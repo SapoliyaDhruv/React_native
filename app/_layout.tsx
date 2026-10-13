@@ -1,24 +1,92 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-reanimated';
+import { MindSprintThemeProvider } from '@/context/ThemeContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function InitialLayout() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const checkOnboardingStatus = async () => {
+    try {
+      const completed = await AsyncStorage.getItem('@mindsprint_onboarding_completed');
+      setHasCompletedOnboarding(completed === 'true');
+    } catch (e) {
+      setHasCompletedOnboarding(true);
+    } finally {
+      setCheckingOnboarding(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoading || checkingOnboarding) return;
+
+    const currentScreen = segments[0] as string | undefined;
+
+    if (!hasCompletedOnboarding && currentScreen !== 'onboarding') {
+      router.replace('/onboarding');
+      return;
+    }
+
+    if (hasCompletedOnboarding) {
+      const inAuthGroup = currentScreen === 'login';
+      const inOnboarding = currentScreen === 'onboarding';
+
+      if (!user && !inAuthGroup && !inOnboarding) {
+        router.replace('/login');
+      } else if (user && (inAuthGroup || inOnboarding)) {
+        router.replace('/(tabs)');
+      }
+    }
+  }, [user, isLoading, checkingOnboarding, hasCompletedOnboarding, segments]);
+
+  if (isLoading || checkingOnboarding) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', gap: 16 }}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={{ color: '#94a3b8', fontSize: 13, fontWeight: '600', letterSpacing: 0.2 }}>
+          "Be the better version of yourself"
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="exam" options={{ headerShown: false }} />
+      <Stack.Screen name="flashcards" options={{ headerShown: false }} />
+      <Stack.Screen name="cheatsheets" options={{ headerShown: false }} />
+      <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
+      <Stack.Screen name="exam-review" options={{ headerShown: false }} />
+      <Stack.Screen name="error-vault" options={{ headerShown: false }} />
+      <Stack.Screen name="doubt-solver" options={{ headerShown: false }} />
+      <Stack.Screen name="board-exam-simulator" options={{ headerShown: false }} />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <MindSprintThemeProvider>
+          <InitialLayout />
+        </MindSprintThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
