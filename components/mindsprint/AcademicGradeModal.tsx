@@ -37,17 +37,13 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
   const { colors, isDarkMode } = useTheme();
 
   const [selectedGrade, setSelectedGrade] = useState<AcademicGrade>(currentGrade);
-  const [selectedBoard, setSelectedBoard] = useState<EducationBoard>(currentBoard);
-  const [selectedMedium, setSelectedMedium] = useState<InstructionMedium>(currentMedium);
 
   // Sync state when props change or modal opens
   React.useEffect(() => {
     if (visible) {
       setSelectedGrade(currentGrade);
-      setSelectedBoard(currentGrade === 'college' ? 'CBSE' : currentBoard);
-      setSelectedMedium(currentGrade === 'college' ? 'English' : currentMedium);
     }
-  }, [visible, currentGrade, currentBoard, currentMedium]);
+  }, [visible, currentGrade]);
 
   const isSchool = selectedGrade !== 'college';
 
@@ -55,7 +51,7 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
     if (selectedGrade === 'college') {
       onSave('college', 'CBSE', 'English');
     } else {
-      onSave(selectedGrade, selectedBoard, selectedMedium);
+      onSave(selectedGrade, 'GSEB', 'Gujarati');
     }
     onClose();
   };
@@ -146,77 +142,45 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
               })}
             </View>
 
-            {/* Step 2 & 3: If School Grade selected, show Board and Medium */}
-            {isSchool && (
-              <View style={styles.schoolOptionsBox}>
-                {/* Board Selector */}
-                <Text style={[styles.sectionTitle, { color: colors.onSurface, marginTop: 16 }]}>
-                  2. Education Board:
-                </Text>
-                <View style={styles.pillRow}>
-                  {[
-                    { key: 'CBSE' as const, label: 'CBSE / NCERT 🇮🇳' },
-                    { key: 'GSEB' as const, label: 'Gujarat Board (GSEB) 🦁' },
-                  ].map((b) => {
-                    const isSelected = selectedBoard === b.key;
-                    return (
-                      <TouchableOpacity
-                        key={b.key}
-                        style={[
-                          styles.pillBtn,
-                          {
-                            backgroundColor: isSelected ? colors.primary : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                            borderColor: isSelected ? colors.primary : colors.outlineVariant,
-                          },
-                        ]}
-                        onPress={() => setSelectedBoard(b.key)}
-                      >
-                        <Text
-                          style={[
-                            styles.pillText,
-                            { color: isSelected ? '#ffffff' : colors.onSurface },
-                          ]}
-                        >
-                          {b.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+            {/* Academic Track Confirmation Banner */}
+            {isSchool ? (
+              <View
+                style={[
+                  styles.gsebNoticeCard,
+                  {
+                    backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.12)' : '#ecfdf5',
+                    borderColor: '#10b981',
+                  },
+                ]}
+              >
+                <Text style={styles.gsebNoticeEmoji}>🦁</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.gsebNoticeTitle, { color: isDarkMode ? '#34d399' : '#065f46' }]}>
+                    GSEB ગુજરાત બોર્ડ • ગુજરાતી માધ્યમ
+                  </Text>
+                  <Text style={[styles.gsebNoticeSub, { color: isDarkMode ? '#a7f3d0' : '#047857' }]}>
+                    ધોરણ ૬ થી ૧૨ નો તમામ અભ્યાસક્રમ, સ્વાધ્યાય, વિડીયો અને બોર્ડ પેપર્સ ગુજરાતી માધ્યમમાં ઉપલબ્ધ રહેશે.
+                  </Text>
                 </View>
-
-                {/* Medium Selector */}
-                <Text style={[styles.sectionTitle, { color: colors.onSurface, marginTop: 16 }]}>
-                  3. Medium of Instruction:
-                </Text>
-                <View style={styles.pillRow}>
-                  {[
-                    { key: 'English' as const, label: 'English Medium' },
-                    { key: 'Gujarati' as const, label: 'Gujarati Medium' },
-                  ].map((m) => {
-                    const isSelected = selectedMedium === m.key;
-                    return (
-                      <TouchableOpacity
-                        key={m.key}
-                        style={[
-                          styles.pillBtn,
-                          {
-                            backgroundColor: isSelected ? '#10b981' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                            borderColor: isSelected ? '#10b981' : colors.outlineVariant,
-                          },
-                        ]}
-                        onPress={() => setSelectedMedium(m.key)}
-                      >
-                        <Text
-                          style={[
-                            styles.pillText,
-                            { color: isSelected ? '#ffffff' : colors.onSurface },
-                          ]}
-                        >
-                          {m.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+              </View>
+            ) : (
+              <View
+                style={[
+                  styles.gsebNoticeCard,
+                  {
+                    backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.12)' : '#eef2ff',
+                    borderColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={styles.gsebNoticeEmoji}>🎓</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.gsebNoticeTitle, { color: colors.primary }]}>
+                    College & Campus Placements (English)
+                  </Text>
+                  <Text style={[styles.gsebNoticeSub, { color: colors.onSurfaceVariant }]}>
+                    Aptitude, DSA, Web Dev, and technical interview simulations are delivered in English.
+                  </Text>
                 </View>
               </View>
             )}
@@ -310,27 +274,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
-  schoolOptionsBox: {
-    marginTop: 6,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  pillBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillText: {
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
   confirmBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -344,5 +287,26 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '700',
+  },
+  gsebNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 16,
+  },
+  gsebNoticeEmoji: {
+    fontSize: 28,
+  },
+  gsebNoticeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  gsebNoticeSub: {
+    fontSize: 12,
+    lineHeight: 16,
   },
 });

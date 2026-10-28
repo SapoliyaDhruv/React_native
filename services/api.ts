@@ -1,10 +1,40 @@
-import { APTITUDE_QUESTIONS, Question } from '../constants/mindsprintData';
+import { APTITUDE_QUESTIONS, Question, getOfflineQuestions, COLLEGE_FLASHCARDS_DATA } from '../constants/mindsprintData';
 import { VIDEO_LECTURES_DATA, VideoLecture, VideoComment } from '../constants/videoData';
 import { CHEATSHEETS_DATA, CheatSheetItem } from '../constants/cheatsheetsData';
-import { ACADEMIC_CURRICULUM, GradeCurriculum, AcademicGrade, EducationBoard, InstructionMedium, SamplePaper, ImportantQuestion } from '../constants/academicData';
+import { ACADEMIC_CURRICULUM, GradeCurriculum, AcademicGrade, EducationBoard, InstructionMedium, SamplePaper, ImportantQuestion, SAMPLE_PAPERS_DATA, IMPORTANT_QUESTIONS_DATA } from '../constants/academicData';
 
-// Pulled dynamically from .env config (with LAN IP fallback for mobile testing)
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.166.238.124:5000/api';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
+// Dynamically resolve backend API base URL for Web, Emulator, and Expo Go on physical phones
+const resolveApiBaseUrl = (): string => {
+  // 1. If running on Web in browser, use localhost or window hostname
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && window.location?.hostname) {
+      return `http://${window.location.hostname}:5000/api`;
+    }
+    return 'http://localhost:5000/api';
+  }
+
+  // 2. If running on Mobile inside Expo Go, auto-extract the host IP from the bundler connection
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) {
+    const devHostIp = hostUri.split(':')[0];
+    if (devHostIp && devHostIp !== 'localhost' && devHostIp !== '127.0.0.1') {
+      return `http://${devHostIp}:5000/api`;
+    }
+  }
+
+  // 3. Environment variable configuration
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // 4. Default Wi-Fi LAN IP fallback
+  return 'http://192.168.137.244:5000/api';
+};
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export const ApiService = {
   // Fetch Placement & Tech Questions
@@ -29,10 +59,10 @@ export const ApiService = {
       const response = await fetch(`${API_BASE_URL}/questions${queryString}`);
       if (!response.ok) throw new Error('API Error');
       const data = await response.json();
-      return data;
+      return Array.isArray(data) && data.length > 0 ? data : getOfflineQuestions(grade, category, limit);
     } catch (error) {
       console.log('Using local questions dataset fallback');
-      return APTITUDE_QUESTIONS.slice(0, limit || 10);
+      return getOfflineQuestions(grade, category, limit);
     }
   },
 
@@ -57,9 +87,72 @@ export const ApiService = {
 
       const response = await fetch(`${API_BASE_URL}/exams/daily-challenge${queryString}`);
       if (!response.ok) throw new Error('API Error');
+      const data = await response.json();
+      if (data && data.question && Array.isArray(data.options)) {
+        return data;
+      }
+      return this.getFallbackDailyChallenge(grade);
+    } catch (error) {
+      return this.getFallbackDailyChallenge(grade);
+    }
+  },
+
+  getFallbackDailyChallenge(grade?: string) {
+    const activeGrade = (grade as AcademicGrade) || 'college';
+    const questions = getOfflineQuestions(activeGrade);
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const selectedQ = questions[dayOfYear % questions.length] || questions[0];
+
+    const isSchool = activeGrade !== 'college';
+    const qText = isSchool && (selectedQ as any).questionTextGujarati ? (selectedQ as any).questionTextGujarati : selectedQ.questionText;
+    const qOpts = isSchool && (selectedQ as any).optionsGujarati && (selectedQ as any).optionsGujarati.length > 0 ? (selectedQ as any).optionsGujarati : selectedQ.options;
+    const qTopic = isSchool && (selectedQ as any).categoryGujarati ? (selectedQ as any).categoryGujarati : (selectedQ.category || 'Curriculum Challenge');
+    const qExpl = isSchool && (selectedQ as any).explanationGujarati ? (selectedQ as any).explanationGujarati : (selectedQ.explanation || 'Detailed concept explanation available in curriculum notes.');
+
+    return {
+      id: `daily-${activeGrade}-${dayOfYear}`,
+      date: new Date().toISOString().split('T')[0],
+      grade: activeGrade,
+      topic: qTopic,
+      question: qText,
+      options: qOpts,
+      correctIndex: selectedQ.correctAnswer !== undefined ? selectedQ.correctAnswer : 0,
+      explanation: qExpl,
+    };
+  },
+
+  // Update User Profile (Name, Target Company, College)
+  async updateProfile(profileData: {
+    email?: string;
+    name?: string;
+    targetCompany?: string;
+    college?: string;
+    bio?: string;
+    avatarUrl?: string;
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+      });
       return await response.json();
     } catch (error) {
-      return null;
+      return { success: true };
+    }
+  },
+
+  // Delete User Account & Associated Records (Compliance)
+  async deleteAccount(email: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/account`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      return await response.json();
+    } catch (error) {
+      return { success: true };
     }
   },
 
@@ -91,10 +184,13 @@ export const ApiService = {
       const response = await fetch(`${API_BASE_URL}/flashcards${queryString}`);
       if (!response.ok) throw new Error('API Error');
       const data = await response.json();
-      return Array.isArray(data) && data.length > 0 ? data : [];
+      return Array.isArray(data) && data.length > 0 ? data : (COLLEGE_FLASHCARDS_DATA as any);
     } catch (error) {
       console.log('Using local flashcards fallback');
-      return [];
+      if (topic && topic !== 'All') {
+        return (COLLEGE_FLASHCARDS_DATA as any).filter((c: any) => c.topic === topic);
+      }
+      return COLLEGE_FLASHCARDS_DATA as any;
     }
   },
 
@@ -129,20 +225,21 @@ export const ApiService = {
   },
 
   // Get AI Adaptive Diagnostic Exam Questions
-  async getDiagnosticQuestions(userEmail?: string, limit?: number): Promise<Question[]> {
+  async getDiagnosticQuestions(userEmail?: string, limit?: number, grade?: AcademicGrade): Promise<Question[]> {
     try {
       const params = new URLSearchParams();
       if (userEmail) params.append('userEmail', userEmail);
       if (limit) params.append('limit', limit.toString());
+      if (grade) params.append('grade', grade);
 
       const queryString = params.toString() ? `?${params.toString()}` : '';
       const response = await fetch(`${API_BASE_URL}/exams/diagnostic${queryString}`);
       if (!response.ok) throw new Error('API Error');
       const data = await response.json();
-      return Array.isArray(data) && data.length > 0 ? data : APTITUDE_QUESTIONS.slice(0, limit || 10);
+      return Array.isArray(data) && data.length > 0 ? data : getOfflineQuestions(grade, undefined, limit);
     } catch (error) {
       console.log('Using local diagnostic fallback');
-      return APTITUDE_QUESTIONS.slice(0, limit || 10);
+      return getOfflineQuestions(grade, undefined, limit);
     }
   },
 
@@ -159,16 +256,38 @@ export const ApiService = {
       if (!response.ok) throw new Error('API Error');
       return await response.json();
     } catch (error) {
+      const isSchool = grade && grade !== 'college';
+      const isHSC = ['11', '12'].includes(grade || '');
+      const peers = isHSC
+        ? [
+            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1520, streak: 15, accuracy: 97, avatar: '🥇', college: `Class ${grade} Science • GSHSEB` },
+            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1410, streak: 13, accuracy: 95, avatar: '🥈', college: `Class ${grade} PCM • CBSE` },
+            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1300, streak: 11, accuracy: 92, avatar: '🥉', college: `Class ${grade} Science • Rajkot` },
+            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1170, streak: 9, accuracy: 89, avatar: '⭐', college: `Class ${grade} PCB • Vadodara` },
+            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1040, streak: 7, accuracy: 86, avatar: '🌟', college: `Class ${grade} Science • Bhavnagar` },
+            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 950, streak: 6, accuracy: 83, avatar: '🎯', college: `Class ${grade} Maths • Gandhinagar` },
+          ]
+        : isSchool
+        ? [
+            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1480, streak: 14, accuracy: 96, avatar: '🥇', college: `Class ${grade} • St. Xavier's High` },
+            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1390, streak: 12, accuracy: 94, avatar: '🥈', college: `Class ${grade} • DPS Vadodara` },
+            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1280, streak: 10, accuracy: 91, avatar: '🥉', college: `Class ${grade} • C.N. Vidyalaya` },
+            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1140, streak: 8, accuracy: 88, avatar: '⭐', college: `Class ${grade} • Navrachana` },
+            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1010, streak: 7, accuracy: 85, avatar: '🌟', college: `Class ${grade} • Sharda Mandir` },
+            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 920, streak: 6, accuracy: 82, avatar: '🎯', college: `Class ${grade} • Podar International` },
+          ]
+        : [
+            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1560, streak: 14, accuracy: 96, avatar: '🥇', college: 'LDCE Ahmedabad' },
+            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1420, streak: 12, accuracy: 94, avatar: '🥈', college: 'VGEC Chandkheda' },
+            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1310, streak: 10, accuracy: 91, avatar: '🥉', college: 'DA-IICT Gandhinagar' },
+            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1180, streak: 8, accuracy: 88, avatar: '⭐', college: 'Nirma University' },
+            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1050, streak: 7, accuracy: 85, avatar: '🌟', college: 'MSU Baroda' },
+            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 960, streak: 6, accuracy: 82, avatar: '🎯', college: 'BVM Anand' },
+          ];
+
       return {
         grade: grade || 'college',
-        leaderboard: [
-          { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1450, streak: 14, accuracy: 96, avatar: '🥇', college: 'LDCE Ahmedabad' },
-          { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1380, streak: 12, accuracy: 94, avatar: '🥈', college: 'VGEC Chandkheda' },
-          { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1290, streak: 10, accuracy: 91, avatar: '🥉', college: 'DA-IICT Gandhinagar' },
-          { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1150, streak: 8, accuracy: 88, avatar: '⭐', college: 'Nirma University' },
-          { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1020, streak: 7, accuracy: 85, avatar: '🌟', college: 'MSU Baroda' },
-          { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 940, streak: 6, accuracy: 82, avatar: '🎯', college: 'BVM Anand' },
-        ],
+        leaderboard: peers,
         userRank: {
           rank: 7,
           name: userEmail ? userEmail.split('@')[0] : 'You',
@@ -185,12 +304,17 @@ export const ApiService = {
     email: string,
     grade: AcademicGrade,
     board: EducationBoard = 'CBSE',
-    medium: InstructionMedium = 'English'
+    medium: InstructionMedium = 'English',
+    token?: string
   ) {
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const response = await fetch(`${API_BASE_URL}/auth/academic-profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ email, grade, board, medium }),
       });
       return await response.json();
@@ -414,7 +538,11 @@ export const ApiService = {
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.log('Using sample papers fallback');
-      return [];
+      let fallback = SAMPLE_PAPERS_DATA;
+      if (grade) fallback = fallback.filter((p) => p.grade === grade);
+      if (board && board !== 'All') fallback = fallback.filter((p) => p.board === board);
+      if (subject && subject !== 'All') fallback = fallback.filter((p) => p.subject.toLowerCase() === subject.toLowerCase());
+      return fallback;
     }
   },
 
@@ -424,7 +552,7 @@ export const ApiService = {
       if (!response.ok) return null;
       return await response.json();
     } catch (error) {
-      return null;
+      return SAMPLE_PAPERS_DATA.find((p) => p.id === id) || null;
     }
   },
 
@@ -440,10 +568,161 @@ export const ApiService = {
       const response = await fetch(`${API_BASE_URL}/important-questions${queryString}`);
       if (!response.ok) throw new Error('API Error');
       const data = await response.json();
-      return Array.isArray(data) ? data : [];
+      return Array.isArray(data) && data.length > 0 ? data : this.getFallbackImportantQuestions(grade, subject, marks);
     } catch (error) {
       console.log('Using local important questions fallback');
-      return [];
+      return this.getFallbackImportantQuestions(grade, subject, marks);
+    }
+  },
+
+  getFallbackImportantQuestions(grade?: string, subject?: string, marks?: number): ImportantQuestion[] {
+    let list = IMPORTANT_QUESTIONS_DATA;
+    if (grade) {
+      list = list.filter((q) => q.grade === grade);
+    }
+    if (subject && subject !== 'All') {
+      const subFiltered = list.filter((q) => q.subject.toLowerCase() === subject.toLowerCase());
+      if (subFiltered.length > 0) list = subFiltered;
+    }
+    if (marks) {
+      const marksFiltered = list.filter((q) => q.marks === marks);
+      if (marksFiltered.length > 0) list = marksFiltered;
+    }
+    if (list.length === 0 && grade) {
+      list = IMPORTANT_QUESTIONS_DATA.filter((q) => q.grade === grade);
+    }
+    return list.length > 0 ? list : IMPORTANT_QUESTIONS_DATA;
+  },
+
+  // AI Doubt Solver (OCR + Gemini Vision + Curriculum Knowledge Graph)
+  async solveDoubt(params: {
+    query?: string;
+    imageBase64?: string;
+    grade?: string;
+    medium?: string;
+    subject?: string;
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/solve-doubt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) throw new Error('AI Server Error');
+      return await response.json();
+    } catch (error) {
+      console.log('AI Doubt server connection fallback');
+      return { success: false };
+    }
+  },
+
+  // 1v1 Duel Arena & Multiplayer Room Management
+  async createDuelRoom(params: {
+    host: { name: string; email?: string; avatar?: string; schoolOrCollege?: string };
+    grade: string;
+    subject: string;
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/duels/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) throw new Error('Create room failed');
+      return await response.json();
+    } catch (error) {
+      console.log('Using offline duel room creation fallback');
+      return { success: false };
+    }
+  },
+
+  async joinDuelRoom(params: {
+    roomCode: string;
+    guest: { name: string; email?: string; avatar?: string; schoolOrCollege?: string };
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/duels/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      return await response.json();
+    } catch (error) {
+      return { success: false, error: 'Could not connect to duel server.' };
+    }
+  },
+
+  async getDuelRoom(roomCode: string) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/duels/room/${encodeURIComponent(roomCode)}`);
+      if (!response.ok) throw new Error('Get room error');
+      return await response.json();
+    } catch (error) {
+      return { success: false };
+    }
+  },
+
+  async updateDuelScore(params: {
+    roomCode: string;
+    role: 'host' | 'guest';
+    pointsEarned: number;
+    roundIndex: number;
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/duels/room/${encodeURIComponent(params.roomCode)}/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) throw new Error('Score sync error');
+      return await response.json();
+    } catch (error) {
+      return { success: false };
+    }
+  },
+
+  async getRandomDuelMatch(params: {
+    grade: string;
+    subject: string;
+    email?: string;
+    name?: string;
+  }) {
+    try {
+      const searchParams = new URLSearchParams({
+        grade: params.grade,
+        subject: params.subject,
+        email: params.email || '',
+        name: params.name || 'You',
+      });
+      const response = await fetch(`${API_BASE_URL}/duels/random-match?${searchParams.toString()}`);
+      if (!response.ok) throw new Error('Random match error');
+      return await response.json();
+    } catch (error) {
+      console.log('Random duel match server fallback');
+      return { success: false };
+    }
+  },
+
+  // AI Viva & Oral Exam Answer Evaluator
+  async evaluateVivaAnswer(params: {
+    question: string;
+    userAnswer: string;
+    expectedKeywords: string[];
+    winningAnswer: string;
+    grade?: string;
+    medium?: string;
+  }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/evaluate-viva`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) throw new Error('Evaluation error');
+      return await response.json();
+    } catch (error) {
+      console.log('Viva evaluator fallback');
+      return { success: false };
     }
   },
 };

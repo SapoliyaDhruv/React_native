@@ -220,7 +220,7 @@ export default function FlashcardsScreen() {
       }
     }
     loadCards();
-  }, [userGrade, isSchoolMode]);
+  }, [userGrade, isSchoolMode, isGSEB]);
 
   useEffect(() => {
     if (selectedFilter === "All") {

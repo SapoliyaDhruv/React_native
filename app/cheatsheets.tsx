@@ -19,6 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 import { CheatSheetItem, FormulaStorage } from '@/constants/cheatsheetsData';
 import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
+import * as Clipboard from 'expo-clipboard';
 
 const getCategoryStyle = (category: string) => {
   switch (category) {
@@ -87,8 +88,17 @@ export default function CheatSheetsScreen() {
     return matchesFilter && matchesSearch;
   });
 
-  const handleCopyFormula = (title: string, formulaText: string) => {
-    Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+  const handleCopyFormula = async (title: string, formulaText: string) => {
+    try {
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(formulaText);
+      } else {
+        await Clipboard.setStringAsync(formulaText);
+      }
+      Alert.alert('Formula Copied 📋', `"${formulaText}" copied to clipboard!`);
+    } catch (e) {
+      Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+    }
   };
 
   const toggleSave = async (item: CheatSheetItem) => {
@@ -103,7 +113,7 @@ export default function CheatSheetsScreen() {
   };
 
   const filterCategories = isSchoolMode
-    ? ['All', `Saved (${savedIds.length})`, 'School Math', 'School Science']
+    ? ['All', `Saved (${savedIds.length})`, 'School Math', 'School Science', 'Physics & Chemistry']
     : ['All', `Saved (${savedIds.length})`, 'Quant Formulas', 'DSA Time Complexities', 'React & JS'];
 
   return (

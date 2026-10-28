@@ -19,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
-import { ApiService } from '@/services/api';
+import { ApiService, API_BASE_URL } from '@/services/api';
 import {
   GradeCurriculum,
   SubjectChapter,
@@ -41,7 +41,7 @@ export default function CoursesScreen() {
 
   const userGrade = user?.grade || '6';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
   const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
     ACADEMIC_CURRICULUM[userGrade] || ACADEMIC_CURRICULUM['6']
@@ -96,13 +96,15 @@ export default function CoursesScreen() {
   useEffect(() => {
     async function loadPapers() {
       try {
-        const papers = await ApiService.getSamplePapers(userGrade, user?.board);
+        const targetBoard = isSchoolMode ? 'GSEB' : (user?.board || 'CBSE');
+        const papers = await ApiService.getSamplePapers(userGrade, targetBoard);
         setSamplePapers(papers);
       } catch (e) {
         console.warn('Error loading sample papers:', e);
       }
     }
-  }, [userGrade, user?.board]);
+    loadPapers();
+  }, [userGrade, isSchoolMode, user?.board]);
 
   // Load Frequently Asked Important Questions (1M, 2M, 3M, 4M)
   useEffect(() => {
@@ -175,16 +177,27 @@ export default function CoursesScreen() {
 
   const handleOpenPdf = async (url?: string) => {
     if (!url) {
-      Alert.alert('Textbook PDF', 'Textbook will be available shortly.');
+      Alert.alert('Examination Paper', 'Exam paper will be available shortly.');
       return;
     }
+    // Resolve relative backend routes (/api/sample-papers/render/...) to absolute server URL
+    let fullUrl = url;
+    if (!url.startsWith('http')) {
+      const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+      const base = API_BASE_URL.replace(/\/api\/?$/, '');
+      fullUrl = `${base}${normalizedPath}`;
+    }
+
     try {
-      await WebBrowser.openBrowserAsync(url);
+      await WebBrowser.openBrowserAsync(fullUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        toolbarColor: colors.primary,
+      });
     } catch (_) {
       try {
-        await Linking.openURL(url);
+        await Linking.openURL(fullUrl);
       } catch (err) {
-        Alert.alert('Link Error', url);
+        Alert.alert('Paper Vault', `Opening link: ${fullUrl}`);
       }
     }
   };
@@ -194,15 +207,17 @@ export default function CoursesScreen() {
     if (chap.videos && chap.videos.length > 0) {
       setActiveVideoOption(chap.videos[0]);
     } else {
-      setActiveVideoOption({
-        id: 'fallback',
-        title: chap.title,
-        titleGujarati: chap.titleGujarati,
-        teacher: 'MindSprint Masterclass',
-        duration: chap.duration,
-        youtubeVideoId: 'L_LUpnjgPso',
-        tag: 'GSEB Masterclass',
-      });
+      const fallbackOption: ChapterVideo = {
+        id: `fb-${chap.id}`,
+        title: `${chap.title} - Video Lesson`,
+        titleGujarati: `${chap.titleGujarati || chap.title} - વિડિયો લેક્ચર`,
+        teacher: 'MindSprint Faculty',
+        duration: chap.duration || '15m',
+        youtubeVideoId: 'w7ejDZ8SWv8',
+        tag: 'Chapter Masterclass',
+      };
+      chap.videos = [fallbackOption];
+      setActiveVideoOption(fallbackOption);
     }
   };
 
@@ -1115,6 +1130,36 @@ export default function CoursesScreen() {
                   }}
                 />
               </View>
+            )}
+
+            {/* Quick Textbook PDF Bar for current chapter */}
+            {selectedChapterForVideo?.textbookPdfUrl && (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[
+                  styles.videoOptionCard,
+                  {
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2',
+                    borderColor: '#ef4444',
+                    borderWidth: 1,
+                    marginVertical: 8,
+                  },
+                ]}
+                onPress={() => handleOpenPdf(selectedChapterForVideo.textbookPdfUrl)}
+              >
+                <View style={[styles.videoOptionIcon, { backgroundColor: '#ef4444' }]}>
+                  <MaterialIcons name="picture-as-pdf" size={18} color="#ffffff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.videoOptionTitle, { color: '#ef4444', fontWeight: '700' }]}>
+                    {isGSEB ? '📖 આ પ્રકરણનું અધિકૃત પાઠ્યપુસ્તક PDF વાંચો' : '📖 Read Official Chapter Textbook PDF'}
+                  </Text>
+                  <Text style={[styles.videoTeacherName, { color: colors.onSurfaceVariant }]}>
+                    {isGSEB ? 'NCERT / GSEB ડિજિટલ પુસ્તક • ઓરિજિનલ સિલેબસ' : 'NCERT / GSEB Official Material & Diagrams'}
+                  </Text>
+                </View>
+                <MaterialIcons name="open-in-new" size={18} color="#ef4444" />
+              </TouchableOpacity>
             )}
 
             {/* Multiple Video Selection Options List */}

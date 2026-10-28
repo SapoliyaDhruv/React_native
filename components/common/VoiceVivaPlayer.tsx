@@ -7,6 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 import { useTheme } from '@/context/ThemeContext';
 
 interface VoiceVivaPlayerProps {
@@ -27,6 +28,8 @@ export const VoiceVivaPlayer: React.FC<VoiceVivaPlayerProps> = ({
     return () => {
       if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+      } else {
+        Speech.stop();
       }
     };
   }, []);
@@ -50,16 +53,22 @@ export const VoiceVivaPlayer: React.FC<VoiceVivaPlayerProps> = ({
         window.speechSynthesis.speak(utterance);
       }
     } else {
-      // Mobile native toggle simulation with auto-finish
-      setIsPlaying((prev) => {
-        const next = !prev;
-        if (next) {
-          setTimeout(() => {
-            setIsPlaying(false);
-          }, 3500);
-        }
-        return next;
-      });
+      if (isPlaying) {
+        Speech.stop();
+        setIsPlaying(false);
+      } else {
+        Speech.stop();
+        setIsPlaying(true);
+        const cleanText = textToRead.replace(/[*_#`]/g, '');
+        Speech.speak(cleanText, {
+          rate: 0.95,
+          pitch: 1.0,
+          onStart: () => setIsPlaying(true),
+          onDone: () => setIsPlaying(false),
+          onStopped: () => setIsPlaying(false),
+          onError: () => setIsPlaying(false),
+        });
+      }
     }
   };
 

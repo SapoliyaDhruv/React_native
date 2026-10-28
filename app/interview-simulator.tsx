@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,6 +16,7 @@ import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { VoiceVivaPlayer } from '@/components/common/VoiceVivaPlayer';
+import { ApiService } from '@/services/api';
 
 interface MockQuestion {
   id: number;
@@ -211,7 +213,7 @@ export default function InterviewSimulatorScreen() {
 
   const userGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
   const availableTracks = isSchoolMode ? SCHOOL_VIVA_TRACKS : COLLEGE_INTERVIEW_TRACKS;
   const initialTrackKey = isSchoolMode ? 'school_science' : 'placement';
@@ -223,6 +225,16 @@ export default function InterviewSimulatorScreen() {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState<boolean>(false);
   const [scores, setScores] = useState<Record<number, number>>({});
   const [sessionFinished, setSessionFinished] = useState<boolean>(false);
+  const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
+  const [evaluationResult, setEvaluationResult] = useState<{
+    score: number;
+    rating: string;
+    matchedKeywords: string[];
+    missingKeywords: string[];
+    feedback: string;
+    examinerTip: string;
+    source?: string;
+  } | null>(null);
 
   const activeTrack = availableTracks[selectedTrackKey] || Object.values(availableTracks)[0];
   const currentQuestion = activeTrack.questions[currentQIndex] || activeTrack.questions[0];
@@ -233,7 +245,59 @@ export default function InterviewSimulatorScreen() {
     setUserNotes('');
     setIsAnswerRevealed(false);
     setScores({});
+    setEvaluationResult(null);
     setSessionFinished(false);
+  };
+
+  const handleEvaluateWithAi = async () => {
+    if (!userNotes.trim()) {
+      Alert.alert(
+        'Oral Answer Required',
+        'Please enter or speak your answer notes into the box before submitting to the AI examiner.'
+      );
+      return;
+    }
+
+    setIsEvaluating(true);
+    try {
+      const qText = isGSEB && currentQuestion.questionGujarati ? currentQuestion.questionGujarati : currentQuestion.question;
+      const kws = isGSEB && currentQuestion.expectedKeywordsGujarati ? currentQuestion.expectedKeywordsGujarati : currentQuestion.expectedKeywords;
+      const winAns = isGSEB && currentQuestion.winningAnswerGujarati ? currentQuestion.winningAnswerGujarati : currentQuestion.winningAnswer;
+
+      const resp = await ApiService.evaluateVivaAnswer({
+        question: qText,
+        userAnswer: userNotes,
+        expectedKeywords: kws,
+        winningAnswer: winAns,
+        grade: userGrade,
+        medium: isSchoolMode ? 'Gujarati' : 'English',
+      });
+
+      if (resp && resp.success) {
+        setEvaluationResult(resp);
+        setScores((prev) => ({ ...prev, [currentQIndex]: resp.score }));
+      } else {
+        // Fallback local calculation
+        const lower = userNotes.toLowerCase();
+        const matched = kws.filter((k) => lower.includes(k.toLowerCase().split(' ')[0]));
+        const missing = kws.filter((k) => !lower.includes(k.toLowerCase().split(' ')[0]));
+        const score = Math.min(10, Math.max(3, Math.round((matched.length / Math.max(1, kws.length)) * 7) + 3));
+        const fallbackRes = {
+          score,
+          rating: score >= 8 ? 'Strong Defense 👍' : 'Fair Attempt 📚',
+          matchedKeywords: matched,
+          missingKeywords: missing,
+          feedback: `Good attempt covering ${matched.length} key concepts. Be sure to address ${missing.slice(0, 2).join(', ')} in your defense.`,
+          examinerTip: 'State definitions explicitly and give concrete units or examples.',
+        };
+        setEvaluationResult(fallbackRes);
+        setScores((prev) => ({ ...prev, [currentQIndex]: score }));
+      }
+    } catch (e) {
+      console.warn('AI viva evaluator call error:', e);
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   const handleNextQuestion = (score: number) => {
@@ -244,8 +308,25 @@ export default function InterviewSimulatorScreen() {
       setCurrentQIndex((prev) => prev + 1);
       setUserNotes('');
       setIsAnswerRevealed(false);
+      setEvaluationResult(null);
     } else {
       setSessionFinished(true);
+
+      // Record oral exam completion in backend ExamResult
+      const scoreVals = Object.values(updatedScores);
+      const sum = scoreVals.reduce((a, b) => a + b, 0);
+      const avgPct = Math.round((sum / (activeTrack.questions.length * 10)) * 100);
+
+      ApiService.submitExamResult({
+        userEmail: user?.email || 'guest@mindsprint.edu',
+        scorePercentage: avgPct,
+        correctCount: Math.round((avgPct / 100) * activeTrack.questions.length),
+        totalQuestions: activeTrack.questions.length,
+        userAnswers: {},
+        weakCategories: [],
+        grade: userGrade,
+        category: `Oral Viva Voce (${activeTrack.title})`,
+      }).catch(() => {});
     }
   };
 
@@ -516,6 +597,135 @@ export default function InterviewSimulatorScreen() {
               />
             </View>
 
+            {/* AI Evaluation Button */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[
+                styles.evalBtn,
+                { backgroundColor: colors.primary },
+                MindSprintShadows.glow,
+              ]}
+              disabled={isEvaluating}
+              onPress={handleEvaluateWithAi}
+            >
+              {isEvaluating ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <>
+                  <MaterialIcons name="auto-awesome" size={20} color="#ffffff" />
+                  <Text style={styles.evalBtnText}>
+                    Evaluate My Spoken Answer with AI 🎙️
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* AI Evaluation Result Card */}
+            {evaluationResult && (
+              <View
+                style={[
+                  styles.aiEvalCard,
+                  {
+                    backgroundColor: colors.surfaceContainerLowest,
+                    borderColor: evaluationResult.score >= 7 ? '#10b981' : '#f59e0b',
+                    borderLeftWidth: 4,
+                  },
+                  MindSprintShadows.card,
+                ]}
+              >
+                <View style={styles.aiEvalHeader}>
+                  <View
+                    style={[
+                      styles.aiScoreBadge,
+                      {
+                        backgroundColor:
+                          evaluationResult.score >= 7
+                            ? 'rgba(16, 185, 129, 0.15)'
+                            : 'rgba(245, 158, 11, 0.15)',
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name={evaluationResult.score >= 7 ? 'verified' : 'analytics'}
+                      size={18}
+                      color={evaluationResult.score >= 7 ? '#10b981' : '#f59e0b'}
+                    />
+                    <Text
+                      style={[
+                        styles.aiScoreText,
+                        { color: evaluationResult.score >= 7 ? '#065f46' : '#b45309' },
+                      ]}
+                    >
+                      AI Score: {evaluationResult.score}/10 • {evaluationResult.rating}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Matched Concepts */}
+                {evaluationResult.matchedKeywords && evaluationResult.matchedKeywords.length > 0 && (
+                  <View style={{ marginTop: 4 }}>
+                    <Text style={[styles.subLabel, { color: '#10b981' }]}>
+                      ✓ Concepts Mastered:
+                    </Text>
+                    <View style={styles.kwWrap}>
+                      {evaluationResult.matchedKeywords.map((kw, i) => (
+                        <View key={i} style={[styles.matchedKwPill, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                          <Text style={[styles.matchedKwText, { color: '#065f46' }]}>✓ {kw}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Missing Concepts */}
+                {evaluationResult.missingKeywords && evaluationResult.missingKeywords.length > 0 && (
+                  <View style={{ marginTop: 4 }}>
+                    <Text style={[styles.subLabel, { color: '#f59e0b' }]}>
+                      ⚠️ Missed Concepts:
+                    </Text>
+                    <View style={styles.kwWrap}>
+                      {evaluationResult.missingKeywords.map((kw, i) => (
+                        <View key={i} style={[styles.missingKwPill, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+                          <Text style={[styles.missingKwText, { color: '#b45309' }]}>• {kw}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Examiner Feedback */}
+                <View style={[styles.aiFeedbackBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+                  <Text style={[styles.feedbackHeading, { color: colors.primary }]}>
+                    Examiner Feedback:
+                  </Text>
+                  <Text style={[styles.feedbackText, { color: colors.onSurface }]}>
+                    {evaluationResult.feedback}
+                  </Text>
+                </View>
+
+                {/* Examiner Tip */}
+                {evaluationResult.examinerTip && (
+                  <View style={[styles.tipBox, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
+                    <MaterialIcons name="lightbulb" size={16} color="#b45309" />
+                    <Text style={styles.tipText}>
+                      Tip: {evaluationResult.examinerTip}
+                    </Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.nextQBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => handleNextQuestion(evaluationResult.score)}
+                >
+                  <Text style={styles.nextQBtnText}>
+                    {currentQIndex < activeTrack.questions.length - 1
+                      ? 'Proceed to Next Viva Question ➔'
+                      : 'Complete Viva & View Report Card 🏆'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Winning Answer Reveal */}
             {!isAnswerRevealed ? (
               <TouchableOpacity
@@ -525,7 +735,7 @@ export default function InterviewSimulatorScreen() {
               >
                 <MaterialIcons name="lightbulb" size={20} color="#ffffff" />
                 <Text style={styles.revealBtnText}>
-                  {'Reveal Winning Answer & Scoring Rubric 💡'}
+                  {'Reveal Model Answer & Reference Rubric 💡'}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -566,31 +776,33 @@ export default function InterviewSimulatorScreen() {
                   </View>
                 </View>
 
-                {/* Self Evaluation Scoring (1-10) */}
-                <View
-                  style={[
-                    styles.scoringCard,
-                    {
-                      backgroundColor: colors.surfaceContainerLowest,
-                      borderColor: colors.outlineVariant,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.scoringTitle, { color: colors.onSurface }]}>
-                    Rate Your Spoken Response:
-                  </Text>
-                  <View style={styles.scoringBtnsRow}>
-                    {[4, 6, 8, 10].map((val) => (
-                      <TouchableOpacity
-                        key={val}
-                        style={[styles.scoreBtn, { backgroundColor: colors.primary }]}
-                        onPress={() => handleNextQuestion(val)}
-                      >
-                        <Text style={styles.scoreBtnText}>{val}/10</Text>
-                      </TouchableOpacity>
-                    ))}
+                {/* Quick Next Button if answer revealed */}
+                {!evaluationResult && (
+                  <View
+                    style={[
+                      styles.scoringCard,
+                      {
+                        backgroundColor: colors.surfaceContainerLowest,
+                        borderColor: colors.outlineVariant,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.scoringTitle, { color: colors.onSurface }]}>
+                      Rate Your Spoken Response:
+                    </Text>
+                    <View style={styles.scoringBtnsRow}>
+                      {[4, 6, 8, 10].map((val) => (
+                        <TouchableOpacity
+                          key={val}
+                          style={[styles.scoreBtn, { backgroundColor: colors.primary }]}
+                          onPress={() => handleNextQuestion(val)}
+                        >
+                          <Text style={styles.scoreBtnText}>{val}/10</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                   </View>
-                </View>
+                )}
               </View>
             )}
           </View>
@@ -915,6 +1127,88 @@ const styles = StyleSheet.create({
   restartBtnText: {
     color: '#ffffff',
     fontSize: 14,
+    fontWeight: '800',
+  },
+  evalBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+  },
+  evalBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  aiEvalCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  aiEvalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  aiScoreBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  aiScoreText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  subLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  kwWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  matchedKwPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  matchedKwText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  missingKwPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  missingKwText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  aiFeedbackBox: {
+    padding: 12,
+    borderRadius: 10,
+    gap: 4,
+    marginTop: 4,
+  },
+  nextQBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  nextQBtnText: {
+    color: '#ffffff',
+    fontSize: 13.5,
     fontWeight: '800',
   },
 });

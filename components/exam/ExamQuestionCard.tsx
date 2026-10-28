@@ -34,26 +34,29 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
           ]}
         >
           <Text style={[styles.categoryText, { color: colors.primary }]}>
-            {question.category}
+            {(question as any).categoryGujarati || question.category}
           </Text>
         </View>
 
         {isMarkedForReview && (
           <View style={[styles.reviewBadge, { backgroundColor: isDarkMode ? '#78350f' : '#fef3c7' }]}>
             <MaterialIcons name="bookmark" size={14} color="#f59e0b" />
-            <Text style={styles.reviewText}>Marked for Review</Text>
+            <Text style={styles.reviewText}>પુનરાવર્તન માટે ચિહ્નિત</Text>
           </View>
         )}
       </View>
 
       {/* Question Text */}
       <Text style={[styles.questionText, { color: colors.onSurface }]}>
-        {question.questionText}
+        {(question as any).questionTextGujarati || question.questionText}
       </Text>
 
       {/* Options List */}
       <View style={styles.optionsList}>
-        {question.options.map((option, optIdx) => {
+        {(((question as any).optionsGujarati && (question as any).optionsGujarati.length > 0)
+          ? (question as any).optionsGujarati
+          : question.options
+        ).map((option: string, optIdx: number) => {
           const isSelected = selectedOption === optIdx;
           const letter = String.fromCharCode(65 + optIdx);
 

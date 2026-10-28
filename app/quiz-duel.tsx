@@ -10,6 +10,7 @@ import {
   Alert,
   TextInput,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -146,12 +147,27 @@ export default function QuizDuelScreen() {
   const [earnedXp, setEarnedXp] = useState<number>(0);
   const [totalUserXp, setTotalUserXp] = useState<number>(0);
   const [roomMode, setRoomMode] = useState<'random' | 'create_room' | 'join_room'>('random');
-  const [createdRoomCode, setCreatedRoomCode] = useState<string>('8421');
+  const [createdRoomCode, setCreatedRoomCode] = useState<string>('');
   const [inputRoomCode, setInputRoomCode] = useState<string>('');
+  const [activeRoomCode, setActiveRoomCode] = useState<string | null>(null);
+  const [playerRole, setPlayerRole] = useState<'host' | 'guest' | 'solo'>('solo');
+  const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);
+  const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
+  const [isMultiplayer, setIsMultiplayer] = useState<boolean>(false);
+  const [myCorrectCount, setMyCorrectCount] = useState<number>(0);
+  const [userAnswersRecord, setUserAnswersRecord] = useState<Record<number, number>>({});
 
   const radarSpin = useRef(new Animated.Value(0)).current;
+  const roomPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const xpStorageKey = `@mindsprint_duel_xp_${userGrade}_${user?.email || 'guest'}`;
+
+  // Cleanup room polling on unmount
+  useEffect(() => {
+    return () => {
+      if (roomPollRef.current) clearInterval(roomPollRef.current);
+    };
+  }, []);
 
   // Load saved XP
   useEffect(() => {
@@ -179,76 +195,286 @@ export default function QuizDuelScreen() {
     }
   }, [phase, radarSpin]);
 
+  // Create real multiplayer duel room on backend
+  const handleCreateRoom = async (subjectId: string = selectedSubjectId) => {
+    setIsCreatingRoom(true);
+    setSelectedSubjectId(subjectId);
+    if (roomPollRef.current) clearInterval(roomPollRef.current);
+
+    try {
+      const resp = await ApiService.createDuelRoom({
+        host: {
+          name: user?.name || 'You',
+          email: user?.email || '',
+          avatar: '🧑‍🎓',
+          schoolOrCollege: isSchoolMode ? 'Gujarat Board School' : 'Campus Engineering',
+        },
+        grade: userGrade,
+        subject: subjectId,
+      });
+
+      if (resp && resp.success && resp.roomCode) {
+        setCreatedRoomCode(resp.roomCode);
+        setActiveRoomCode(resp.roomCode);
+        setPlayerRole('host');
+        setIsMultiplayer(true);
+        if (resp.room && resp.room.questions && resp.room.questions.length > 0) {
+          setQuestions(resp.room.questions);
+        }
+
+        // Start polling room state until guest joins
+        roomPollRef.current = setInterval(async () => {
+          const roomCheck = await ApiService.getDuelRoom(resp.roomCode);
+          if (roomCheck && roomCheck.success && roomCheck.room && roomCheck.room.guest) {
+            if (roomPollRef.current) clearInterval(roomPollRef.current);
+            setOpponent({
+              name: roomCheck.room.guest.name,
+              avatar: roomCheck.room.guest.avatar || '👩‍🎓',
+              schoolSchool: roomCheck.room.guest.schoolOrCollege,
+              college: roomCheck.room.guest.schoolOrCollege,
+            });
+            setPhase('matching');
+            setTimeout(() => {
+              setPhase('duel');
+              setCurrentQIndex(0);
+              setMyScore(0);
+              setOppScore(0);
+              setMyCorrectCount(0);
+              setSelectedOpt(null);
+              setIsRoundAnswered(false);
+              setTimerSeconds(12);
+            }, 1200);
+          }
+        }, 1500);
+      } else {
+        const localCode = Math.floor(1000 + Math.random() * 9000).toString();
+        setCreatedRoomCode(localCode);
+        setActiveRoomCode(localCode);
+      }
+    } catch (e) {
+      const localCode = Math.floor(1000 + Math.random() * 9000).toString();
+      setCreatedRoomCode(localCode);
+      setActiveRoomCode(localCode);
+    } finally {
+      setIsCreatingRoom(false);
+    }
+  };
+
+  // Join existing multiplayer duel room via 4-digit PIN
+  const handleJoinRoom = async () => {
+    if (inputRoomCode.length !== 4) return;
+    setIsJoiningRoom(true);
+
+    try {
+      const resp = await ApiService.joinDuelRoom({
+        roomCode: inputRoomCode,
+        guest: {
+          name: user?.name || 'Classmate',
+          email: user?.email || '',
+          avatar: '👩‍🎓',
+          schoolOrCollege: isSchoolMode ? 'Gujarat Board School' : 'Campus Engineering',
+        },
+      });
+
+      if (resp && resp.success && resp.room) {
+        setActiveRoomCode(inputRoomCode);
+        setPlayerRole('guest');
+        setIsMultiplayer(true);
+        setOpponent({
+          name: resp.room.host.name,
+          avatar: resp.room.host.avatar || '🧑‍🎓',
+          schoolSchool: resp.room.host.schoolOrCollege,
+          college: resp.room.host.schoolOrCollege,
+        });
+        if (resp.room.questions && resp.room.questions.length > 0) {
+          setQuestions(resp.room.questions);
+        }
+        setPhase('matching');
+        setTimeout(() => {
+          setPhase('duel');
+          setCurrentQIndex(0);
+          setMyScore(0);
+          setOppScore(0);
+          setMyCorrectCount(0);
+          setSelectedOpt(null);
+          setIsRoundAnswered(false);
+          setTimerSeconds(12);
+        }, 1500);
+      } else {
+        Alert.alert('Cannot Join Room', resp?.error || 'Room code not found or already expired. Please check with your classmate.');
+      }
+    } catch (e) {
+      Alert.alert('Connection Error', 'Could not connect to duel server. Please try again.');
+    } finally {
+      setIsJoiningRoom(false);
+    }
+  };
+
   const startMatchmaking = async (subjectId: string) => {
     setSelectedSubjectId(subjectId);
     setPhase('matching');
-
-    // Pick random simulated opponent
-    const randomOpp = PEER_OPPONENTS[Math.floor(Math.random() * PEER_OPPONENTS.length)];
-    setOpponent(randomOpp);
+    if (roomPollRef.current) clearInterval(roomPollRef.current);
 
     try {
-      const categoryParam = subjectId === 'All' ? undefined : subjectId;
-      const fetched = await ApiService.getQuestions(categoryParam, user?.email, 5, undefined, userGrade);
-      if (fetched && fetched.length > 0) {
-        setQuestions(fetched.slice(0, 5));
+      const resp = await ApiService.getRandomDuelMatch({
+        grade: userGrade,
+        subject: subjectId,
+        email: user?.email,
+        name: user?.name,
+      });
+
+      if (resp && resp.success) {
+        if (resp.isMultiplayerRoom && resp.roomCode) {
+          setActiveRoomCode(resp.roomCode);
+          setPlayerRole('guest');
+          setIsMultiplayer(true);
+        } else {
+          setActiveRoomCode(null);
+          setPlayerRole('solo');
+          setIsMultiplayer(false);
+        }
+
+        if (resp.opponent) {
+          setOpponent({
+            name: resp.opponent.name,
+            avatar: resp.opponent.avatar || '👩‍🎓',
+            schoolSchool: resp.opponent.schoolSchool || resp.opponent.schoolOrCollege || 'Gujarat Board School',
+            college: resp.opponent.college || resp.opponent.schoolOrCollege || 'Engineering Campus',
+          });
+        }
+
+        if (resp.questions && resp.questions.length > 0) {
+          setQuestions(resp.questions);
+        }
       } else {
-        // Fallback to local questions
-        setQuestions([
-          {
-            id: 101,
-            questionText: 'What is the sum of angles in a triangle?',
-            category: 'Mathematics',
-            options: ['90°', '180°', '270°', '360°'],
-            correctAnswer: 1,
-            explanation: 'The interior angles of a triangle always sum to 180°.',
-          },
-          {
-            id: 102,
-            questionText: 'Which green pigment in plants traps sunlight for photosynthesis?',
-            category: 'Science',
-            options: ['Chlorophyll', 'Hemoglobin', 'Carotene', 'Anthocyanin'],
-            correctAnswer: 0,
-            explanation: 'Chlorophyll traps sunlight for photosynthesis.',
-          },
-          {
-            id: 103,
-            questionText: 'Which ancient civilization built the Great Bath at Mohenjo-daro?',
-            category: 'Social Science',
-            options: ['Egyptian', 'Indus Valley (Harappan)', 'Mesopotamian', 'Roman'],
-            correctAnswer: 1,
-            explanation: 'The Indus Valley Civilization built the Great Bath.',
-          },
-          {
-            id: 104,
-            questionText: 'Evaluate: (-12) + (-8) = ?',
-            category: 'Mathematics',
-            options: ['-4', '+20', '-20', '+4'],
-            correctAnswer: 2,
-            explanation: '(-12) + (-8) = -20.',
-          },
-          {
-            id: 105,
-            questionText: 'What type of electric circuit allows continuous current flow to light a bulb?',
-            category: 'Science',
-            options: ['Open circuit', 'Closed circuit', 'Short circuit', 'Broken circuit'],
-            correctAnswer: 1,
-            explanation: 'A closed circuit provides an unbroken path.',
-          },
-        ]);
+        // Fallback to randomized cohort peer & localized questions
+        const randomOpp = PEER_OPPONENTS[Math.floor(Math.random() * PEER_OPPONENTS.length)];
+        setOpponent(randomOpp);
+        const categoryParam = subjectId === 'All' ? undefined : subjectId;
+        const fetched = await ApiService.getQuestions(categoryParam, user?.email, 5, undefined, userGrade);
+        if (fetched && fetched.length > 0) {
+          setQuestions(fetched.slice(0, 5));
+        } else {
+          setQuestions(
+            isSchoolMode
+              ? [
+                  {
+                    id: 101,
+                    questionText: 'ત્રિકોણના ત્રણેય ખૂણાઓનો સરવાળો કેટલો થાય છે?',
+                    questionTextGujarati: 'ત્રિકોણના ત્રણેય ખૂણાઓનો સરવાળો કેટલો થાય છે?',
+                    category: 'ગણિત',
+                    categoryGujarati: 'ગણિત',
+                    options: ['90°', '180°', '270°', '360°'],
+                    optionsGujarati: ['90°', '180°', '270°', '360°'],
+                    correctAnswer: 1,
+                    explanation: 'ત્રિકોણના અંદરના ત્રણેય ખૂણાઓનો સરવાળો હંમેશાં 180° થાય છે.',
+                  },
+                  {
+                    id: 102,
+                    questionText: 'વનસ્પતિમાં પ્રકાશસંશ્લેષણ માટે સૂર્યપ્રકાશ શોષતું લીલું રંજકદ્રવ્ય કયું છે?',
+                    questionTextGujarati: 'વનસ્પતિમાં પ્રકાશસંશ્લેષણ માટે સૂર્યપ્રકાશ શોષતું લીલું રંજકદ્રવ્ય કયું છે?',
+                    category: 'વિજ્ઞાન',
+                    categoryGujarati: 'વિજ્ઞાન',
+                    options: ['ક્લોરોફિલ (હરિદ્રવ્ય)', 'હિમોગ્લોબિન', 'કેરોટીન', 'એન્થોસાયનિન'],
+                    optionsGujarati: ['ક્લોરોફિલ (હરિદ્રવ્ય)', 'હિમોગ્લોબિન', 'કેરોટીન', 'એન્થોસાયનિન'],
+                    correctAnswer: 0,
+                    explanation: 'ક્લોરોફિલ (હરિદ્રવ્ય) સૂર્યપ્રકાશ શોષીને ખોરાક બનાવવામાં મદદ કરે છે.',
+                  },
+                  {
+                    id: 103,
+                    questionText: 'વિશાળ જાહેર સ્નાનાગાર સિંધુ સંસ્કૃતિના કયા પ્રાચીન નગરમાંથી મળી આવ્યું હતું?',
+                    questionTextGujarati: 'વિશાળ જાહેર સ્નાનાગાર સિંધુ સંસ્કૃતિના કયા પ્રાચીન નગરમાંથી મળી આવ્યું હતું?',
+                    category: 'સામાજિક વિજ્ઞાન',
+                    categoryGujarati: 'સામાજિક વિજ્ઞાન',
+                    options: ['ઇજિપ્ત', 'મોહેં-જો-દડો (હડપ્પા)', 'મેસોપોટેમિયા', 'રોમ'],
+                    optionsGujarati: ['ઇજિપ્ત', 'મોહેં-જો-દડો (હડપ્પા)', 'મેસોપોટેમિયા', 'રોમ'],
+                    correctAnswer: 1,
+                    explanation: 'મોહેં-જો-દડો ખાતેથી વિશાળ જાહેર સ્નાનાગારના અવશેષો મળી આવ્યા હતા.',
+                  },
+                  {
+                    id: 104,
+                    questionText: 'કિંમત શોધો: (-12) + (-8) = ?',
+                    questionTextGujarati: 'કિંમત શોધો: (-12) + (-8) = ?',
+                    category: 'ગણિત',
+                    categoryGujarati: 'ગણિત',
+                    options: ['-4', '+20', '-20', '+4'],
+                    optionsGujarati: ['-4', '+20', '-20', '+4'],
+                    correctAnswer: 2,
+                    explanation: '(-12) + (-8) = -20.',
+                  },
+                  {
+                    id: 105,
+                    questionText: 'બલ્બ પ્રકાશિત કરવા માટે સતત વિદ્યુત પ્રવાહ વહેવા દેતો પરિપથ કયો છે?',
+                    questionTextGujarati: 'બલ્બ પ્રકાશિત કરવા માટે સતત વિદ્યુત પ્રવાહ વહેવા દેતો પરિપથ કયો છે?',
+                    category: 'વિજ્ઞાન',
+                    categoryGujarati: 'વિજ્ઞાન',
+                    options: ['ખુલ્લો પરિપથ', 'બંધ પરિપથ', 'શોર્ટ સર્કિટ', 'તૂટેલો પરિપથ'],
+                    optionsGujarati: ['ખુલ્લો પરિપથ', 'બંધ પરિપથ', 'શોર્ટ સર્કિટ', 'તૂટેલો પરિપથ'],
+                    correctAnswer: 1,
+                    explanation: 'બંધ પરિપથ વિદ્યુત પ્રવાહના વહન માટે અવિરત માર્ગ પૂરો પાડે છે.',
+                  },
+                ]
+              : [
+                  {
+                    id: 101,
+                    questionText: 'What is the sum of angles in a triangle?',
+                    category: 'Mathematics',
+                    options: ['90°', '180°', '270°', '360°'],
+                    correctAnswer: 1,
+                    explanation: 'The interior angles of a triangle always sum to 180°.',
+                  },
+                  {
+                    id: 102,
+                    questionText: 'Which green pigment in plants traps sunlight for photosynthesis?',
+                    category: 'Science',
+                    options: ['Chlorophyll', 'Hemoglobin', 'Carotene', 'Anthocyanin'],
+                    correctAnswer: 0,
+                    explanation: 'Chlorophyll traps sunlight for photosynthesis.',
+                  },
+                  {
+                    id: 103,
+                    questionText: 'Which ancient civilization built the Great Bath at Mohenjo-daro?',
+                    category: 'Social Science',
+                    options: ['Egyptian', 'Indus Valley (Harappan)', 'Mesopotamian', 'Roman'],
+                    correctAnswer: 1,
+                    explanation: 'The Indus Valley Civilization built the Great Bath.',
+                  },
+                  {
+                    id: 104,
+                    questionText: 'Evaluate: (-12) + (-8) = ?',
+                    category: 'Mathematics',
+                    options: ['-4', '+20', '-20', '+4'],
+                    correctAnswer: 2,
+                    explanation: '(-12) + (-8) = -20.',
+                  },
+                  {
+                    id: 105,
+                    questionText: 'What type of electric circuit allows continuous current flow to light a bulb?',
+                    category: 'Science',
+                    options: ['Open circuit', 'Closed circuit', 'Short circuit', 'Broken circuit'],
+                    correctAnswer: 1,
+                    explanation: 'A closed circuit provides an unbroken path.',
+                  },
+                ]
+          );
+        }
       }
     } catch (e) {
       console.warn('Duel question load note:', e);
+      const randomOpp = PEER_OPPONENTS[Math.floor(Math.random() * PEER_OPPONENTS.length)];
+      setOpponent(randomOpp);
     } finally {
       setTimeout(() => {
         setPhase('duel');
         setCurrentQIndex(0);
         setMyScore(0);
         setOppScore(0);
+        setMyCorrectCount(0);
+        setUserAnswersRecord({});
         setSelectedOpt(null);
         setIsRoundAnswered(false);
         setTimerSeconds(12);
-      }, 2200);
+      }, 2000);
     }
   };
 
@@ -276,8 +502,20 @@ export default function QuizDuelScreen() {
       try {
         await AsyncStorage.setItem(xpStorageKey, newTotal.toString());
       } catch (_) {}
+
+      // Submit exam result to backend for leaderboard standings and recent activity
+      ApiService.submitExamResult({
+        userEmail: user?.email || 'guest@mindsprint.edu',
+        scorePercentage: Math.min(100, Math.round((myScore / 450) * 100)),
+        correctCount: myCorrectCount,
+        totalQuestions: questions.length || 5,
+        userAnswers: userAnswersRecord,
+        weakCategories: [],
+        grade: userGrade,
+        category: `1v1 Quiz Duel (${selectedSubjectId})`,
+      }).catch(() => {});
     }
-  }, [currentQIndex, questions.length, myScore, oppScore, totalUserXp, xpStorageKey]);
+  }, [currentQIndex, questions.length, myScore, oppScore, totalUserXp, xpStorageKey, user?.email, myCorrectCount, userAnswersRecord, userGrade, selectedSubjectId]);
 
   // Round countdown timer
   useEffect(() => {
@@ -300,7 +538,7 @@ export default function QuizDuelScreen() {
     return () => clearInterval(interval);
   }, [phase, isRoundAnswered, handleNextRound]);
 
-  const handleAnswer = (index: number) => {
+  const handleAnswer = async (index: number) => {
     if (isRoundAnswered || !currentQ) return;
 
     setSelectedOpt(index);
@@ -309,6 +547,10 @@ export default function QuizDuelScreen() {
     const isCorrect = index === currentQ.correctAnswer;
     const pointsEarned = isCorrect ? Math.max(30, 40 + timerSeconds * 5) : 0;
     setMyScore((prev) => prev + pointsEarned);
+    if (isCorrect) {
+      setMyCorrectCount((prev) => prev + 1);
+    }
+    setUserAnswersRecord((prev) => ({ ...prev, [currentQIndex]: index }));
 
     if (!isCorrect && currentQ) {
       MistakeStorage.addMistake({
@@ -325,10 +567,27 @@ export default function QuizDuelScreen() {
       }, user?.email || 'guest', userGrade).catch(() => {});
     }
 
-    // Realistic opponent score simulation (75% probability of answering correctly)
-    const oppIsCorrect = Math.random() < 0.75;
-    const oppPoints = oppIsCorrect ? Math.floor(Math.random() * 30) + 45 : 0;
-    setOppScore((prev) => prev + oppPoints);
+    // Sync score with backend if in active multiplayer room
+    if (isMultiplayer && activeRoomCode) {
+      try {
+        const scoreSync = await ApiService.updateDuelScore({
+          roomCode: activeRoomCode,
+          role: playerRole === 'host' ? 'host' : 'guest',
+          pointsEarned,
+          roundIndex: currentQIndex,
+        });
+        if (scoreSync && scoreSync.success && typeof scoreSync.opponentScore === 'number') {
+          setOppScore(scoreSync.opponentScore);
+        }
+      } catch (err) {
+        console.warn('Multiplayer score sync note:', err);
+      }
+    } else {
+      // Dynamic realistic peer simulation (Practice Bot Mode)
+      const oppIsCorrect = Math.random() < 0.75;
+      const oppPoints = oppIsCorrect ? Math.floor(Math.random() * 25) + 40 : 0;
+      setOppScore((prev) => prev + oppPoints);
+    }
 
     setTimeout(() => {
       handleNextRound();
@@ -426,9 +685,10 @@ export default function QuizDuelScreen() {
             <TouchableOpacity
               style={[styles.modeTabBtn, roomMode === 'create_room' && { backgroundColor: colors.primary }]}
               onPress={() => {
-                const code = Math.floor(1000 + Math.random() * 9000).toString();
-                setCreatedRoomCode(code);
                 setRoomMode('create_room');
+                if (!createdRoomCode) {
+                  handleCreateRoom(selectedSubjectId);
+                }
               }}
             >
               <Text style={[styles.modeTabBtnText, { color: roomMode === 'create_room' ? '#ffffff' : colors.onSurface }]}>
@@ -450,26 +710,49 @@ export default function QuizDuelScreen() {
           {roomMode === 'create_room' && (
             <View style={[styles.roomCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.primary }, MindSprintShadows.card]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={[styles.roomLabel, { color: colors.onSurface }]}>Your Private Duel Room Code:</Text>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={[styles.roomLabel, { color: colors.onSurface }]}>Your Private Duel Room Code:</Text>
+                  <Text style={[styles.roomSub, { color: colors.onSurfaceVariant, marginTop: 2 }]}>
+                    {isCreatingRoom
+                      ? 'Generating live room...'
+                      : '🟢 Live Room Active • Waiting for classmate...'}
+                  </Text>
+                </View>
                 <View style={[styles.codeBadge, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.codeText}>{createdRoomCode}</Text>
+                  {isCreatingRoom ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.codeText}>{createdRoomCode || '...'}</Text>
+                  )}
                 </View>
               </View>
-              <Text style={[styles.roomSub, { color: colors.onSurfaceVariant }]}>
-                Share this 4-digit PIN with your classmate to compete live on the same questions!
+
+              <Text style={[styles.roomSub, { color: colors.onSurfaceVariant, marginTop: 8 }]}>
+                Share this 4-digit PIN with your classmate to compete live on the same 5 questions!
               </Text>
-              <TouchableOpacity
-                style={[styles.waShareBtn, { backgroundColor: '#25D366' }]}
-                onPress={() => {
-                  const msg = `⚔️ Hey! Join my Class ${userGrade} Quiz Duel on MindSprint!\n🔑 Room PIN: *${createdRoomCode}*\nEnter this PIN in the Quiz Duel screen to play! 🚀`;
-                  Linking.openURL(`whatsapp://send?text=${encodeURIComponent(msg)}`).catch(() => {
-                    Linking.openURL(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-                  });
-                }}
-              >
-                <MaterialIcons name="share" size={16} color="#ffffff" />
-                <Text style={styles.waShareBtnText}>Share PIN on WhatsApp 💬</Text>
-              </TouchableOpacity>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+                <TouchableOpacity
+                  style={[styles.waShareBtn, { backgroundColor: '#25D366', flex: 1 }]}
+                  disabled={!createdRoomCode}
+                  onPress={() => {
+                    const msg = `⚔️ Hey! Join my Class ${userGrade} Quiz Duel on MindSprint!\n🔑 Room PIN: *${createdRoomCode}*\nEnter this PIN in the Quiz Duel screen to play live! 🚀`;
+                    Linking.openURL(`whatsapp://send?text=${encodeURIComponent(msg)}`).catch(() => {
+                      Linking.openURL(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+                    });
+                  }}
+                >
+                  <MaterialIcons name="share" size={16} color="#ffffff" />
+                  <Text style={styles.waShareBtnText}>Share PIN on WhatsApp 💬</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.waShareBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9', borderWidth: 1, borderColor: colors.outlineVariant }]}
+                  onPress={() => startMatchmaking(selectedSubjectId)}
+                >
+                  <Text style={[styles.waShareBtnText, { color: colors.onSurface }]}>Play vs Bot 🤖</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -488,19 +771,15 @@ export default function QuizDuelScreen() {
                   onChangeText={setInputRoomCode}
                 />
                 <TouchableOpacity
-                  style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: inputRoomCode.length === 4 ? 1 : 0.5 }]}
-                  disabled={inputRoomCode.length !== 4}
-                  onPress={() => {
-                    setOpponent({
-                      name: `Classmate (Room #${inputRoomCode})`,
-                      avatar: '🧑‍🎓',
-                      schoolSchool: 'Classroom Duel',
-                      college: 'Peer Match',
-                    });
-                    startMatchmaking(selectedSubjectId);
-                  }}
+                  style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: inputRoomCode.length === 4 && !isJoiningRoom ? 1 : 0.5 }]}
+                  disabled={inputRoomCode.length !== 4 || isJoiningRoom}
+                  onPress={handleJoinRoom}
                 >
-                  <Text style={styles.joinBtnText}>Join Battle ⚔️</Text>
+                  {isJoiningRoom ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.joinBtnText}>Join Battle ⚔️</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -635,12 +914,15 @@ export default function QuizDuelScreen() {
               ]}
             >
               <Text style={[styles.duelQText, { color: colors.onSurface }]}>
-                {currentQ.questionText}
+                {isSchoolMode && (currentQ as any).questionTextGujarati ? (currentQ as any).questionTextGujarati : currentQ.questionText}
               </Text>
 
               {/* 4 Interactive Options */}
               <View style={styles.optionsList}>
-                {currentQ.options.map((opt, idx) => {
+                {(isSchoolMode && (currentQ as any).optionsGujarati && (currentQ as any).optionsGujarati.length > 0
+                  ? (currentQ as any).optionsGujarati
+                  : currentQ.options
+                ).map((opt: string, idx: number) => {
                   const isSelected = selectedOpt === idx;
                   const isCorrect = idx === currentQ.correctAnswer;
 

@@ -8,11 +8,13 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintColors, MindSprintShadows } from '@/constants/mindsprintTheme';
+import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import * as WebBrowser from 'expo-web-browser';
@@ -28,24 +30,26 @@ export default function LoginScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<AcademicGrade>('college');
   const [loading, setLoading] = useState(false);
-  const { login: authLogin, register: authRegister, loginAsGuest } = useAuth();
+  const { login: authLogin, register: authRegister, loginWithGoogle: authGoogleLogin, loginAsGuest } = useAuth();
 
   const handleBackendGoogleLogin = async (idToken: string) => {
     setLoading(true);
     try {
-      const res = await ApiService.loginWithGoogle(idToken);
+      const res = await authGoogleLogin(idToken);
       setLoading(false);
 
       if (res.error) {
-        Alert.alert('Login Note', res.error + '\nLogged in as Guest user.');
-      } else {
-        Alert.alert('Welcome Back!', `Logged in successfully as ${res.user?.name || res.user?.email}`);
+        Alert.alert('Google Sign-In Failed', res.error);
+        return;
       }
+      Alert.alert('Welcome to MindSprint! 🎓', 'Signed in successfully with your Google account.');
       router.replace('/(tabs)');
-    } catch (err) {
+    } catch (err: any) {
       setLoading(false);
-      router.replace('/(tabs)');
+      Alert.alert('Sign-In Error', err?.message || 'Could not complete Google Sign-In.');
     }
   };
 
@@ -70,7 +74,9 @@ export default function LoginScreen() {
           Alert.alert('Login Failed', res.error);
         }
       } else {
-        const res = await authRegister(name, email, password);
+        const targetBoard = selectedGrade === 'college' ? 'CBSE' : 'GSEB';
+        const targetMedium = selectedGrade === 'college' ? 'English' : 'Gujarati';
+        const res = await authRegister(name, email, password, selectedGrade, targetBoard, targetMedium);
         setLoading(false);
         if (res.error) {
           Alert.alert('Registration Failed', res.error);
@@ -88,17 +94,20 @@ export default function LoginScreen() {
     await loginAsGuest();
   };
 
-  const handleGoogleSignIn = async () => {
+  const launchGoogleOAuth = async () => {
     setLoading(true);
     try {
       const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB;
-      const redirectTarget = 'https://auth.expo.io/@anonymous/mindsprint';
+      const redirectTarget = makeRedirectUri({
+        scheme: 'mindsprint',
+        preferLocalhost: true,
+      });
       const redirectUri = encodeURIComponent(redirectTarget);
       
       const nonce = Math.random().toString(36).substring(2);
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=id_token&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid%20profile%20email&nonce=${nonce}`;
 
-      const result = await WebBrowser.openAuthSessionAsync(authUrl);
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectTarget);
 
       if (result.type === 'success' && result.url) {
         const matches = result.url.match(/id_token=([^&]+)/);
@@ -113,6 +122,22 @@ export default function LoginScreen() {
       setLoading(false);
       console.log('WebBrowser auth session ended:', error);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (Platform.OS !== 'web') {
+      Alert.alert(
+        'Google Sign-In on Phone 📱',
+        'Google OAuth security policy blocks "localhost" redirects on mobile phones. To test Google Sign-In with your new credentials, press "w" in your terminal to open on Web.\n\nTo test on your phone right now, you can sign in with Email/Password or Continue as Guest.',
+        [
+          { text: 'Continue as Guest', onPress: () => handleGuestLogin() },
+          { text: 'Try Anyway', onPress: () => launchGoogleOAuth() },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await launchGoogleOAuth();
   };
 
   return (
@@ -166,7 +191,7 @@ export default function LoginScreen() {
                 <MaterialIcons name="person" size={20} color={MindSprintColors.outline} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Alex Johnson"
+                  placeholder="Sapoliya Dhruv"
                   placeholderTextColor={MindSprintColors.outline}
                   value={name}
                   onChangeText={setName}
@@ -182,7 +207,7 @@ export default function LoginScreen() {
               <MaterialIcons name="email" size={20} color={MindSprintColors.outline} />
               <TextInput
                 style={styles.input}
-                placeholder="alex.johnson@mindsprint.edu"
+                placeholder="sapoliyadhruv74@gmail.com"
                 placeholderTextColor={MindSprintColors.outline}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -201,12 +226,72 @@ export default function LoginScreen() {
                 style={styles.input}
                 placeholder="••••••••"
                 placeholderTextColor={MindSprintColors.outline}
-                secureTextEntry
+                secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
               />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setShowPassword((prev) => !prev)}
+                style={styles.eyeBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MaterialIcons
+                  name={showPassword ? 'visibility' : 'visibility-off'}
+                  size={20}
+                  color={MindSprintColors.outline}
+                />
+              </TouchableOpacity>
             </View>
           </View>
+
+          {/* Academic Track Picker on Registration */}
+          {!isLoginMode && (
+            <View style={styles.academicSection}>
+              <Text style={styles.inputLabel}>Learning Track</Text>
+              <View style={styles.stageToggleRow}>
+                <TouchableOpacity
+                  style={[styles.stageChip, selectedGrade === 'college' && styles.stageChipActive]}
+                  onPress={() => setSelectedGrade('college')}
+                >
+                  <Text style={[styles.stageChipText, selectedGrade === 'college' && styles.stageChipTextActive]}>
+                    🎓 College Placements
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.stageChip, selectedGrade !== 'college' && styles.stageChipActive]}
+                  onPress={() => setSelectedGrade('10')}
+                >
+                  <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>
+                    🏫 School (6 - 12)
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {selectedGrade !== 'college' && (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={[styles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>Select Class (ગુજરાતી માધ્યમ):</Text>
+                  <View style={styles.gradePillRow}>
+                    {(['6', '7', '8', '9', '10', '11', '12'] as AcademicGrade[]).map((g) => (
+                      <TouchableOpacity
+                        key={g}
+                        style={[styles.gradePill, selectedGrade === g && styles.gradePillActive]}
+                        onPress={() => setSelectedGrade(g)}
+                      >
+                        <Text style={[styles.gradePillText, selectedGrade === g && styles.gradePillTextActive]}>
+                          ધોરણ {g}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <View style={styles.gsebTrackBadge}>
+                    <Text style={styles.gsebTrackText}>🦁 GSEB ગુજરાત બોર્ડ • શુદ્ધ ગુજરાતી માધ્યમ</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Submit Button */}
           <TouchableOpacity
@@ -363,6 +448,11 @@ const styles = StyleSheet.create({
     color: MindSprintColors.onSurface,
     padding: 0,
   },
+  eyeBtn: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   submitBtn: {
     backgroundColor: MindSprintColors.primary,
     paddingVertical: 14,
@@ -429,5 +519,80 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: MindSprintColors.primary,
+  },
+  academicSection: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: MindSprintColors.surfaceContainerLowest,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: MindSprintColors.outlineVariant,
+  },
+  stageToggleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  stageChip: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: MindSprintColors.surfaceContainer,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  stageChipActive: {
+    backgroundColor: '#eef2ff',
+    borderColor: MindSprintColors.primary,
+  },
+  stageChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: MindSprintColors.onSurfaceVariant,
+  },
+  stageChipTextActive: {
+    color: MindSprintColors.primary,
+    fontWeight: '700',
+  },
+  gradePillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  gradePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: MindSprintColors.surfaceContainer,
+  },
+  gradePillActive: {
+    backgroundColor: MindSprintColors.primary,
+  },
+  gradePillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: MindSprintColors.onSurfaceVariant,
+  },
+  gradePillTextActive: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  gsebTrackBadge: {
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#10b981',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 4,
+  },
+  gsebTrackText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065f46',
+    textAlign: 'center',
   },
 });

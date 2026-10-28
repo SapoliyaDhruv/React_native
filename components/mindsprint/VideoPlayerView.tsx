@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,15 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import * as WebBrowser from 'expo-web-browser';
+import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { VideoLecture, VideoComment } from '@/constants/videoData';
-import { ApiService } from '@/services/api';
+import { ApiService, API_BASE_URL } from '@/services/api';
 
 interface VideoPlayerViewProps {
   lecture: VideoLecture;
@@ -46,12 +48,46 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   const displayInstructor = (isGujarati && lecture.instructorGujarati) ? lecture.instructorGujarati : lecture.instructor;
 
   const [playing, setPlaying] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState<number>(1.0);
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'discussion'>('overview');
   const [userNote, setUserNote] = useState('');
   const [savedNotes, setSavedNotes] = useState<string[]>([]);
   const [newCommentText, setNewCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [localComments, setLocalComments] = useState<VideoComment[]>(lecture.comments || []);
+
+  const notesStorageKey = `@mindsprint_video_notes_${lecture.id}_${user?.email || 'guest'}`;
+  const commentsStorageKey = `@mindsprint_video_comments_${lecture.id}`;
+
+  // Restore saved notes and discussion comments on lecture change
+  useEffect(() => {
+    async function loadStoredData() {
+      try {
+        const [storedNotes, storedComments] = await Promise.all([
+          AsyncStorage.getItem(notesStorageKey),
+          AsyncStorage.getItem(commentsStorageKey),
+        ]);
+        if (storedNotes) {
+          setSavedNotes(JSON.parse(storedNotes));
+        } else {
+          setSavedNotes([]);
+        }
+        if (storedComments) {
+          const parsed = JSON.parse(storedComments);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setLocalComments(parsed);
+          } else {
+            setLocalComments(lecture.comments || []);
+          }
+        } else {
+          setLocalComments(lecture.comments || []);
+        }
+      } catch (e) {
+        console.warn('Error restoring video notes/comments:', e);
+      }
+    }
+    loadStoredData();
+  }, [lecture.id, user?.email]);
 
   const onStateChange = useCallback((state: string) => {
     if (state === 'ended') {
@@ -88,6 +124,31 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     }
   };
 
+  const handleOpenPdf = async (url?: string) => {
+    if (!url) {
+      Alert.alert('Study Material', 'Reference PDF will be available shortly.');
+      return;
+    }
+    let fullUrl = url;
+    if (!url.startsWith('http')) {
+      const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+      const base = API_BASE_URL.replace(/\/api\/?$/, '');
+      fullUrl = `${base}${normalizedPath}`;
+    }
+    try {
+      await WebBrowser.openBrowserAsync(fullUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        toolbarColor: colors.primary,
+      });
+    } catch (_) {
+      try {
+        await Linking.openURL(fullUrl);
+      } catch (err) {
+        Alert.alert('PDF Link', fullUrl);
+      }
+    }
+  };
+
   const handleJumpToTimestamp = (timeStr: string) => {
     const parts = timeStr.split(':');
     const targetSec = parseInt(parts[0]) * 60 + parseInt(parts[1]);
@@ -98,11 +159,28 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     }
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!userNote.trim()) return;
-    setSavedNotes((prev) => [...prev, userNote.trim()]);
+    const noteText = userNote.trim();
+    const updated = [...savedNotes, noteText];
+    setSavedNotes(updated);
     setUserNote('');
-    Alert.alert('Note Saved 📝', 'Your lesson note has been recorded!');
+    try {
+      await AsyncStorage.setItem(notesStorageKey, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to save personal note:', e);
+    }
+    Alert.alert('Note Saved 📝', 'Your lesson note has been recorded and safely saved!');
+  };
+
+  const handleDeleteNote = async (indexToDelete: number) => {
+    const updated = savedNotes.filter((_, idx) => idx !== indexToDelete);
+    setSavedNotes(updated);
+    try {
+      await AsyncStorage.setItem(notesStorageKey, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to delete note:', e);
+    }
   };
 
   const handlePostComment = async () => {
@@ -122,13 +200,11 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
       setSubmittingComment(false);
 
+      let commentToAdd: VideoComment;
       if (res.comment) {
-        setLocalComments((prev) => [res.comment!, ...prev]);
-        onCommentAdded?.(res.comment);
-        setNewCommentText('');
-        Alert.alert('Discussion Posted 💬', 'Your comment has been shared with fellow students!');
+        commentToAdd = res.comment;
       } else {
-        const fallbackComment: VideoComment = {
+        commentToAdd = {
           id: 'c_' + Date.now(),
           author: authorName,
           role: 'Verified Learner',
@@ -136,22 +212,49 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           upvotes: 1,
           createdAt: 'Just now',
         };
-        setLocalComments((prev) => [fallbackComment, ...prev]);
-        onCommentAdded?.(fallbackComment);
-        setNewCommentText('');
       }
+
+      const updatedComments = [commentToAdd, ...localComments];
+      setLocalComments(updatedComments);
+      onCommentAdded?.(commentToAdd);
+      setNewCommentText('');
+
+      try {
+        await AsyncStorage.setItem(commentsStorageKey, JSON.stringify(updatedComments));
+      } catch (e) {
+        console.warn('Failed to persist comment locally:', e);
+      }
+
+      Alert.alert('Discussion Posted 💬', 'Your comment has been shared with fellow students!');
     } catch (err) {
       setSubmittingComment(false);
-      Alert.alert('Note', 'Comment posted locally.');
+      const fallbackComment: VideoComment = {
+        id: 'c_' + Date.now(),
+        author: authorName,
+        role: 'Verified Learner',
+        text: newCommentText.trim(),
+        upvotes: 1,
+        createdAt: 'Just now',
+      };
+      const updatedComments = [fallbackComment, ...localComments];
+      setLocalComments(updatedComments);
+      onCommentAdded?.(fallbackComment);
+      setNewCommentText('');
+
+      try {
+        await AsyncStorage.setItem(commentsStorageKey, JSON.stringify(updatedComments));
+      } catch (_) {}
+
+      Alert.alert('Note', 'Comment posted and saved locally.');
     }
   };
 
   const handleUpvote = async (commentId: string) => {
     try {
       await ApiService.upvoteVideoComment(lecture.id, commentId, user?.email);
-      setLocalComments((prev) =>
-        prev.map((c) => (c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c))
-      );
+      const updated = localComments.map((c) => (c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c));
+      setLocalComments(updated);
+      await AsyncStorage.setItem(commentsStorageKey, JSON.stringify(updated));
     } catch (_) {}
   };
 
@@ -172,6 +275,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           ref={playerRef}
           height={PLAYER_HEIGHT}
           play={playing}
+          playbackRate={playbackRate}
           videoId={lecture.youtubeVideoId}
           onChangeState={onStateChange}
           initialPlayerParams={{
@@ -184,6 +288,49 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
             androidLayerType: 'hardware',
           }}
         />
+      </View>
+
+      {/* Playback Speed Controls */}
+      <View
+        style={[
+          styles.speedBar,
+          {
+            backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+            borderBottomColor: colors.outlineVariant,
+          },
+        ]}
+      >
+        <View style={styles.speedLabelRow}>
+          <MaterialIcons name="speed" size={15} color={colors.primary} />
+          <Text style={[styles.speedLabel, { color: colors.onSurfaceVariant }]}>Speed:</Text>
+        </View>
+        <View style={styles.speedChipsRow}>
+          {[0.75, 1.0, 1.25, 1.5, 2.0].map((rate) => {
+            const isSelected = playbackRate === rate;
+            return (
+              <TouchableOpacity
+                key={rate}
+                style={[
+                  styles.speedChip,
+                  {
+                    backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLowest,
+                    borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                  },
+                ]}
+                onPress={() => {
+                  setPlaybackRate(rate);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                accessibilityLabel={`Set speed to ${rate}x`}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.speedChipText, { color: isSelected ? '#ffffff' : colors.onSurface }]}>
+                  {rate}x
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       {/* Video Info Section */}
@@ -311,6 +458,32 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 </View>
                 <MaterialIcons name="arrow-forward-ios" size={14} color={colors.primary} />
               </TouchableOpacity>
+
+              {/* Reference Textbook & Study Material PDF Card */}
+              {lecture.referencePdfUrl && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[styles.youtubeCard, {
+                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.08)' : '#fef2f2',
+                    borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.25)' : '#fecaca',
+                    marginTop: 10,
+                  }]}
+                  onPress={() => handleOpenPdf(lecture.referencePdfUrl)}
+                >
+                  <View style={[styles.ytIconCircle, { backgroundColor: '#ef4444' }]}>
+                    <MaterialIcons name="picture-as-pdf" size={20} color="#ffffff" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.ytCardTitle, { color: '#ef4444' }]}>
+                      {isGujarati ? 'ઓફિશિયલ પાઠ્યપુસ્તક / નોટ્સ PDF' : 'Official NCERT / GSEB Textbook PDF'}
+                    </Text>
+                    <Text style={[styles.ytCardSub, { color: colors.onSurfaceVariant }]}>
+                      {isGujarati ? 'પ્રકરણ આધારિત ડિજિટલ પુસ્તક • ઑફલાઇન સપોર્ટ' : 'Read official textbook chapter material & diagrams'}
+                    </Text>
+                  </View>
+                  <MaterialIcons name="open-in-new" size={16} color="#ef4444" />
+                </TouchableOpacity>
+              )}
             </View>
           ) : activeTab === 'notes' ? (
             <View style={styles.notesContent}>
@@ -357,7 +530,10 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   {savedNotes.map((sn, idx) => (
                     <View key={idx} style={[styles.personalNoteCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#fefce8', borderColor: isDarkMode ? colors.outlineVariant : '#fef08a' }]}>
                       <MaterialIcons name="note" size={14} color={isDarkMode ? colors.primary : '#ca8a04'} />
-                      <Text style={[styles.personalNoteText, { color: colors.onSurface }]}>{sn}</Text>
+                      <Text style={[styles.personalNoteText, { color: colors.onSurface, flex: 1 }]}>{sn}</Text>
+                      <TouchableOpacity onPress={() => handleDeleteNote(idx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                        <MaterialIcons name="delete-outline" size={16} color={colors.outline} />
+                      </TouchableOpacity>
                     </View>
                   ))}
                 </View>
@@ -775,5 +951,37 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     fontStyle: 'italic',
+  },
+  speedBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  speedLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  speedLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  speedChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  speedChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  speedChipText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

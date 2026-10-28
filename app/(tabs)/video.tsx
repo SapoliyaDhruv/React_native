@@ -29,20 +29,11 @@ const COLLEGE_FILTERS = [
   { key: 'HR', label: 'HR Rounds', icon: 'person-outline' as const },
 ];
 
-const SCHOOL_CBSE_FILTERS = [
-  { key: 'All', label: 'All Subjects', icon: 'video-library' as const },
-  { key: 'Mathematics', label: 'Maths', icon: 'calculate' as const },
-  { key: 'Science', label: 'Science', icon: 'biotech' as const },
-  { key: 'Social Science', label: 'Social Sci.', icon: 'public' as const },
-  { key: 'Gujarati', label: 'Gujarati', icon: 'edit-note' as const },
-  { key: 'English', label: 'English', icon: 'menu-book' as const },
-];
-
 const SCHOOL_GSEB_FILTERS = [
-  { key: 'All', label: 'All Subjects', icon: 'video-library' as const },
+  { key: 'All', label: 'બધા વિષયો', icon: 'video-library' as const },
   { key: 'ગણિત', label: 'ગણિત', icon: 'calculate' as const },
   { key: 'વિજ્ઞાન', label: 'વિજ્ઞાન', icon: 'biotech' as const },
-  { key: 'સામાજિક વિજ્ઞાન', label: 'સામા. વિ.', icon: 'public' as const },
+  { key: 'સામાજિક વિજ્ઞાન', label: 'સામા. વિજ્ઞાન', icon: 'public' as const },
   { key: 'ગુજરાતી', label: 'ગુજરાતી', icon: 'edit-note' as const },
   { key: 'અંગ્રેજી', label: 'અંગ્રેજી', icon: 'menu-book' as const },
 ];
@@ -53,13 +44,9 @@ export default function VideoScreen() {
 
   const userGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
-  const filterOptions = !isSchoolMode
-    ? COLLEGE_FILTERS
-    : isGSEB
-    ? SCHOOL_GSEB_FILTERS
-    : SCHOOL_CBSE_FILTERS;
+  const filterOptions = !isSchoolMode ? COLLEGE_FILTERS : SCHOOL_GSEB_FILTERS;
 
   const [lectures, setLectures] = useState<VideoLecture[]>(VIDEO_LECTURES_DATA);
   const [activeLecture, setActiveLecture] = useState<VideoLecture>(VIDEO_LECTURES_DATA[0]);

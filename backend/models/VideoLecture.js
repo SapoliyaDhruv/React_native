@@ -8,7 +8,7 @@ const CommentSchema = new mongoose.Schema({
   text: { type: String, required: true },
   upvotes: { type: Number, default: 0 },
   upvotedBy: [{ type: String }],
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: mongoose.Schema.Types.Mixed, default: () => new Date().toISOString() },
 });
 
 const VideoLectureSchema = new mongoose.Schema({
@@ -28,6 +28,7 @@ const VideoLectureSchema = new mongoose.Schema({
   playbackMode: { type: String, enum: ['embed', 'in_app_browser'], default: 'embed' },
   description: { type: String, required: true },
   descriptionGujarati: { type: String },
+  referencePdfUrl: { type: String },
   timeStampedNotes: [
     {
       time: { type: String, required: true },

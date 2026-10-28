@@ -8,29 +8,12 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
 function InitialLayout() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, hasCompletedOnboarding } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   useEffect(() => {
-    checkOnboardingStatus();
-  }, []);
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const completed = await AsyncStorage.getItem('@mindsprint_onboarding_completed');
-      setHasCompletedOnboarding(completed === 'true');
-    } catch (e) {
-      setHasCompletedOnboarding(true);
-    } finally {
-      setCheckingOnboarding(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isLoading || checkingOnboarding) return;
+    if (isLoading) return;
 
     const currentScreen = segments[0] as string | undefined;
 
@@ -49,9 +32,9 @@ function InitialLayout() {
         router.replace('/(tabs)');
       }
     }
-  }, [user, isLoading, checkingOnboarding, hasCompletedOnboarding, segments]);
+  }, [user, isLoading, hasCompletedOnboarding, segments]);
 
-  if (isLoading || checkingOnboarding) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', gap: 16 }}>
         <ActivityIndicator size="large" color="#3b82f6" />
@@ -75,6 +58,11 @@ function InitialLayout() {
       <Stack.Screen name="error-vault" options={{ headerShown: false }} />
       <Stack.Screen name="doubt-solver" options={{ headerShown: false }} />
       <Stack.Screen name="board-exam-simulator" options={{ headerShown: false }} />
+      <Stack.Screen name="interview-simulator" options={{ headerShown: false }} />
+      <Stack.Screen name="quiz-duel" options={{ headerShown: false }} />
+      <Stack.Screen name="leaderboard" options={{ headerShown: false }} />
+      <Stack.Screen name="mastery-analytics" options={{ headerShown: false }} />
+      <Stack.Screen name="profile-edit" options={{ headerShown: false }} />
     </Stack>
   );
 }

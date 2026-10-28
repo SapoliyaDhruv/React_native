@@ -7,9 +7,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { APTITUDE_QUESTIONS, Question } from '@/constants/mindsprintData';
+import { Question, getOfflineQuestions } from '@/constants/mindsprintData';
 import { ApiService } from '@/services/api';
 import { ExamHeader } from '@/components/mindsprint/ExamHeader';
 import { QuestionNavigatorModal } from '@/components/exam/QuestionNavigatorModal';
@@ -36,6 +38,7 @@ export default function ExamScreen() {
   const isDiagnostic = searchParams.isDiagnostic === 'true';
 
   const initialSeconds = examLimit === 50 ? 2700 : examLimit === 25 ? 1500 : 600;
+  const DRAFT_KEY = `@mindsprint_active_exam_draft_${user?.email || 'guest'}_${examLimit}_${examCategory || 'all'}_${examCompany || 'none'}`;
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,13 +84,15 @@ export default function ExamScreen() {
     }
   }, [user, router]);
 
-  // Load Questions Effect
+  // Load Questions / Restore Draft Effect
   useEffect(() => {
-    async function fetchQuestions() {
+    let isCancelled = false;
+
+    async function fetchFreshQuestions() {
       try {
         let data: Question[];
         if (isDiagnostic) {
-          data = await ApiService.getDiagnosticQuestions(user?.email, examLimit);
+          data = await ApiService.getDiagnosticQuestions(user?.email, examLimit, user?.grade);
         } else {
           data = await ApiService.getQuestions(
             examCategory,
@@ -98,19 +103,123 @@ export default function ExamScreen() {
             user?.board
           );
         }
-        setQuestions(data && data.length > 0 ? data : APTITUDE_QUESTIONS.slice(0, examLimit));
+        const fallback = getOfflineQuestions(user?.grade, examCategory, examLimit);
+        if (!isCancelled) {
+          setQuestions(data && data.length > 0 ? data : fallback);
+        }
       } catch (err) {
         console.error('Error fetching questions:', err);
-        setQuestions(APTITUDE_QUESTIONS.slice(0, examLimit));
+        if (!isCancelled) {
+          const fallback = getOfflineQuestions(user?.grade, examCategory, examLimit);
+          setQuestions(fallback);
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     }
-    fetchQuestions();
-  }, [user, examCategory, examLimit, examCompany, isDiagnostic]);
+
+    async function initExam() {
+      try {
+        const rawDraft = await AsyncStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+          try {
+            const draft = JSON.parse(rawDraft);
+            const isRecent = Date.now() - (draft.timestamp || 0) < 4 * 60 * 60 * 1000; // 4 hours
+            if (isRecent && Array.isArray(draft.questions) && draft.questions.length > 0) {
+              const answeredCount = Object.keys(draft.userAnswers || {}).length;
+              Alert.alert(
+                'Resume Previous Exam?',
+                `You have an ongoing test session with ${answeredCount} of ${draft.questions.length} questions answered. Would you like to resume where you left off?`,
+                [
+                  {
+                    text: 'Start Fresh',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+                      if (!isCancelled) fetchFreshQuestions();
+                    },
+                  },
+                  {
+                    text: 'Resume Test',
+                    onPress: () => {
+                      if (isCancelled) return;
+                      setQuestions(draft.questions);
+                      setUserAnswers(draft.userAnswers || {});
+                      setMarkedForReview(draft.markedForReview || {});
+                      setSecondsLeft(
+                        typeof draft.secondsLeft === 'number' && draft.secondsLeft > 0
+                          ? draft.secondsLeft
+                          : initialSeconds
+                      );
+                      setCurrentIndex(
+                        typeof draft.currentIndex === 'number' && draft.currentIndex < draft.questions.length
+                          ? draft.currentIndex
+                          : 0
+                      );
+                      setLoading(false);
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+                    },
+                  },
+                ],
+                { cancelable: false }
+              );
+              return;
+            } else {
+              await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+            }
+          } catch (e) {
+            console.error('Error parsing draft:', e);
+            await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+          }
+        }
+
+        if (!isCancelled) {
+          await fetchFreshQuestions();
+        }
+      } catch (err) {
+        console.error('Error initializing exam:', err);
+        if (!isCancelled) {
+          const fallback = getOfflineQuestions(user?.grade, examCategory, examLimit);
+          setQuestions(fallback);
+          setLoading(false);
+        }
+      }
+    }
+
+    initExam();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user, examCategory, examLimit, examCompany, isDiagnostic, initialSeconds, DRAFT_KEY]);
+
+  // Auto-Save Active Exam Draft Effect
+  useEffect(() => {
+    if (loading || isSubmitted || questions.length === 0) return;
+
+    const saveTimer = setTimeout(() => {
+      const draftData = {
+        questions,
+        userAnswers,
+        markedForReview,
+        secondsLeft,
+        currentIndex,
+        timestamp: Date.now(),
+      };
+      AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draftData)).catch((err) => {
+        console.warn('Failed to auto-save exam draft:', err);
+      });
+    }, 1000);
+
+    return () => clearTimeout(saveTimer);
+  }, [questions, userAnswers, markedForReview, secondsLeft, currentIndex, loading, isSubmitted, DRAFT_KEY]);
 
   const handleSubmitExam = useCallback(async () => {
     setIsSubmitted(true);
+    await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
     let correctCount = 0;
     let wrongCount = 0;
@@ -126,8 +235,12 @@ export default function ExamScreen() {
       }
     });
 
-    // Score % calculation with standard accuracy
-    const scorePercentage = Math.max(0, Math.round((correctCount / questions.length) * 100));
+    // Score % calculation with negative marking support (e.g. -0.25 mark per wrong answer)
+    const hasNegativeMarking = searchParams.negativeMarking === 'true';
+    const rawMarks = hasNegativeMarking
+      ? Math.max(0, correctCount - (wrongCount * 0.25))
+      : correctCount;
+    const scorePercentage = Math.max(0, Math.min(100, Math.round((rawMarks / questions.length) * 100)));
 
     const categoryStats: Record<string, { correct: number; total: number }> = {};
     questions.forEach((q, idx) => {
@@ -165,7 +278,7 @@ export default function ExamScreen() {
     } catch (e) {
       console.error('Failed to submit results to database:', e);
     }
-  }, [questions, userAnswers, user?.email]);
+  }, [questions, userAnswers, user?.email, DRAFT_KEY]);
 
   // Timer Effect
   useEffect(() => {
@@ -189,6 +302,7 @@ export default function ExamScreen() {
   const isMarked = !!markedForReview[currentIndex];
 
   const handleSelectOption = (optionIndex: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setUserAnswers((prev) => ({
       ...prev,
       [currentIndex]: optionIndex,
@@ -196,6 +310,7 @@ export default function ExamScreen() {
   };
 
   const handleClearChoice = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setUserAnswers((prev) => {
       const next = { ...prev };
       delete next[currentIndex];
@@ -216,6 +331,7 @@ export default function ExamScreen() {
   };
 
   const handleToggleReview = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     setMarkedForReview((prev) => ({
       ...prev,
       [currentIndex]: !prev[currentIndex],
@@ -275,10 +391,27 @@ export default function ExamScreen() {
         totalQuestions={questions.length}
         onOpenPalette={() => setShowNavigator(true)}
         onQuitExam={() => {
-          Alert.alert('Quit Exam?', 'Are you sure you want to exit? Your progress will be lost.', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Quit', style: 'destructive', onPress: () => router.back() },
-          ]);
+          Alert.alert(
+            'Quit Exam?',
+            'Would you like to save your exam progress to resume later, or discard your current draft?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Discard & Exit',
+                style: 'destructive',
+                onPress: async () => {
+                  await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+                  router.back();
+                },
+              },
+              {
+                text: 'Save & Exit',
+                onPress: () => {
+                  router.back();
+                },
+              },
+            ]
+          );
         }}
       />
 

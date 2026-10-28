@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Formula = require('../models/Formula');
 
 const SEED_FORMULAS = [
@@ -164,19 +165,42 @@ const SEED_FORMULAS = [
 ];
 
 // Auto-seed helper
+let formulasSeeded = false;
 async function ensureFormulasSeeded() {
-  const count = await Formula.countDocuments();
-  if (count === 0) {
-    console.log('🌱 Auto-seeding Formula dataset in MongoDB...');
-    await Formula.insertMany(SEED_FORMULAS);
+  if (formulasSeeded) return;
+  if (mongoose.connection.readyState !== 1) return;
+  try {
+    const count = await Formula.countDocuments();
+    if (count === 0) {
+      await Formula.insertMany(SEED_FORMULAS);
+    }
+    formulasSeeded = true;
+  } catch (e) {
+    formulasSeeded = true;
   }
 }
 
 // GET /api/formulas
 router.get('/', async (req, res) => {
   try {
-    await ensureFormulasSeeded();
     const { grade, category } = req.query;
+
+    const filterSeed = () => {
+      let list = SEED_FORMULAS;
+      if (grade && grade !== 'all') {
+        list = list.filter((f) => f.grades && f.grades.includes(grade));
+      }
+      if (category && category !== 'All') {
+        list = list.filter((f) => f.category === category);
+      }
+      return list.length > 0 ? list : SEED_FORMULAS;
+    };
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.json(filterSeed());
+    }
+
+    await ensureFormulasSeeded();
 
     const filter = {};
     if (grade && grade !== 'all') {
@@ -187,10 +211,10 @@ router.get('/', async (req, res) => {
     }
 
     const formulas = await Formula.find(filter).sort({ id: 1 });
-    res.json(formulas);
+    res.json(formulas.length > 0 ? formulas : filterSeed());
   } catch (error) {
     console.error('Error fetching formulas:', error);
-    res.status(500).json({ error: error.message });
+    res.json(SEED_FORMULAS);
   }
 });
 

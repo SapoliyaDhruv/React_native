@@ -23,16 +23,16 @@ export default function LeaderboardScreen() {
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || 'college';
   const isSchool = userGrade !== 'college';
-  const isGSEB = isSchool && user?.medium === 'Gujarati';
+  const isGSEB = isSchool;
 
   // Build subject filter list from curriculum
   const curriculum = ACADEMIC_CURRICULUM[userGrade];
   const subjectFilters = isSchool && curriculum
     ? [
-        { key: 'All', label: 'All Subjects', color: '#6366f1' },
+        { key: 'All', label: 'બધા વિષયો', color: '#6366f1' },
         ...curriculum.subjects.map((s) => ({
           key: s.name,
-          label: isGSEB ? (s.nameGujarati || s.name) : s.name,
+          label: s.nameGujarati || s.name,
           color: s.color,
         })),
       ]

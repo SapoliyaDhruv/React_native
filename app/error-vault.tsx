@@ -124,6 +124,28 @@ export default function ErrorVaultScreen() {
               </Text>
             </View>
           </View>
+          {needsPracticeCount > 0 && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={{
+                marginTop: 12,
+                backgroundColor: '#ef4444',
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+              onPress={() => router.push(`/exam?isDiagnostic=true&limit=${Math.min(25, Math.max(5, needsPracticeCount))}`)}
+            >
+              <MaterialIcons name="replay" size={18} color="#ffffff" />
+              <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 13 }}>
+                Retest & Practice Weak Concepts ({needsPracticeCount})
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Tab Switcher */}

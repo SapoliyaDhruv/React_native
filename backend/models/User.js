@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   attemptedQuestionIds: [{ type: Number }],
   bookmarkedQuestionIds: [{ type: Number }],
   lastLoginDate: { type: Date, default: Date.now },
+  avatarUrl: { type: String, default: '' },
   unlockedBadges: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
 });

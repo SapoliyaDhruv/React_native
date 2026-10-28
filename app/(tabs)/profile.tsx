@@ -8,16 +8,20 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
 import { AcademicGradeModal } from '@/components/mindsprint/AcademicGradeModal';
 import { AcademicGrade, EducationBoard, InstructionMedium, GRADE_OPTIONS } from '@/constants/academicData';
+
+const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍💻', '👨‍🚀', '🦁', '⚡', '🎯', '🦉', '🚀'];
 
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
@@ -33,9 +37,68 @@ type MenuOption = {
 export default function ProfileScreen() {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode, colors } = useTheme();
-  const { user, logout, updateAcademicProfile } = useAuth();
+  const { user, logout, updateAcademicProfile, updateUserProfile } = useAuth();
   const [userStats, setUserStats] = useState<any>(null);
   const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
+  const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
+
+  const handlePickFromGallery = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Permission Needed', 'Please allow photo gallery access to select an avatar.');
+        return;
+      }
+      const res = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const uri = res.assets[0].uri;
+        await updateUserProfile({ avatarUrl: uri });
+        if (user?.email) {
+          ApiService.updateProfile({ email: user.email, name: user.name, avatarUrl: uri }).catch(() => {});
+        }
+        setShowAvatarModal(false);
+      }
+    } catch (e) {
+      console.warn('Gallery pick error:', e);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Permission Needed', 'Please allow camera access to take a profile photo.');
+        return;
+      }
+      const res = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const uri = res.assets[0].uri;
+        await updateUserProfile({ avatarUrl: uri });
+        if (user?.email) {
+          ApiService.updateProfile({ email: user.email, name: user.name, avatarUrl: uri }).catch(() => {});
+        }
+        setShowAvatarModal(false);
+      }
+    } catch (e) {
+      console.warn('Camera take error:', e);
+    }
+  };
+
+  const handleSelectEmojiAvatar = async (emoji: string) => {
+    await updateUserProfile({ avatarUrl: emoji });
+    if (user?.email) {
+      ApiService.updateProfile({ email: user.email, name: user.name, avatarUrl: emoji }).catch(() => {});
+    }
+    setShowAvatarModal(false);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -52,14 +115,14 @@ export default function ProfileScreen() {
   const handleSaveGrade = async (grade: AcademicGrade, board: EducationBoard, medium: InstructionMedium) => {
     await updateAcademicProfile(grade, board, medium);
     Alert.alert(
-      'Curriculum Updated! 🎓',
-      `Your learning track is now set to ${grade === 'college' ? 'College Placements' : `Class ${grade} (${board} • ${medium})`}.`
+      'અભ્યાસક્રમ અપડેટ થયો! 🎓',
+      `તમારો લર્નિંગ ટ્રેક હવે ${grade === 'college' ? 'College Placements (English)' : `ધોરણ ${grade} (GSEB ગુજરાતી માધ્યમ)`} તરીકે સેટ થયો છે.`
     );
   };
 
   const userGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
   const currentGradeObj = GRADE_OPTIONS.find((g) => g.grade === userGrade) || GRADE_OPTIONS[7];
 
@@ -67,8 +130,8 @@ export default function ProfileScreen() {
     {
       id: 'edit_profile',
       icon: 'manage-accounts',
-      title: isSchoolMode ? 'Edit Profile & Academic Goals' : 'Edit Profile & Target Goals',
-      subtitle: isSchoolMode ? 'Grade, board & medium settings' : 'Target company, institute & account settings',
+      title: isSchoolMode ? 'પ્રોફાઇલ અને શૈક્ષણિક લક્ષ્ય' : 'Edit Profile & Target Goals',
+      subtitle: isSchoolMode ? 'ધોરણ અને લક્ષ્યાંક સેટિંગ્સ' : 'Target company, institute & account settings',
       route: '/profile-edit',
     },
     {
@@ -173,7 +236,22 @@ export default function ProfileScreen() {
             MindSprintShadows.card,
           ]}
         >
-          <Image source={{ uri: AVATAR_URL }} style={styles.avatar} />
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setShowAvatarModal(true)}
+            style={styles.avatarWrapper}
+          >
+            {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
+              <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
+                <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
+              </View>
+            ) : (
+              <Image source={{ uri: user?.avatarUrl || AVATAR_URL }} style={styles.avatar} />
+            )}
+            <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
+              <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
+            </View>
+          </TouchableOpacity>
           <Text style={[styles.userName, { color: colors.onSurface }]}>
             {user?.name || 'Guest Student'}
           </Text>
@@ -378,6 +456,66 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </ScrollView>
 
+      {/* Avatar Picker Modal */}
+      <Modal
+        visible={showAvatarModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAvatarModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }, MindSprintShadows.card]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.onSurface }]}>Choose Profile Avatar 📸</Text>
+              <TouchableOpacity onPress={() => setShowAvatarModal(false)} style={styles.closeBtn}>
+                <MaterialIcons name="close" size={20} color={colors.outline} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Photo / Camera Actions */}
+            <View style={styles.photoActionsRow}>
+              <TouchableOpacity
+                style={[styles.photoActionBtn, { backgroundColor: colors.primary }]}
+                onPress={handlePickFromGallery}
+              >
+                <MaterialIcons name="photo-library" size={18} color="#ffffff" />
+                <Text style={styles.photoActionBtnText}>From Gallery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.photoActionBtn, { backgroundColor: '#334155' }]}
+                onPress={handleTakePhoto}
+              >
+                <MaterialIcons name="photo-camera" size={18} color="#ffffff" />
+                <Text style={styles.photoActionBtnText}>Take Photo</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.modalSubheading, { color: colors.onSurfaceVariant }]}>
+              Or pick an academic student avatar:
+            </Text>
+
+            <View style={styles.emojiGrid}>
+              {AVATAR_PRESETS.map((emoji, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={[
+                    styles.emojiBtn,
+                    {
+                      backgroundColor: user?.avatarUrl === emoji ? 'rgba(99, 102, 241, 0.2)' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
+                      borderColor: user?.avatarUrl === emoji ? colors.primary : 'transparent',
+                    },
+                  ]}
+                  onPress={() => handleSelectEmojiAvatar(emoji)}
+                >
+                  <Text style={styles.emojiGridText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Grade Selector Modal */}
       <AcademicGradeModal
         visible={showGradeModal}
@@ -520,13 +658,102 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 12,
+  },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 12,
     borderWidth: 2,
     borderColor: '#3525cd',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  emojiAvatarBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiAvatarText: {
+    fontSize: 40,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+    gap: 14,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  photoActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  photoActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  photoActionBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  modalSubheading: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  emojiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+  },
+  emojiBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiGridText: {
+    fontSize: 26,
   },
   userName: {
     fontSize: 20,

@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
@@ -144,8 +145,17 @@ export default function BookmarksScreen() {
     Alert.alert('Bookmark Removed', `"${item.title}" removed from saved formulas.`);
   };
 
-  const handleCopyFormula = (title: string, formulaText: string) => {
-    Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+  const handleCopyFormula = async (title: string, formulaText: string) => {
+    try {
+      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(formulaText);
+      } else {
+        await Clipboard.setStringAsync(formulaText);
+      }
+      Alert.alert('Formula Copied 📋', `"${formulaText}" copied to clipboard!`);
+    } catch (e) {
+      Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+    }
   };
 
   const savedFormulasList = CHEATSHEETS_DATA.filter((item) =>

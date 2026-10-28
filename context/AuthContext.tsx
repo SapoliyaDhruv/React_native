@@ -14,6 +14,9 @@ export interface UserProfile {
   medium?: InstructionMedium;
   academicStage?: 'school' | 'college';
   targetCompany?: string;
+  avatarUrl?: string;
+  college?: string;
+  graduationYear?: string;
 }
 
 interface AuthSessionData {
@@ -26,14 +29,20 @@ interface AuthContextType {
   user: UserProfile | null;
   token: string | null;
   isLoading: boolean;
+  hasCompletedOnboarding: boolean;
+  completeOnboarding: () => Promise<void>;
+  resetOnboarding: () => Promise<void>;
   login: (email: string, pass: string) => Promise<{ error?: string }>;
   register: (name: string, email: string, pass: string, grade?: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium) => Promise<{ error?: string }>;
+  loginWithGoogle: (idToken: string) => Promise<{ error?: string }>;
   updateAcademicProfile: (grade: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium) => Promise<{ success: boolean; error?: string }>;
+  updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const STORAGE_KEY = '@mindsprint_user_session';
+const ONBOARDING_KEY = '@mindsprint_onboarding_completed';
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false);
 
   useEffect(() => {
     checkSession();
@@ -49,7 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkSession = async () => {
     try {
-      const storedSession = await AsyncStorage.getItem(STORAGE_KEY);
+      const [storedSession, onboardingStatus] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEY),
+        AsyncStorage.getItem(ONBOARDING_KEY),
+      ]);
+
+      setHasCompletedOnboarding(onboardingStatus === 'true');
+
       if (storedSession) {
         const session: AuthSessionData = JSON.parse(storedSession);
         const now = Date.now();
@@ -80,6 +96,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    } catch (e) {
+      console.error('Failed to persist onboarding completion:', e);
+    }
+    setHasCompletedOnboarding(true);
+  };
+
+  const resetOnboarding = async () => {
+    try {
+      await AsyncStorage.removeItem(ONBOARDING_KEY);
+    } catch (e) {
+      console.error('Failed to reset onboarding:', e);
+    }
+    setHasCompletedOnboarding(false);
+  };
+
   const login = async (email: string, pass: string) => {
     setIsLoading(true);
     try {
@@ -98,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         medium: res.user?.medium || 'English',
         academicStage: res.user?.academicStage || (res.user?.grade === 'college' ? 'college' : 'school'),
         targetCompany: res.user?.targetCompany || 'All Companies',
+        avatarUrl: res.user?.avatarUrl || '',
         isGuest: false,
       };
 
@@ -123,12 +158,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string,
     pass: string,
     grade: AcademicGrade = 'college',
-    board: EducationBoard = 'CBSE',
-    medium: InstructionMedium = 'English'
+    board?: EducationBoard,
+    medium?: InstructionMedium
   ) => {
     setIsLoading(true);
     try {
-      const res = await ApiService.register(name, email, pass, grade, board, medium);
+      const isCollege = grade === 'college';
+      const effectiveBoard: EducationBoard = isCollege ? 'CBSE' : 'GSEB';
+      const effectiveMedium: InstructionMedium = isCollege ? 'English' : 'Gujarati';
+
+      const res = await ApiService.register(name, email, pass, grade, effectiveBoard, effectiveMedium);
       if (res.error) {
         setIsLoading(false);
         return { error: res.error };
@@ -139,10 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: name,
         email: email,
         grade: grade,
-        board: board,
-        medium: medium,
-        academicStage: grade === 'college' ? 'college' : 'school',
+        board: effectiveBoard,
+        medium: effectiveMedium,
+        academicStage: isCollege ? 'college' : 'school',
         targetCompany: 'All Companies',
+        avatarUrl: res.user?.avatarUrl || '',
         isGuest: false,
       };
 
@@ -163,15 +203,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithGoogle = async (idToken: string) => {
+    setIsLoading(true);
+    try {
+      const res = await ApiService.loginWithGoogle(idToken);
+      if (res.error) {
+        setIsLoading(false);
+        return { error: res.error };
+      }
+
+      const userProfile: UserProfile = {
+        id: res.user?.id || 'usr_' + Date.now(),
+        name: res.user?.name || 'Google User',
+        email: res.user?.email,
+        grade: res.user?.grade || 'college',
+        board: res.user?.board || 'CBSE',
+        medium: res.user?.medium || 'English',
+        academicStage: res.user?.academicStage || 'college',
+        targetCompany: res.user?.targetCompany || 'All Companies',
+        avatarUrl: res.user?.avatarUrl || '',
+        college: res.user?.college || '',
+        graduationYear: res.user?.graduationYear || '',
+        isGuest: false,
+      };
+
+      const sessionData: AuthSessionData = {
+        user: userProfile,
+        token: res.token || 'jwt_' + Date.now(),
+        loginTimestamp: Date.now(),
+      };
+
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+      setUser(userProfile);
+      setToken(sessionData.token || null);
+      setIsLoading(false);
+      return {};
+    } catch (err: any) {
+      setIsLoading(false);
+      return { error: err.message || 'Google login failed.' };
+    }
+  };
+
   const updateAcademicProfile = async (
     grade: AcademicGrade,
-    board: EducationBoard = 'CBSE',
-    medium: InstructionMedium = 'English'
+    board?: EducationBoard,
+    medium?: InstructionMedium
   ) => {
     const isCollege = grade === 'college';
     const chosenStage = isCollege ? 'college' : 'school';
-    const effectiveBoard = isCollege ? 'CBSE' : board;
-    const effectiveMedium = isCollege ? 'English' : medium;
+    const effectiveBoard: EducationBoard = isCollege ? 'CBSE' : 'GSEB';
+    const effectiveMedium: InstructionMedium = isCollege ? 'English' : 'Gujarati';
 
     const updatedUser: UserProfile = {
       ...(user || { name: 'Student', email: 'student@mindsprint.app' }),
@@ -196,13 +277,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (user?.email && !user?.isGuest) {
       try {
-        await ApiService.updateAcademicProfile(user.email, grade, board, medium);
+        await ApiService.updateAcademicProfile(user.email, grade, board, medium, token || undefined);
       } catch (err) {
         console.warn('Backend academic profile update note:', err);
       }
     }
 
     return { success: true };
+  };
+
+  const updateUserProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return;
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    try {
+      const storedSession = await AsyncStorage.getItem(STORAGE_KEY);
+      if (storedSession) {
+        const session: AuthSessionData = JSON.parse(storedSession);
+        session.user = updatedUser;
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      }
+    } catch (e) {
+      console.warn('AsyncStorage updateUserProfile note:', e);
+    }
   };
 
   const loginAsGuest = async () => {
@@ -216,6 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       medium: 'English',
       academicStage: 'college',
       targetCompany: 'All Companies',
+      avatarUrl: '🧑‍🎓',
       isGuest: true,
     };
 
@@ -248,9 +346,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         token,
         isLoading,
+        hasCompletedOnboarding,
+        completeOnboarding,
+        resetOnboarding,
         login,
         register,
+        loginWithGoogle,
         updateAcademicProfile,
+        updateUserProfile,
         loginAsGuest,
         logout,
       }}

@@ -5,17 +5,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Dimensions,
+  useWindowDimensions,
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MindSprintColors, MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useAuth } from '@/context/AuthContext';
 
 interface OnboardingSlide {
   id: string;
@@ -80,22 +78,26 @@ const SLIDES: OnboardingSlide[] = [
 export default function OnboardingScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { completeOnboarding } = useAuth();
+  const { width: screenWidth } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   const handleFinishOnboarding = async () => {
     try {
-      await AsyncStorage.setItem('@mindsprint_onboarding_completed', 'true');
+      await completeOnboarding();
     } catch (e) {
-      console.error('Failed to set onboarding flag', e);
+      console.error('Failed to complete onboarding flag', e);
     }
     router.replace('/login');
   };
 
   const handleNext = () => {
     if (currentIndex < SLIDES.length - 1) {
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
       flatListRef.current?.scrollToIndex({
-        index: currentIndex + 1,
+        index: nextIndex,
         animated: true,
       });
     } else {
@@ -103,9 +105,13 @@ export default function OnboardingScreen() {
     }
   };
 
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 50,
+  }).current;
+
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index || 0);
+    if (viewableItems && viewableItems.length > 0 && viewableItems[0].index != null) {
+      setCurrentIndex(viewableItems[0].index);
     }
   }).current;
 
@@ -141,15 +147,34 @@ export default function OnboardingScreen() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        initialNumToRender={SLIDES.length}
+        getItemLayout={(_, index) => ({
+          length: screenWidth,
+          offset: screenWidth * index,
+          index,
+        })}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({
+            offset: info.index * screenWidth,
+            animated: true,
+          });
+        }}
+        onMomentumScrollEnd={(ev) => {
+          const nextIdx = Math.round(ev.nativeEvent.contentOffset.x / screenWidth);
+          if (nextIdx >= 0 && nextIdx < SLIDES.length) {
+            setCurrentIndex(nextIdx);
+          }
+        }}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+        viewabilityConfig={viewabilityConfig}
         renderItem={({ item }) => (
-          <View style={styles.slide}>
+          <View style={[styles.slide, { width: screenWidth }]}>
             {/* Visual Card */}
             <View
               style={[
                 styles.iconContainer,
                 {
+                  width: Math.min(screenWidth - 48, 480),
                   backgroundColor: isDarkMode ? colors.surfaceContainerLow : item.bgGradientColor,
                   borderColor: isDarkMode ? colors.outlineVariant : item.accentColor + '40',
                 },
@@ -266,13 +291,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   slide: {
-    width: SCREEN_WIDTH,
     paddingHorizontal: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconContainer: {
-    width: SCREEN_WIDTH - 48,
     height: 240,
     borderRadius: 28,
     borderWidth: 1.5,

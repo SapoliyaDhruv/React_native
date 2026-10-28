@@ -15,6 +15,7 @@ const samplePaperSchema = new mongoose.Schema(
     difficulty: { type: String, default: 'Medium' },
     officialPdfUrl: { type: String },
     solutionPdfUrl: { type: String },
+    externalSourceUrl: { type: String },
     badge: { type: String, default: 'OFFICIAL MODEL PAPER' },
     instructions: [{ type: String }],
     instructionsGujarati: [{ type: String }],

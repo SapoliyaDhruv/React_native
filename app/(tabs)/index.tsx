@@ -49,7 +49,7 @@ export default function DashboardScreen() {
 
   const userGrade: AcademicGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
   // Initial state with immediate fallback so there is never a blank flash
   const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
@@ -168,7 +168,13 @@ export default function DashboardScreen() {
       >
         <View style={styles.headerLeft}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/(tabs)/profile')}>
-            <Image source={{ uri: AVATAR_URL }} style={styles.avatar} />
+            {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
+              <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
+                <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
+              </View>
+            ) : (
+              <Image source={{ uri: user?.avatarUrl || AVATAR_URL }} style={styles.avatar} />
+            )}
           </TouchableOpacity>
           <View>
             <Text style={[styles.headerGreeting, { color: colors.onSurfaceVariant }]}>
@@ -806,7 +812,10 @@ export default function DashboardScreen() {
           )}
 
           {/* Grade-Isolated Streak, Stats, and Performance Analytics */}
-          <StreakWidget streakCount={userStats?.streakCount || 1} />
+          <StreakWidget
+            streakCount={userStats?.streakCount || 1}
+            recentActivity={userStats?.recentActivity || []}
+          />
           <StatsCard
             totalTests={userStats?.totalTests || 0}
             avgScore={userStats?.avgScore || 0}
@@ -1000,6 +1009,13 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     borderWidth: 1.5,
     borderColor: 'rgba(79, 70, 229, 0.2)',
+  },
+  emojiAvatarBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiAvatarText: {
+    fontSize: 20,
   },
   headerGreeting: {
     fontSize: 11,

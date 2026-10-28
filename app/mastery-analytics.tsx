@@ -115,15 +115,51 @@ export default function MasteryAnalyticsScreen() {
             setOverallMastery(avg);
           }
         } else {
-          // College mode: keep API-driven logic
-          const collegeTopics: SubjectMasteryItem[] = [
-            { name: 'Quantitative Aptitude', accuracy: weakMap['Quantitative Aptitude'] ? 52 : (apiStats?.avgScore || 75), totalAttempted: 45, status: weakMap['Quantitative Aptitude'] ? 'Needs Practice' : 'Moderate', color: '#f59e0b' },
-            { name: 'Data Structures & Algorithms', accuracy: weakMap['Data Structures & Algorithms'] ? 45 : 68, totalAttempted: 38, status: weakMap['Data Structures & Algorithms'] ? 'Needs Practice' : 'Moderate', color: '#ef4444' },
-            { name: 'React & Frontend Core', accuracy: 88, totalAttempted: 28, status: 'Mastered', color: '#10b981' },
-            { name: 'Logical Reasoning', accuracy: 84, totalAttempted: 32, status: 'Mastered', color: '#3b82f6' },
+          // College mode: calculate based on actual user test history from recentActivity
+          const recent = apiStats?.recentActivity || [];
+          const avgSc = Math.round(apiStats?.avgScore || 0);
+
+          const categories = [
+            { name: 'Quantitative Aptitude', color: '#f59e0b' },
+            { name: 'Data Structures & Algorithms', color: '#ef4444' },
+            { name: 'React & Frontend Core', color: '#10b981' },
+            { name: 'Logical Reasoning', color: '#3b82f6' },
           ];
+
+          const collegeTopics: SubjectMasteryItem[] = categories.map((cat) => {
+            const catTests = recent.filter((r: any) =>
+              (r.category && r.category.toLowerCase().includes(cat.name.toLowerCase().split(' ')[0])) ||
+              (r.weakCategories && r.weakCategories.includes(cat.name))
+            );
+
+            let accuracy = 0;
+            let totalAttempted = 0;
+
+            if (catTests.length > 0) {
+              const sum = catTests.reduce((acc: number, t: any) => acc + (t.scorePercentage || 0), 0);
+              accuracy = Math.round(sum / catTests.length);
+              totalAttempted = catTests.length;
+            } else if (recent.length > 0) {
+              // If user took mixed/general exams
+              const isWeak = weakMap[cat.name] || (recent[0]?.weakCategories || []).includes(cat.name);
+              accuracy = isWeak ? Math.max(30, avgSc - 20) : Math.min(100, avgSc);
+              totalAttempted = Math.round(recent.length / categories.length) || 1;
+            }
+
+            const status: 'Mastered' | 'Moderate' | 'Needs Practice' =
+              accuracy >= 75 ? 'Mastered' : accuracy >= 50 ? 'Moderate' : 'Needs Practice';
+
+            return {
+              name: cat.name,
+              accuracy,
+              totalAttempted,
+              status,
+              color: cat.color,
+            };
+          });
+
           setMasteryData(collegeTopics);
-          if (!apiStats?.avgScore) setOverallMastery(72);
+          setOverallMastery(avgSc);
         }
       } catch (e) {
         console.warn('Mastery analytics error:', e);

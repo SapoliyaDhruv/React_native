@@ -8,25 +8,77 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { ApiService } from '@/services/api';
+
+const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍💻', '👨‍🚀', '🦁', '⚡', '🎯', '🦉', '🚀'];
 
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || '');
+  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatarUrl || '');
   const [targetCompany, setTargetCompany] = useState(user?.targetCompany || 'TCS NQT');
-  const [institute, setInstitute] = useState('Gujarat Technological University');
-  const [targetYear, setTargetYear] = useState('2026');
+  const [institute, setInstitute] = useState(user?.college || 'Gujarat Technological University');
+  const [targetYear, setTargetYear] = useState(user?.graduationYear || '2026');
   const [saving, setSaving] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  const handlePickFromGallery = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Permission Needed', 'Please allow gallery access to select a profile picture.');
+        return;
+      }
+      const res = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const asset = res.assets[0];
+        const dataUrl = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : asset.uri;
+        setAvatarUrl(dataUrl);
+      }
+    } catch (e) {
+      console.warn('Gallery pick error:', e);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Permission Needed', 'Please allow camera access to take a profile photo.');
+        return;
+      }
+      const res = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true,
+      });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const asset = res.assets[0];
+        const dataUrl = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : asset.uri;
+        setAvatarUrl(dataUrl);
+      }
+    } catch (e) {
+      console.warn('Camera take error:', e);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
@@ -36,24 +88,24 @@ export default function ProfileEditScreen() {
 
     setSaving(true);
     try {
-      const response = await fetch('http://10.166.238.124:5000/api/auth/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user?.email,
-          name,
-          targetCompany,
-          college: institute,
-        }),
+      await ApiService.updateProfile({
+        email: user?.email,
+        name,
+        targetCompany,
+        college: institute,
+        avatarUrl,
       });
 
-      if (response.ok) {
-        Alert.alert('Profile Updated 🎉', 'Your goals and profile info have been successfully saved.');
-        router.back();
-      } else {
-        Alert.alert('Saved Locally', 'Your profile details have been saved.');
-        router.back();
-      }
+      await updateUserProfile({
+        name,
+        targetCompany,
+        avatarUrl,
+        college: institute,
+        graduationYear: targetYear,
+      });
+
+      Alert.alert('Profile Updated 🎉', 'Your goals and profile info have been successfully saved.');
+      router.back();
     } catch (e) {
       Alert.alert('Saved Locally', 'Your profile details have been saved.');
       router.back();
@@ -74,11 +126,7 @@ export default function ProfileEditScreen() {
           onPress: async () => {
             try {
               if (user?.email) {
-                await fetch('http://10.166.238.124:5000/api/auth/account', {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: user.email }),
-                });
+                await ApiService.deleteAccount(user.email);
               }
             } catch (e) {
               console.warn('Delete account error:', e);
@@ -129,6 +177,66 @@ export default function ProfileEditScreen() {
             MindSprintShadows.card,
           ]}
         >
+          {/* Avatar Preview & Chooser */}
+          <View style={styles.avatarSection}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.avatarWrapper}
+              onPress={handlePickFromGallery}
+            >
+              {avatarUrl && !avatarUrl.startsWith('http') && !avatarUrl.startsWith('file:') && !avatarUrl.startsWith('data:') ? (
+                <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
+                  <Text style={styles.emojiAvatarText}>{avatarUrl}</Text>
+                </View>
+              ) : (
+                <Image
+                  source={{ uri: avatarUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3' }}
+                  style={styles.avatar}
+                />
+              )}
+              <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
+                <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.avatarActionBtnsRow}>
+              <TouchableOpacity
+                style={[styles.smallActionBtn, { backgroundColor: colors.primary }]}
+                onPress={handlePickFromGallery}
+              >
+                <MaterialIcons name="photo-library" size={14} color="#ffffff" />
+                <Text style={styles.smallActionBtnText}>Gallery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.smallActionBtn, { backgroundColor: '#334155' }]}
+                onPress={handleTakePhoto}
+              >
+                <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
+                <Text style={styles.smallActionBtnText}>Camera</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Quick Emoji Avatars */}
+            <View style={styles.emojiRow}>
+              {AVATAR_PRESETS.map((emoji, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={[
+                    styles.smallEmojiBtn,
+                    {
+                      backgroundColor: avatarUrl === emoji ? 'rgba(99, 102, 241, 0.2)' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
+                      borderColor: avatarUrl === emoji ? colors.primary : 'transparent',
+                    },
+                  ]}
+                  onPress={() => setAvatarUrl(emoji)}
+                >
+                  <Text style={{ fontSize: 20 }}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           {/* Full Name */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.onSurface }]}>Full Name</Text>
@@ -438,5 +546,71 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 10,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#3525cd',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  emojiAvatarBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiAvatarText: {
+    fontSize: 40,
+  },
+  avatarActionBtnsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  smallActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  smallActionBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  emojiRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  smallEmojiBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

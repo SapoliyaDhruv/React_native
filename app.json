@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.mindsprint.app",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
     },
     "android": {
       "package": "com.mindsprint.app",

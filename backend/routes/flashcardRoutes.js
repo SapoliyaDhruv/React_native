@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Flashcard = require('../models/Flashcard');
 
 const SEED_FLASHCARDS = [
@@ -77,28 +78,48 @@ const SEED_FLASHCARDS = [
   },
 ];
 
+let flashcardsSeeded = false;
 async function ensureFlashcardsSeeded() {
-  const count = await Flashcard.countDocuments();
-  if (count === 0) {
-    console.log('🌱 Auto-seeding Flashcards dataset in MongoDB...');
-    await Flashcard.insertMany(SEED_FLASHCARDS);
+  if (flashcardsSeeded) return;
+  if (mongoose.connection.readyState !== 1) return;
+  try {
+    const count = await Flashcard.countDocuments();
+    if (count === 0) {
+      await Flashcard.insertMany(SEED_FLASHCARDS);
+    }
+    flashcardsSeeded = true;
+  } catch (e) {
+    flashcardsSeeded = true;
   }
 }
 
 // GET /api/flashcards
 router.get('/', async (req, res) => {
   try {
-    await ensureFlashcardsSeeded();
     const { topic } = req.query;
+
+    const filterSeed = () => {
+      if (topic && topic !== 'All') {
+        return SEED_FLASHCARDS.filter((c) => c.topic === topic);
+      }
+      return SEED_FLASHCARDS;
+    };
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.json(filterSeed());
+    }
+
+    await ensureFlashcardsSeeded();
+
     const filter = {};
     if (topic && topic !== 'All') {
       filter.topic = topic;
     }
     const cards = await Flashcard.find(filter).sort({ id: 1 });
-    res.json(cards);
+    res.json(cards.length > 0 ? cards : filterSeed());
   } catch (error) {
     console.error('Error fetching flashcards:', error);
-    res.status(500).json({ error: error.message });
+    res.json(SEED_FLASHCARDS);
   }
 });
 

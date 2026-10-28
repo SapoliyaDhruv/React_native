@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -14,11 +15,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { IMPORTANT_QUESTIONS_DATA, ImportantQuestion } from '@/constants/academicData';
+import { ApiService } from '@/services/api';
 
-interface BoardQuestion {
+export interface BoardQuestion {
   id: number;
+  originalId?: string;
   section: 'A' | 'B' | 'C' | 'D';
   marks: number;
+  chapterTitle?: string;
+  chapterTitleGujarati?: string;
   questionText: string;
   questionTextGujarati: string;
   options?: string[];
@@ -26,91 +32,9 @@ interface BoardQuestion {
   modelAnswer: string;
   modelAnswerGujarati: string;
   markingRubric: { step: string; stepGujarati: string; marks: number }[];
+  examinerTips?: string;
+  examinerTipsGujarati?: string;
 }
-
-const BOARD_PAPER_QUESTIONS: BoardQuestion[] = [
-  // SECTION A: 1-MARK OBJECTIVE (4 Questions demo)
-  {
-    id: 1,
-    section: 'A',
-    marks: 1,
-    questionText: 'Which gas is evolved during the reaction of Zinc with dilute Sulphuric Acid?',
-    questionTextGujarati: 'ઝિંકની મંદ સલ્ફ્યુરિક એસિડ સાથેની પ્રક્રિયાથી કયો વાયુ ઉત્પન્ન થાય છે?',
-    options: ['Hydrogen (H₂)', 'Oxygen (O₂)', 'Carbon Dioxide (CO₂)', 'Nitrogen (N₂)'],
-    correctAnswer: 0,
-    modelAnswer: 'Hydrogen gas (H₂) is released: Zn + H₂SO₄ → ZnSO₄ + H₂↑.',
-    modelAnswerGujarati: 'હાઈડ્રોજન વાયુ (H₂) મુક્ત થાય છે: Zn + H₂SO₄ → ZnSO₄ + H₂↑.',
-    markingRubric: [{ step: 'Correct option chosen (H₂)', stepGujarati: 'સાચો વિકલ્પ (H₂)', marks: 1 }],
-  },
-  {
-    id: 2,
-    section: 'A',
-    marks: 1,
-    questionText: 'What is the SI unit of Electric Power?',
-    questionTextGujarati: 'વિદ્યુત પાવરનો SI એકમ કયો છે?',
-    options: ['Watt (W)', 'Joule (J)', 'Volt (V)', 'Ampere (A)'],
-    correctAnswer: 0,
-    modelAnswer: 'The SI unit of electric power is Watt (W).',
-    modelAnswerGujarati: 'વિદ્યુત પાવરનો SI એકમ વૉટ (Watt - W) છે.',
-    markingRubric: [{ step: 'Correct unit stated (Watt)', stepGujarati: 'સાચો એકમ (વૉટ)', marks: 1 }],
-  },
-  // SECTION B: 2-MARK SHORT ANSWER (2 Questions demo)
-  {
-    id: 3,
-    section: 'B',
-    marks: 2,
-    questionText: 'Define Refraction of light and state Snell’s Law.',
-    questionTextGujarati: 'પ્રકાશનું વક્રીભવન એટલે શું? સ્નેલનો નિયમ જણાવો.',
-    modelAnswer: 'Refraction is the bending of light when it passes obliquely from one transparent medium to another. Snell\'s Law: sin(i) / sin(r) = constant = n.',
-    modelAnswerGujarati: 'પ્રકાશનું ત્રાંસું કિરણ એક પારદર્શક માધ્યમમાંથી બીજા માધ્યમમાં પ્રવેશતા દિશા બદલે તેને વક્રીભવન કહેવાય. સ્નેલનો નિયમ: આપાતકોણની સાઇન અને વક્રીભૂતકોણની સાઇનનો ગુણોત્તર અચળ હોય છે: sin(i)/sin(r) = અચળ.',
-    markingRubric: [
-      { step: 'Definition of refraction with medium change', stepGujarati: 'વક્રીભવનની સાચી વ્યાખ્યા', marks: 1 },
-      { step: 'Snell\'s law formula sin(i)/sin(r) = n', stepGujarati: 'સ્નેલનું સૂત્ર sin(i)/sin(r) = n', marks: 1 },
-    ],
-  },
-  {
-    id: 4,
-    section: 'B',
-    marks: 2,
-    questionText: 'Find the 10th term of the Arithmetic Progression: 2, 7, 12 ...',
-    questionTextGujarati: 'સમાંતર શ્રેણી ૨, ૭, ૧૨ ... નું ૧૦મું પદ શોધો.',
-    modelAnswer: 'a = 2, d = 7 - 2 = 5, n = 10.\naₙ = a + (n - 1)d\na₁₀ = 2 + (10 - 1) × 5 = 2 + 45 = 47.',
-    modelAnswerGujarati: 'a = ૨, d = ૭ - ૨ = ૫, n = ૧૦.\naₙ = a + (n - 1)d\na₁₀ = ૨ + (૧૦ - ૧) × ૫ = ૨ + ૪૫ = ૪૭.',
-    markingRubric: [
-      { step: 'Formula aₙ = a + (n-1)d and substituting values', stepGujarati: 'સૂત્ર અને કિંમતો મૂકવી', marks: 1 },
-      { step: 'Final answer a₁₀ = 47', stepGujarati: 'અંતિમ જવાબ ૪૭', marks: 1 },
-    ],
-  },
-  // SECTION C: 3-MARK MEDIUM SUMS / PROOFS (1 Question demo)
-  {
-    id: 5,
-    section: 'C',
-    marks: 3,
-    questionText: 'Prove that √5 is an irrational number by contradiction method.',
-    questionTextGujarati: 'અસંગતતા (વિરોધાભાસ) ની રીતે સાબિત કરો કે √૫ અસંમેય સંખ્યા છે.',
-    modelAnswer: 'Assume √5 is rational = p/q (coprime). Squaring both sides: 5 = p²/q² => p² = 5q². So 5 divides p². Thus 5 divides p. Let p = 5k => 25k² = 5q² => q² = 5k². So 5 divides q. Contradiction to p, q being coprime. Hence √5 is irrational.',
-    modelAnswerGujarati: 'ધારો કે √૫ સંમેય છે = p/q (પરસ્પર અવિભાજ્ય). બંને બાજુ વર્ગ: ૫ = p²/q² => p² = ૫q². આથી ૫ એ p² નો અવયવ છે => ૫ એ p નો પણ અવયવ છે. p = ૫k મૂકતા: ૨૫k² = ૫q² => q² = ૫k². આથી ૫ એ q નો પણ અવયવ છે. આથી p અને q નો સામાન્ય અવયવ ૫ મળે છે જે વિરોધાભાસ છે. આથી √૫ અસંમેય છે.',
-    markingRubric: [
-      { step: 'Assumption of rationality and p = 5k logic', stepGujarati: 'સંમેય ધારણા અને વર્ગ કરવો', marks: 1 },
-      { step: 'Showing 5 divides both p and q', stepGujarati: '૫ એ બંને p અને q નો અવયવ દર્શાવવો', marks: 1 },
-      { step: 'Contradiction statement and conclusion', stepGujarati: 'વિરોધાભાસ અને અંતિમ તારણ', marks: 1 },
-    ],
-  },
-  // SECTION D: 4-MARK LONG QUESTION (1 Question demo)
-  {
-    id: 6,
-    section: 'D',
-    marks: 4,
-    questionText: 'Draw the ray diagram of human eye defects (Myopia & Hypermetropia) and state their causes and corrections.',
-    questionTextGujarati: 'માનવ આંખની ખામીઓ (લઘુદ્રષ્ટિ અને ગુરુદ્રષ્ટિ) ના કારણો અને તેના નિવારણના ચશ્માના લેન્સ સમજાવો.',
-    modelAnswer: '1. Myopia (Near-sightedness): Image forms in front of retina. Causes: Excessive curvature of cornea or elongation of eyeball. Correction: Concave lens.\n2. Hypermetropia (Far-sightedness): Image forms behind retina. Causes: Focal length too long or eyeball too short. Correction: Convex lens.',
-    modelAnswerGujarati: '૧. લઘુદ્રષ્ટિ (Myopia): નજીકનું ચોખ્ખું દેખાય, દૂરનું ન દેખાય. પ્રતિબિંબ નેત્રપટલની આગળ રચાય. નિવારણ: અંતર્ગોળ લેન્સ.\n૨. ગુરુદ્રષ્ટિ (Hypermetropia): દૂરનું ચોખ્ખું દેખાય, નજીકનું ન દેખાય. પ્રતિબિંબ નેત્રપટલની પાછળ રચાય. નિવારણ: બહિર્ગોળ લેન્સ.',
-    markingRubric: [
-      { step: 'Myopia definition, image position and concave lens', stepGujarati: 'લઘુદ્રષ્ટિ અને અંતર્ગોળ લેન્સ', marks: 2 },
-      { step: 'Hypermetropia definition, image position and convex lens', stepGujarati: 'ગુરુદ્રષ્ટિ અને બહિર્ગોળ લેન્સ', marks: 2 },
-    ],
-  },
-];
 
 export default function BoardExamSimulatorScreen() {
   const router = useRouter();
@@ -119,8 +43,22 @@ export default function BoardExamSimulatorScreen() {
 
   const userGrade = user?.grade || '10';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const isGSEB = isSchoolMode;
 
+  const availableSubjects = useMemo(() => {
+    if (!isSchoolMode) {
+      return ['All Topics', 'Quantitative Aptitude', 'Data Structures & Algorithms', 'Web Development', 'Computer Networks'];
+    }
+    if (['11', '12'].includes(userGrade)) {
+      return ['All Subjects', 'Physics (ભૌતિકવિજ્ઞાન)', 'Chemistry (રસાયણવિજ્ઞાન)', 'Mathematics (ગણિત)', 'Biology (જીવવિજ્ઞાન)'];
+    }
+    return ['All Subjects', 'Mathematics', 'Science', 'Social Science', 'English', 'Gujarati'];
+  }, [isSchoolMode, userGrade]);
+
+  const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
+  const [selectedSection, setSelectedSection] = useState<'All' | 'A' | 'B' | 'C' | 'D'>('All');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [fetchedQuestions, setFetchedQuestions] = useState<ImportantQuestion[]>([]);
   const [activeQIndex, setActiveQIndex] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, any>>({});
   const [writtenNotes, setWrittenNotes] = useState<Record<number, string>>({});
@@ -129,6 +67,120 @@ export default function BoardExamSimulatorScreen() {
   const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [evalMarks, setEvalMarks] = useState<Record<string, boolean>>({});
+
+  // Fetch real questions dynamically from backend or localized dataset
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadPaperQuestions() {
+      setLoading(true);
+      try {
+        const subParam = selectedSubject !== 'All Subjects' && selectedSubject !== 'All Topics' ? selectedSubject : undefined;
+        const res = await ApiService.getImportantQuestions(userGrade, subParam);
+        if (!isCancelled) {
+          if (res && res.length > 0) {
+            setFetchedQuestions(res);
+          } else {
+            setFetchedQuestions(IMPORTANT_QUESTIONS_DATA);
+          }
+        }
+      } catch (e) {
+        if (!isCancelled) {
+          setFetchedQuestions(IMPORTANT_QUESTIONS_DATA);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    }
+    loadPaperQuestions();
+    return () => {
+      isCancelled = true;
+    };
+  }, [userGrade, selectedSubject]);
+
+  // Assemble the official 80-Mark Board Exam blueprint:
+  // Section A: 1-mark objective questions (targeted 16 questions)
+  // Section B: 2-mark short questions (targeted 10 questions)
+  // Section C: 3-mark analytical/proof questions (targeted 8 questions)
+  // Section D: 4-mark comprehensive long questions (targeted 5 questions)
+  const paperQuestions: BoardQuestion[] = useMemo(() => {
+    let pool = fetchedQuestions.filter((q) => q.grade === userGrade);
+    if (selectedSubject !== 'All Subjects' && selectedSubject !== 'All Topics') {
+      const subFiltered = pool.filter((q) => q.subject.toLowerCase() === selectedSubject.toLowerCase());
+      if (subFiltered.length > 0) pool = subFiltered;
+    }
+    if (pool.length === 0) {
+      pool = fetchedQuestions.filter((q) => q.grade === '10');
+      if (pool.length === 0) pool = IMPORTANT_QUESTIONS_DATA;
+    }
+
+    const ones = pool.filter((q) => q.marks === 1);
+    const twos = pool.filter((q) => q.marks === 2);
+    const threes = pool.filter((q) => q.marks === 3);
+    const fours = pool.filter((q) => q.marks >= 4);
+
+    const secA = ones.slice(0, 16);
+    const secB = twos.slice(0, 10);
+    const secC = threes.slice(0, 8);
+    const secD = fours.slice(0, 5);
+
+    const orderedPool = [
+      ...secA.map((q) => ({ ...q, section: 'A' as const })),
+      ...secB.map((q) => ({ ...q, section: 'B' as const })),
+      ...secC.map((q) => ({ ...q, section: 'C' as const })),
+      ...secD.map((q) => ({ ...q, section: 'D' as const })),
+    ];
+
+    const finalSelection = orderedPool.length >= 6
+      ? orderedPool
+      : pool.sort((a, b) => a.marks - b.marks).map((q) => ({
+          ...q,
+          section: (q.marks === 1 ? 'A' : q.marks === 2 ? 'B' : q.marks === 3 ? 'C' : 'D') as 'A' | 'B' | 'C' | 'D',
+        }));
+
+    return finalSelection.map((q, idx) => {
+      const rubric = (q.stepWiseMarking || []).map((s) => ({
+        step: s.text,
+        stepGujarati: s.textGujarati || s.text,
+        marks: parseFloat(s.marksAllocated) || 1,
+      }));
+      if (rubric.length === 0) {
+        rubric.push({
+          step: 'Accurate and comprehensive response with standard units/diagram',
+          stepGujarati: 'ચોક્કસ અને સંપૂર્ણ જવાબ',
+          marks: q.marks,
+        });
+      }
+      return {
+        id: idx + 1,
+        originalId: q.id,
+        section: q.section,
+        marks: q.marks,
+        chapterTitle: q.chapterTitle,
+        chapterTitleGujarati: q.chapterTitleGujarati,
+        questionText: q.questionText,
+        questionTextGujarati: q.questionTextGujarati || q.questionText,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        modelAnswer: q.modelAnswer,
+        modelAnswerGujarati: q.modelAnswerGujarati || q.modelAnswer,
+        markingRubric: rubric,
+        examinerTips: q.examinerTips,
+        examinerTipsGujarati: q.examinerTipsGujarati,
+      };
+    });
+  }, [fetchedQuestions, userGrade, selectedSubject]);
+
+  const handleSelectSubject = (subj: string) => {
+    setSelectedSubject(subj);
+    setSelectedSection('All');
+    setActiveQIndex(0);
+    setSelectedAnswers({});
+    setWrittenNotes({});
+    setMarkedForReview([]);
+    setEvalMarks({});
+  };
 
   useEffect(() => {
     if (isSubmitted || isTimerPaused) return;
@@ -177,13 +229,22 @@ export default function BoardExamSimulatorScreen() {
     );
   };
 
-  const currentQ = BOARD_PAPER_QUESTIONS[activeQIndex];
+  const currentQ = paperQuestions[activeQIndex] || paperQuestions[0] || {
+    id: 1,
+    section: 'A',
+    marks: 1,
+    questionText: 'Loading board examination questions...',
+    questionTextGujarati: 'પ્રશ્નો લોડ થઈ રહ્યા છે...',
+    modelAnswer: '',
+    modelAnswerGujarati: '',
+    markingRubric: [],
+  };
   const displayQ = isGSEB && currentQ.questionTextGujarati ? currentQ.questionTextGujarati : currentQ.questionText;
 
   // Calculate self-evaluation score
-  const totalMaxMarks = BOARD_PAPER_QUESTIONS.reduce((sum, q) => sum + q.marks, 0);
+  const totalMaxMarks = paperQuestions.reduce((sum, q) => sum + q.marks, 0);
   let studentAwardedScore = 0;
-  BOARD_PAPER_QUESTIONS.forEach((q) => {
+  paperQuestions.forEach((q) => {
     if (q.options && selectedAnswers[q.id] === q.correctAnswer) {
       studentAwardedScore += q.marks;
     } else {
@@ -196,7 +257,28 @@ export default function BoardExamSimulatorScreen() {
     }
   });
 
-  const percentage = Math.round((studentAwardedScore / totalMaxMarks) * 100);
+  const percentage = totalMaxMarks > 0 ? Math.round((studentAwardedScore / totalMaxMarks) * 100) : 0;
+
+  const handleFinishAndSave = async () => {
+    try {
+      if (user?.email) {
+        await ApiService.submitExamResult({
+          userEmail: user.email,
+          scorePercentage: percentage,
+          correctCount: studentAwardedScore,
+          totalQuestions: totalMaxMarks,
+          userAnswers: selectedAnswers,
+          weakCategories: [],
+          grade: userGrade,
+          board: user?.board || 'CBSE',
+          category: `80M Board Exam - ${selectedSubject}`,
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to record board simulation score:', e);
+    }
+    router.back();
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
@@ -228,12 +310,78 @@ export default function BoardExamSimulatorScreen() {
         </View>
       </View>
 
-      {!isSubmitted ? (
+      {loading ? (
+        <View style={styles.centerLoading}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>
+            Assembling official 80-mark blueprint from curriculum...
+          </Text>
+        </View>
+      ) : !isSubmitted ? (
         /* ACTIVE EXAM INTERFACE */
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          {/* Subject / Paper Selector Chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subjectChipScroll}>
+            {availableSubjects.map((sub) => {
+              const isSelected = selectedSubject === sub;
+              return (
+                <TouchableOpacity
+                  key={sub}
+                  style={[
+                    styles.subjectChip,
+                    {
+                      backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLowest,
+                      borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                    },
+                  ]}
+                  onPress={() => handleSelectSubject(sub)}
+                >
+                  <Text style={[styles.subjectChipText, { color: isSelected ? '#ffffff' : colors.onSurface }]}>
+                    {sub}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* Section Filter / Jump Tabs */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sectionTabsRow}>
+            {(['All', 'A', 'B', 'C', 'D'] as const).map((sec) => {
+              const isSecSelected = selectedSection === sec;
+              const count = sec === 'All'
+                ? paperQuestions.length
+                : paperQuestions.filter((q) => q.section === sec).length;
+              if (sec !== 'All' && count === 0) return null;
+              return (
+                <TouchableOpacity
+                  key={sec}
+                  style={[
+                    styles.secFilterTab,
+                    {
+                      backgroundColor: isSecSelected ? colors.primary : colors.surfaceContainerLowest,
+                      borderColor: isSecSelected ? colors.primary : colors.outlineVariant,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedSection(sec);
+                    if (sec !== 'All') {
+                      const firstIdx = paperQuestions.findIndex((q) => q.section === sec);
+                      if (firstIdx !== -1) setActiveQIndex(firstIdx);
+                    }
+                  }}
+                >
+                  <Text style={[styles.secFilterText, { color: isSecSelected ? '#ffffff' : colors.onSurface }]}>
+                    {sec === 'All' ? 'All Sections' : `Section ${sec}`} ({count})
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
           {/* Question Navigator Palette */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.paletteScroll}>
-            {BOARD_PAPER_QUESTIONS.map((q, idx) => {
+            {paperQuestions.map((q, idx) => {
+              if (selectedSection !== 'All' && q.section !== selectedSection) return null;
               const isCurrent = activeQIndex === idx;
               const isAnswered = selectedAnswers[q.id] !== undefined || (writtenNotes[q.id] && writtenNotes[q.id].length > 0);
               const isReview = markedForReview.includes(q.id);
@@ -282,6 +430,11 @@ export default function BoardExamSimulatorScreen() {
               <Text style={[styles.marksText, { color: colors.primary }]}>
                 {currentQ.marks} {currentQ.marks === 1 ? 'Mark' : 'Marks'}
               </Text>
+              {currentQ.chapterTitle ? (
+                <Text style={[styles.chapterTag, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                  • {isGSEB && currentQ.chapterTitleGujarati ? currentQ.chapterTitleGujarati : currentQ.chapterTitle}
+                </Text>
+              ) : null}
               <View style={{ flex: 1 }} />
               <TouchableOpacity
                 style={[
@@ -378,10 +531,10 @@ export default function BoardExamSimulatorScreen() {
               <Text style={[styles.navBtnText, { color: colors.onSurface }]}>Previous</Text>
             </TouchableOpacity>
 
-            {activeQIndex < BOARD_PAPER_QUESTIONS.length - 1 ? (
+            {activeQIndex < paperQuestions.length - 1 ? (
               <TouchableOpacity
                 style={[styles.navBtn, { backgroundColor: colors.primary }]}
-                onPress={() => setActiveQIndex((prev) => Math.min(BOARD_PAPER_QUESTIONS.length - 1, prev + 1))}
+                onPress={() => setActiveQIndex((prev) => Math.min(paperQuestions.length - 1, prev + 1))}
               >
                 <Text style={[styles.navBtnText, { color: '#ffffff' }]}>Next Question</Text>
                 <MaterialIcons name="chevron-right" size={20} color="#ffffff" />
@@ -416,7 +569,7 @@ export default function BoardExamSimulatorScreen() {
           </View>
 
           {/* Question-by-Question Evaluation List */}
-          {BOARD_PAPER_QUESTIONS.map((q, idx) => {
+          {paperQuestions.map((q, idx) => {
             const isMcq = !!q.options;
             const mcqCorrect = isMcq && selectedAnswers[q.id] === q.correctAnswer;
 
@@ -499,9 +652,9 @@ export default function BoardExamSimulatorScreen() {
 
           <TouchableOpacity
             style={[styles.finishEvalBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.back()}
+            onPress={handleFinishAndSave}
           >
-            <Text style={styles.finishEvalBtnText}>Return to Dashboard</Text>
+            <Text style={styles.finishEvalBtnText}>Save Result & Return to Dashboard 🎓</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -761,5 +914,50 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 15,
     fontWeight: '800',
+  },
+  subjectChipScroll: {
+    gap: 8,
+    paddingBottom: 2,
+  },
+  subjectChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  subjectChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  centerLoading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    padding: 32,
+  },
+  loadingText: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  sectionTabsRow: {
+    gap: 8,
+    paddingVertical: 2,
+  },
+  secFilterTab: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  secFilterText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  chapterTag: {
+    fontSize: 11,
+    fontWeight: '600',
+    maxWidth: 160,
   },
 });

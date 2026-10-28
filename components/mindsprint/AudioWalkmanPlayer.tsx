@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -40,6 +41,7 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
   const [progressPercent, setProgressPercent] = useState<number>(0);
+  const progressTimerRef = useRef<any>(null);
 
   useEffect(() => {
     setCurrentIndex(initialTrackIndex);
@@ -53,29 +55,61 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
 
   const currentTrack = tracks[currentIndex] || tracks[0];
 
+  const clearProgressTimer = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  };
+
+  const startProgressTimer = (estimatedTotalSec: number) => {
+    clearProgressTimer();
+    const intervalMs = 250;
+    const increment = (intervalMs / (estimatedTotalSec * 1000)) * 100;
+    progressTimerRef.current = setInterval(() => {
+      setProgressPercent((prev) => {
+        if (prev >= 95) {
+          clearProgressTimer();
+          return 95;
+        }
+        return Math.min(95, prev + increment);
+      });
+    }, intervalMs);
+  };
+
   const stopSpeech = () => {
+    clearProgressTimer();
     if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    } else {
+      Speech.stop();
     }
     setIsPlaying(false);
   };
 
   const speakCurrentTrack = () => {
     if (!currentTrack) return;
+    const clean = currentTrack.contentToSpeak.replace(/[*_#`]/g, '');
+
+    // Estimate speaking duration in seconds (~130 words per minute base)
+    const wordCount = clean.split(/\s+/).length;
+    const estimatedSeconds = Math.max(3, (wordCount / (130 * speedMultiplier)) * 60);
+
+    setProgressPercent(2);
+    startProgressTimer(estimatedSeconds);
 
     if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const clean = currentTrack.contentToSpeak.replace(/[*_#`]/g, '');
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.rate = speedMultiplier;
       utterance.pitch = 1.0;
 
       utterance.onstart = () => {
         setIsPlaying(true);
-        setProgressPercent(15);
       };
 
       utterance.onend = () => {
+        clearProgressTimer();
         setIsPlaying(false);
         setProgressPercent(100);
         // Auto-advance to next track if available
@@ -86,15 +120,39 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
         }
       };
 
-      utterance.onerror = () => setIsPlaying(false);
+      utterance.onerror = () => {
+        clearProgressTimer();
+        setIsPlaying(false);
+      };
       window.speechSynthesis.speak(utterance);
     } else {
+      Speech.stop();
       setIsPlaying(true);
-      setProgressPercent(30);
-      setTimeout(() => {
-        setProgressPercent(100);
-        setIsPlaying(false);
-      }, 5000);
+      Speech.speak(clean, {
+        rate: speedMultiplier,
+        pitch: 1.0,
+        onStart: () => {
+          setIsPlaying(true);
+        },
+        onDone: () => {
+          clearProgressTimer();
+          setIsPlaying(false);
+          setProgressPercent(100);
+          if (currentIndex < tracks.length - 1) {
+            setTimeout(() => {
+              setCurrentIndex((prev) => prev + 1);
+            }, 1000);
+          }
+        },
+        onStopped: () => {
+          clearProgressTimer();
+          setIsPlaying(false);
+        },
+        onError: () => {
+          clearProgressTimer();
+          setIsPlaying(false);
+        },
+      });
     }
   };
 

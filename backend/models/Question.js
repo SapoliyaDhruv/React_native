@@ -12,6 +12,10 @@ const questionSchema = new mongoose.Schema({
   explanation: { type: String, required: true },
   targetCompany: { type: String, default: 'All' },
   difficulty: { type: String, default: 'Medium' },
+  questionTextGujarati: { type: String },
+  optionsGujarati: [{ type: String }],
+  explanationGujarati: { type: String },
+  categoryGujarati: { type: String },
 });
 
 // Indexes for fast lookups and randomized sampling queries
