@@ -13,7 +13,9 @@ const CommentSchema = new mongoose.Schema({
 
 const VideoLectureSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  grades: [{ type: String, default: ['college'] }], // e.g. ['6'], ['7'], ['8'], ['9'], ['10'], ['11'], ['12'], ['college']
+  chapterNumber: { type: Number },
+  subjectId: { type: String },
+  grades: [{ type: String, default: ['college'] }], // e.g. ['7'], ['8'], ['9'], ['10'], ['11'], ['12'], ['college']
   boards: [{ type: String, default: ['CBSE', 'GSEB'] }], // e.g. ['CBSE', 'GSEB']
   category: { type: String, required: true },
   categoryGujarati: { type: String },

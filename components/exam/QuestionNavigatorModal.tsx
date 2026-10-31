@@ -20,6 +20,7 @@ interface QuestionNavigatorModalProps {
   questionsList: any[];
   onSelectQuestion: (index: number) => void;
   onClose: () => void;
+  onSubmitExam?: () => void;
 }
 
 export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
@@ -31,6 +32,7 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
   questionsList,
   onSelectQuestion,
   onClose,
+  onSubmitExam,
 }) => {
   const { colors, isDarkMode } = useTheme();
 
@@ -138,13 +140,27 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
             })}
           </ScrollView>
 
-          {/* Close Action */}
-          <TouchableOpacity
-            style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
-            onPress={onClose}
-          >
-            <Text style={styles.resumeBtnText}>Resume Exam</Text>
-          </TouchableOpacity>
+          {/* Modal Actions */}
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+            <TouchableOpacity
+              style={[styles.resumeBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}
+              onPress={onClose}
+            >
+              <Text style={[styles.resumeBtnText, { color: colors.onSurface }]}>Resume Exam</Text>
+            </TouchableOpacity>
+
+            {onSubmitExam && (
+              <TouchableOpacity
+                style={[styles.resumeBtn, { flex: 1.2, backgroundColor: '#10b981' }]}
+                onPress={() => {
+                  onClose();
+                  onSubmitExam();
+                }}
+              >
+                <Text style={styles.resumeBtnText}>Submit Exam 🏁</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Modal>

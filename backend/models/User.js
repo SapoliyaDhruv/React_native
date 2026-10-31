@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   activeTrack: { type: String, default: 'placement' },
   grade: {
     type: String,
-    enum: ['6', '7', '8', '9', '10', '11', '12', 'college'],
+    enum: ['7', '8', '9', '10', '11', '12', 'college'],
     default: 'college',
   },
   board: {
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     enum: ['school', 'college'],
     default: 'college',
   },
-  streakCount: { type: Number, default: 3 },
+  streakCount: { type: Number, default: 1 },
   targetCompany: { type: String, default: 'All Companies' },
   weakSpotStats: { type: Object, default: {} },
   attemptedQuestionIds: [{ type: Number }],

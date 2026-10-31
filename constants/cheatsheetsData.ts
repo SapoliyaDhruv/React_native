@@ -20,7 +20,7 @@ export const CHEATSHEETS_DATA: CheatSheetItem[] = [
     category: 'School Math',
     title: 'Algebraic Identities & Formulas',
     titleGujarati: 'બીજગણિતીય નિત્યસમો',
-    grades: ['6', '7', '8', '9', '10'],
+    grades: ['7', '8', '9', '10'],
     formulas: [
       '(a + b)² = a² + 2ab + b²',
       '(a - b)² = a² - 2ab + b²',
@@ -35,7 +35,7 @@ export const CHEATSHEETS_DATA: CheatSheetItem[] = [
     category: 'School Math',
     title: 'Mensuration & Geometry (Area & Volume)',
     titleGujarati: 'ક્ષેત્રફળ અને ઘનફળના સૂત્રો',
-    grades: ['6', '7', '8', '9', '10'],
+    grades: ['7', '8', '9', '10'],
     formulas: [
       'Area of Triangle = 1/2 × Base × Height',
       'Area of Circle = πr² | Perimeter (Circumference) = 2πr',

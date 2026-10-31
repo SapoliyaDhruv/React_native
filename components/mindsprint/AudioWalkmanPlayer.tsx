@@ -20,6 +20,7 @@ export interface AudioTrackItem {
   subject: string;
   duration: string;
   contentToSpeak: string;
+  contentToSpeakGujarati?: string;
 }
 
 interface AudioWalkmanPlayerProps {
@@ -41,11 +42,24 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
   const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [selectedLang, setSelectedLang] = useState<'gu' | 'en'>('gu');
   const progressTimerRef = useRef<any>(null);
 
   useEffect(() => {
     setCurrentIndex(initialTrackIndex);
   }, [initialTrackIndex]);
+
+  // Auto-play when opened or track changed
+  useEffect(() => {
+    if (visible && tracks.length > 0) {
+      const timer = setTimeout(() => {
+        speakCurrentTrack();
+      }, 400);
+      return () => clearTimeout(timer);
+    } else {
+      stopSpeech();
+    }
+  }, [visible, currentIndex, selectedLang]);
 
   useEffect(() => {
     return () => {
@@ -89,7 +103,19 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
 
   const speakCurrentTrack = () => {
     if (!currentTrack) return;
-    const clean = currentTrack.contentToSpeak.replace(/[*_#`]/g, '');
+
+    // Pick content based on chosen language
+    let textToSpeak = selectedLang === 'gu'
+      ? (currentTrack.contentToSpeakGujarati || currentTrack.contentToSpeak)
+      : (currentTrack.contentToSpeak || currentTrack.contentToSpeakGujarati);
+
+    if (!textToSpeak || textToSpeak.trim().length === 0) {
+      textToSpeak = `${currentTrack.title}. Chapter ${currentTrack.chapterNumber}. Detailed notes and concepts available in MindSprint.`;
+    }
+
+    const clean = textToSpeak.replace(/[*_#`]/g, '').trim();
+    const hasGujaratiChars = /[\u0A80-\u0AFF]/.test(clean);
+    const targetLang = hasGujaratiChars ? 'gu-IN' : 'en-US';
 
     // Estimate speaking duration in seconds (~130 words per minute base)
     const wordCount = clean.split(/\s+/).length;
@@ -103,6 +129,15 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.rate = speedMultiplier;
       utterance.pitch = 1.0;
+      utterance.lang = targetLang;
+
+      if (window.speechSynthesis.getVoices) {
+        const voices = window.speechSynthesis.getVoices();
+        if (hasGujaratiChars) {
+          const guVoice = voices.find((v) => v.lang.toLowerCase().includes('gu'));
+          if (guVoice) utterance.voice = guVoice;
+        }
+      }
 
       utterance.onstart = () => {
         setIsPlaying(true);
@@ -112,7 +147,6 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
         clearProgressTimer();
         setIsPlaying(false);
         setProgressPercent(100);
-        // Auto-advance to next track if available
         if (currentIndex < tracks.length - 1) {
           setTimeout(() => {
             setCurrentIndex((prev) => prev + 1);
@@ -129,6 +163,7 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
       Speech.stop();
       setIsPlaying(true);
       Speech.speak(clean, {
+        language: targetLang,
         rate: speedMultiplier,
         pitch: 1.0,
         onStart: () => {
@@ -148,9 +183,24 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
           clearProgressTimer();
           setIsPlaying(false);
         },
-        onError: () => {
-          clearProgressTimer();
-          setIsPlaying(false);
+        onError: (err) => {
+          console.warn('Speech error on target language, trying English fallback:', err);
+          if (hasGujaratiChars && currentTrack.contentToSpeak) {
+            Speech.speak(currentTrack.contentToSpeak.replace(/[*_#`]/g, ''), {
+              language: 'en-US',
+              rate: speedMultiplier,
+              pitch: 1.0,
+              onStart: () => setIsPlaying(true),
+              onDone: () => {
+                clearProgressTimer();
+                setIsPlaying(false);
+                setProgressPercent(100);
+              },
+            });
+          } else {
+            clearProgressTimer();
+            setIsPlaying(false);
+          }
         },
       });
     }
@@ -227,11 +277,32 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
           <View style={styles.trackInfo}>
             <Text style={styles.subjectText}>{currentTrack.subject} • Chapter {currentTrack.chapterNumber}</Text>
             <Text style={styles.trackTitle} numberOfLines={2}>
-              {currentTrack.titleGujarati || currentTrack.title}
+              {selectedLang === 'gu' && currentTrack.titleGujarati ? currentTrack.titleGujarati : currentTrack.title}
             </Text>
             <Text style={styles.counterText}>
               Track {currentIndex + 1} of {tracks.length} • Duration: {currentTrack.duration}
             </Text>
+
+            {/* Audio Voice Language Switcher */}
+            <View style={styles.langPillRow}>
+              <TouchableOpacity
+                onPress={() => setSelectedLang('gu')}
+                style={[styles.langPill, selectedLang === 'gu' && styles.langPillActive]}
+              >
+                <Text style={[styles.langPillText, selectedLang === 'gu' && styles.langPillTextActive]}>
+                  🇮🇳 ગુજરાતી Audio
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setSelectedLang('en')}
+                style={[styles.langPill, selectedLang === 'en' && styles.langPillActive]}
+              >
+                <Text style={[styles.langPillText, selectedLang === 'en' && styles.langPillTextActive]}>
+                  🇬🇧 English Audio
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Scrubber Progress Bar */}
@@ -373,6 +444,32 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 12,
     marginTop: 2,
+  },
+  langPillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  langPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  langPillActive: {
+    backgroundColor: 'rgba(56, 189, 248, 0.2)',
+    borderColor: '#38bdf8',
+  },
+  langPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94a3b8',
+  },
+  langPillTextActive: {
+    color: '#38bdf8',
   },
   progressContainer: {
     paddingVertical: 6,

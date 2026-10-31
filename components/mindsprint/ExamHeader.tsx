@@ -10,6 +10,7 @@ interface ExamHeaderProps {
   totalQuestions: number;
   onOpenPalette: () => void;
   onQuitExam: () => void;
+  onSubmitExam?: () => void;
 }
 
 export const ExamHeader: React.FC<ExamHeaderProps> = ({
@@ -19,6 +20,7 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
   totalQuestions,
   onOpenPalette,
   onQuitExam,
+  onSubmitExam,
 }) => {
   const formatTime = (totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
@@ -49,9 +51,18 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
           </Text>
         </View>
 
-        <View style={styles.timerBadge}>
-          <MaterialIcons name="timer" size={16} color={MindSprintColors.error} />
-          <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={styles.timerBadge}>
+            <MaterialIcons name="timer" size={16} color={MindSprintColors.error} />
+            <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
+          </View>
+
+          {onSubmitExam && (
+            <TouchableOpacity style={styles.submitHeaderBtn} onPress={onSubmitExam}>
+              <MaterialIcons name="done-all" size={15} color="#ffffff" />
+              <Text style={styles.submitHeaderBtnText}>Submit</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -124,5 +135,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: MindSprintColors.error,
+  },
+  submitHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#10b981',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  submitHeaderBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#ffffff',
   },
 });

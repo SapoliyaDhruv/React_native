@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,23 +8,55 @@ import { VideoLecture } from '@/constants/videoData';
 
 interface UpNextListProps {
   lectures: VideoLecture[];
+  allLectures?: VideoLecture[];
+  totalChaptersCount?: number;
   activeLectureId: string;
   completedLectureIds: string[];
+  isSequentialMode?: boolean;
+  onToggleSequentialMode?: () => void;
   onSelectLecture: (lecture: VideoLecture) => void;
   onToggleComplete: (lectureId: string) => void;
+  remainingLockedCount?: number;
+  nextLockedTitle?: string;
+  isLectureUnlocked?: (lecture: VideoLecture) => boolean;
 }
 
 export const UpNextList: React.FC<UpNextListProps> = ({
   lectures,
+  allLectures,
+  totalChaptersCount,
   activeLectureId,
   completedLectureIds,
+  isSequentialMode = true,
+  onToggleSequentialMode,
   onSelectLecture,
   onToggleComplete,
+  remainingLockedCount = 0,
+  nextLockedTitle,
+  isLectureUnlocked = () => true,
 }) => {
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
-  const isGujarati = user?.grade !== 'college' && user?.medium === 'Gujarati';
+  const isGujarati = user?.grade !== 'college';
+  const totalCount = totalChaptersCount || lectures.length;
+  const completedCount = completedLectureIds.filter((id) =>
+    (allLectures || lectures).some((l) => l.id === id)
+  ).length;
+
+  const handlePressLecture = (item: VideoLecture) => {
+    const unlocked = isLectureUnlocked(item);
+    if (!unlocked) {
+      Alert.alert(
+        isGujarati ? '🔒 પ્રકરણ લૉક છે' : '🔒 Chapter Locked',
+        isGujarati
+          ? `આ પ્રકરણ જોવા માટે કૃપા કરીને અગાઉનું પ્રકરણ પૂર્ણ કરો.`
+          : `Please complete the previous chapter to unlock this lesson.`
+      );
+      return;
+    }
+    onSelectLecture(item);
+  };
 
   return (
     <View style={styles.container}>
@@ -33,21 +65,84 @@ export const UpNextList: React.FC<UpNextListProps> = ({
         <View style={styles.sectionTitleRow}>
           <MaterialIcons name="playlist-play" size={22} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-            Course Playlist
+            {isGujarati ? 'અભ્યાસક્રમ પ્લેલિસ્ટ' : 'Course Playlist'}
           </Text>
         </View>
-        <View style={[styles.countBadge, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' }]}>
-          <Text style={[styles.countText, { color: colors.primary }]}>
-            {completedLectureIds.length}/{lectures.length} Completed
-          </Text>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          {/* Mode Switcher Pill */}
+          {onToggleSequentialMode && (
+            <TouchableOpacity
+              activeOpacity={0.75}
+              style={[
+                styles.modeTogglePill,
+                {
+                  backgroundColor: isSequentialMode
+                    ? isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#fef3c7'
+                    : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
+                  borderColor: isSequentialMode ? '#f59e0b' : colors.outlineVariant,
+                },
+              ]}
+              onPress={onToggleSequentialMode}
+            >
+              <MaterialIcons
+                name={isSequentialMode ? 'lock-outline' : 'lock-open'}
+                size={13}
+                color={isSequentialMode ? '#d97706' : colors.onSurfaceVariant}
+              />
+              <Text
+                style={[
+                  styles.modeToggleText,
+                  { color: isSequentialMode ? '#d97706' : colors.onSurfaceVariant },
+                ]}
+              >
+                {isSequentialMode
+                  ? isGujarati ? 'ક્રમિક (Sequential)' : 'Sequential'
+                  : isGujarati ? 'બધા (All)' : 'All'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Completion Count Badge */}
+          <View
+            style={[
+              styles.countBadge,
+              { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' },
+            ]}
+          >
+            <Text style={[styles.countText, { color: colors.primary }]}>
+              {completedCount}/{totalCount} {isGujarati ? 'પૂર્ણ' : 'Completed'}
+            </Text>
+          </View>
         </View>
       </View>
+
+      {/* Sequential Notice Banner when sequential unlock is active */}
+      {isSequentialMode && (
+        <View
+          style={[
+            styles.modeInfoBanner,
+            {
+              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.12)' : '#eff6ff',
+              borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : '#bfdbfe',
+            },
+          ]}
+        >
+          <MaterialIcons name="auto-awesome" size={16} color={colors.primary} />
+          <Text style={[styles.modeInfoText, { color: colors.primary }]}>
+            {isGujarati
+              ? '✨ ૧લું પ્રકરણ પૂર્ણ કરતાં ૨જું ખૂલશે, અને ૨જું પૂર્ણ કરતાં ૩જું ખૂલશે.'
+              : '✨ Complete each chapter to automatically reveal and unlock the next lesson.'}
+          </Text>
+        </View>
+      )}
 
       {/* Lecture Cards */}
       <View style={styles.list}>
         {lectures.map((item, index) => {
           const isActive = item.id === activeLectureId;
           const isCompleted = completedLectureIds.includes(item.id);
+          const unlocked = isLectureUnlocked(item);
           const displayTitle = (isGujarati && item.titleGujarati) ? item.titleGujarati : item.title;
           const displayInstructor = (isGujarati && item.instructorGujarati) ? item.instructorGujarati : item.instructor;
 
@@ -55,7 +150,7 @@ export const UpNextList: React.FC<UpNextListProps> = ({
             <TouchableOpacity
               key={item.id}
               activeOpacity={0.75}
-              onPress={() => onSelectLecture(item)}
+              onPress={() => handlePressLecture(item)}
               style={[
                 styles.itemCard,
                 {
@@ -64,17 +159,23 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                     : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
                   borderColor: isActive ? colors.primary : isDarkMode ? colors.outlineVariant : '#e5e7eb',
                   borderWidth: isActive ? 1.5 : 1,
+                  opacity: unlocked ? 1 : 0.65,
                 },
                 !isActive && MindSprintShadows.card,
               ]}
             >
               {/* Lesson Number or Checkmark Circle */}
               <TouchableOpacity
-                onPress={() => onToggleComplete(item.id)}
+                onPress={() => {
+                  if (unlocked) onToggleComplete(item.id);
+                  else handlePressLecture(item);
+                }}
                 style={[
                   styles.lessonNumCircle,
                   {
-                    backgroundColor: isCompleted
+                    backgroundColor: !unlocked
+                      ? isDarkMode ? '#334155' : '#cbd5e1'
+                      : isCompleted
                       ? '#10b981'
                       : isActive
                       ? colors.primary
@@ -82,13 +183,15 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                   },
                 ]}
               >
-                {isCompleted ? (
+                {!unlocked ? (
+                  <MaterialIcons name="lock" size={14} color="#64748b" />
+                ) : isCompleted ? (
                   <MaterialIcons name="check" size={16} color="#ffffff" />
                 ) : isActive ? (
                   <MaterialIcons name="equalizer" size={16} color="#ffffff" />
                 ) : (
                   <Text style={[styles.lessonNumText, { color: colors.onSurfaceVariant }]}>
-                    {index + 1}
+                    {item.chapterNumber || index + 1}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -103,7 +206,12 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                 <View style={styles.durationBadge}>
                   <Text style={styles.durationText}>{item.duration}</Text>
                 </View>
-                {isActive && (
+                {!unlocked && (
+                  <View style={styles.lockedOverlay}>
+                    <MaterialIcons name="lock" size={20} color="#ffffff" />
+                  </View>
+                )}
+                {isActive && unlocked && (
                   <View style={styles.playingOverlay}>
                     <MaterialIcons name="play-arrow" size={22} color="#ffffff" />
                   </View>
@@ -121,7 +229,16 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                   </Text>
                   {isCompleted && (
                     <View style={styles.completedBadge}>
-                      <Text style={styles.completedBadgeText}>COMPLETED ✓</Text>
+                      <Text style={styles.completedBadgeText}>
+                        {isGujarati ? 'પૂર્ણ ✓' : 'COMPLETED ✓'}
+                      </Text>
+                    </View>
+                  )}
+                  {!unlocked && (
+                    <View style={styles.lockedBadge}>
+                      <Text style={styles.lockedBadgeText}>
+                        {isGujarati ? '🔒 લૉક' : '🔒 LOCKED'}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -130,6 +247,37 @@ export const UpNextList: React.FC<UpNextListProps> = ({
           );
         })}
       </View>
+
+      {/* Lock Notice Card below list when more chapters remain locked */}
+      {isSequentialMode && remainingLockedCount > 0 && (
+        <View
+          style={[
+            styles.nextUnlockNoticeCard,
+            {
+              backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : '#fffbeb',
+              borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.25)' : '#fde68a',
+            },
+          ]}
+        >
+          <View style={styles.lockNoticeIconCircle}>
+            <MaterialIcons name="lock" size={18} color="#d97706" />
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={[styles.nextUnlockTitle, { color: isDarkMode ? '#fde68a' : '#92400e' }]}>
+              {nextLockedTitle
+                ? `${isGujarati ? 'આગળનું પ્રકરણ' : 'Next Chapter'}: ${nextLockedTitle}`
+                : isGujarati
+                ? 'હાલનું પ્રકરણ પૂર્ણ કરતાં આગળનું પ્રકરણ અનલૉક થશે'
+                : 'Complete the active lesson to reveal next chapter'}
+            </Text>
+            <Text style={[styles.nextUnlockSub, { color: isDarkMode ? '#cbd5e1' : '#b45309' }]}>
+              {isGujarati
+                ? `🔒 કુલ ${remainingLockedCount} વધુ પ્રકરણો ક્રમશઃ ખૂલશે (બધા જોવા માટે ઉપર 'બધા' ટેપ કરો)`
+                : `🔒 ${remainingLockedCount} more chapters will unlock sequentially (tap 'All' above to view all)`}
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -143,26 +291,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
+    gap: 8,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flex: 1,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
+  modeTogglePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  modeToggleText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
   countBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 20,
   },
   countText: {
     fontSize: 11,
     fontWeight: '700',
+  },
+  modeInfoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  modeInfoText: {
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+    lineHeight: 16,
   },
   list: {
     gap: 10,
@@ -202,6 +381,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  lockedOverlay: {
+    ...(StyleSheet.absoluteFill as object),
+    backgroundColor: 'rgba(15, 23, 42, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   durationBadge: {
     position: 'absolute',
     bottom: 3,
@@ -230,10 +415,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexWrap: 'wrap',
   },
   channelName: {
     fontSize: 11,
     fontWeight: '400',
+    flexShrink: 1,
   },
   completedBadge: {
     backgroundColor: 'rgba(16, 185, 129, 0.15)',
@@ -245,5 +432,42 @@ const styles = StyleSheet.create({
     color: '#10b981',
     fontSize: 9,
     fontWeight: '800',
+  },
+  lockedBadge: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  lockedBadgeText: {
+    color: '#ef4444',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  nextUnlockNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 12,
+  },
+  lockNoticeIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextUnlockTitle: {
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  nextUnlockSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    lineHeight: 15,
   },
 });

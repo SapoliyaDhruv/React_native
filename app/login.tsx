@@ -72,6 +72,8 @@ export default function LoginScreen() {
         setLoading(false);
         if (res.error) {
           Alert.alert('Login Failed', res.error);
+        } else {
+          router.replace('/(tabs)');
         }
       } else {
         const targetBoard = selectedGrade === 'college' ? 'CBSE' : 'GSEB';
@@ -82,6 +84,7 @@ export default function LoginScreen() {
           Alert.alert('Registration Failed', res.error);
         } else {
           Alert.alert('Account Created!', `Welcome to MindSprint, ${name}!`);
+          router.replace('/(tabs)');
         }
       }
     } catch (err: any) {
@@ -91,7 +94,10 @@ export default function LoginScreen() {
   };
 
   const handleGuestLogin = async () => {
+    setLoading(true);
     await loginAsGuest();
+    setLoading(false);
+    router.replace('/(tabs)');
   };
 
   const launchGoogleOAuth = async () => {
@@ -263,7 +269,7 @@ export default function LoginScreen() {
                   onPress={() => setSelectedGrade('10')}
                 >
                   <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>
-                    🏫 School (6 - 12)
+                    🏫 School (Class 7 - 12)
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -272,7 +278,7 @@ export default function LoginScreen() {
                 <View style={{ marginTop: 8 }}>
                   <Text style={[styles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>Select Class (ગુજરાતી માધ્યમ):</Text>
                   <View style={styles.gradePillRow}>
-                    {(['6', '7', '8', '9', '10', '11', '12'] as AcademicGrade[]).map((g) => (
+                    {(['7', '8', '9', '10', '11', '12'] as AcademicGrade[]).map((g) => (
                       <TouchableOpacity
                         key={g}
                         style={[styles.gradePill, selectedGrade === g && styles.gradePillActive]}

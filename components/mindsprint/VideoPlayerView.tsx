@@ -9,6 +9,7 @@ import {
   Linking,
   Dimensions,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import YoutubePlayer from 'react-native-youtube-iframe';
@@ -104,6 +105,15 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     const timeParam = startSec > 0 ? `&t=${startSec}s` : '';
     const webUrl = `https://www.youtube.com/watch?v=${lecture.youtubeVideoId}${timeParam}`;
     const appUrl = `vnd.youtube://${lecture.youtubeVideoId}`;
+
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof window !== 'undefined') {
+          window.open(webUrl, '_blank');
+          return;
+        }
+      } catch (_) {}
+    }
 
     try {
       const canOpen = await Linking.canOpenURL(appUrl);
@@ -269,25 +279,37 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   return (
     <View style={styles.container}>
       {/* 16:9 YouTube Player */}
-      <View style={[styles.videoBox, { height: PLAYER_HEIGHT }]}>
-        <YoutubePlayer
-          key={lecture.id}
-          ref={playerRef}
-          height={PLAYER_HEIGHT}
-          play={playing}
-          playbackRate={playbackRate}
-          videoId={lecture.youtubeVideoId}
-          onChangeState={onStateChange}
-          initialPlayerParams={{
-            preventFullScreen: false,
-            controls: true,
-            modestbranding: true,
-            rel: false,
-          }}
-          webViewProps={{
-            androidLayerType: 'hardware',
-          }}
-        />
+      <View style={[styles.videoBox, { height: PLAYER_HEIGHT, backgroundColor: '#000000', overflow: 'hidden' }]}>
+        {Platform.OS === 'web' ? (
+          <iframe
+            key={lecture.id + '-' + lecture.youtubeVideoId}
+            src={`https://www.youtube-nocookie.com/embed/${lecture.youtubeVideoId}?rel=0&modestbranding=1&enablejsapi=1`}
+            width="100%"
+            height={PLAYER_HEIGHT}
+            style={{ border: 'none' }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        ) : (
+          <YoutubePlayer
+            key={lecture.id}
+            ref={playerRef}
+            height={PLAYER_HEIGHT}
+            play={playing}
+            playbackRate={playbackRate}
+            videoId={lecture.youtubeVideoId}
+            onChangeState={onStateChange}
+            initialPlayerParams={{
+              preventFullScreen: false,
+              controls: true,
+              modestbranding: true,
+              rel: false,
+            }}
+            webViewProps={{
+              androidLayerType: 'hardware',
+            }}
+          />
+        )}
       </View>
 
       {/* Playback Speed Controls */}
@@ -364,10 +386,10 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           <View style={styles.actionColumn}>
             <TouchableOpacity
               onPress={() => handleLaunchVideo(0)}
-              style={[styles.actionBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}
+              style={[styles.actionBtn, { backgroundColor: '#ef4444', borderColor: '#ef4444' }]}
               accessibilityLabel="Open on YouTube"
             >
-              <MaterialIcons name="open-in-new" size={18} color={colors.primary} />
+              <MaterialIcons name="smart-display" size={18} color="#ffffff" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onToggleBookmark}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -38,6 +38,17 @@ const SCHOOL_GSEB_FILTERS = [
   { key: 'અંગ્રેજી', label: 'અંગ્રેજી', icon: 'menu-book' as const },
 ];
 
+const SENIOR_GSEB_FILTERS = [
+  { key: 'All', label: 'બધા વિષયો', icon: 'video-library' as const },
+  { key: 'ભૌતિક વિજ્ઞાન', label: 'ભૌતિક વિજ્ઞાન', icon: 'speed' as const },
+  { key: 'રસાયણ વિજ્ઞાન', label: 'રસાયણ વિજ્ઞાન', icon: 'science' as const },
+  { key: 'ગણિત', label: 'ગણિત', icon: 'calculate' as const },
+  { key: 'જીવ વિજ્ઞાન', label: 'જીવ વિજ્ઞાન', icon: 'biotech' as const },
+  { key: 'ગુજરાતી', label: 'ગુજરાતી', icon: 'edit-note' as const },
+  { key: 'અંગ્રેજી', label: 'અંગ્રેજી', icon: 'menu-book' as const },
+  { key: 'કોમ્પ્યુટર સાયન્સ', label: 'કોમ્પ્યુટર', icon: 'computer' as const },
+];
+
 export default function VideoScreen() {
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
@@ -46,11 +57,16 @@ export default function VideoScreen() {
   const isSchoolMode = userGrade !== 'college';
   const isGSEB = isSchoolMode;
 
-  const filterOptions = !isSchoolMode ? COLLEGE_FILTERS : SCHOOL_GSEB_FILTERS;
+  const filterOptions = useMemo(() => {
+    if (!isSchoolMode) return COLLEGE_FILTERS;
+    if (userGrade === '11' || userGrade === '12') return SENIOR_GSEB_FILTERS;
+    return SCHOOL_GSEB_FILTERS;
+  }, [isSchoolMode, userGrade]);
 
   const [lectures, setLectures] = useState<VideoLecture[]>(VIDEO_LECTURES_DATA);
   const [activeLecture, setActiveLecture] = useState<VideoLecture>(VIDEO_LECTURES_DATA[0]);
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
+  const [isSequentialMode, setIsSequentialMode] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +95,38 @@ export default function VideoScreen() {
     loadCompleted();
   }, [user?.email, storageKey]);
 
+  // Check if a lecture is unlocked sequentially within its subject
+  const isLectureUnlocked = useCallback((lecture: VideoLecture) => {
+    const subjectLecs = lectures.filter(
+      (l) => (l.category && l.category === lecture.category) ||
+             (l.categoryGujarati && l.categoryGujarati === lecture.categoryGujarati)
+    );
+    const index = subjectLecs.findIndex((l) => l.id === lecture.id);
+    if (index <= 0) return true; // Chapter 1 is always unlocked
+    return completedLectureIds.includes(subjectLecs[index - 1].id);
+  }, [lectures, completedLectureIds]);
+
+  // Displayed lectures based on sequential mode
+  const displayedLectures = useMemo(() => {
+    if (!isSequentialMode) return lectures;
+    return lectures.filter((l) => isLectureUnlocked(l));
+  }, [isSequentialMode, lectures, isLectureUnlocked]);
+
+  // Number of remaining locked chapters
+  const remainingLockedCount = Math.max(0, lectures.length - displayedLectures.length);
+
+  // Next locked lecture title
+  const nextLockedLecture = useMemo(() => {
+    return lectures.find((l) => !isLectureUnlocked(l));
+  }, [lectures, isLectureUnlocked]);
+
+  // Ensure active lecture is valid and in displayed list
+  useEffect(() => {
+    if (displayedLectures.length > 0 && !displayedLectures.some((l) => l.id === activeLecture?.id)) {
+      setActiveLecture(displayedLectures[0]);
+    }
+  }, [displayedLectures, activeLecture?.id]);
+
   const toggleComplete = async (lectureId: string) => {
     let updated: string[];
     const isNowComplete = !completedLectureIds.includes(lectureId);
@@ -87,7 +135,23 @@ export default function VideoScreen() {
       updated = completedLectureIds.filter((id) => id !== lectureId);
     } else {
       updated = [...completedLectureIds, lectureId];
-      if (updated.length === lectures.length) {
+
+      // Auto-unlock next chapter feedback
+      const currentSubjectLecs = lectures.filter(
+        (l) => (l.category && l.category === activeLecture?.category) ||
+               (l.categoryGujarati && l.categoryGujarati === activeLecture?.categoryGujarati)
+      );
+      const currIdx = currentSubjectLecs.findIndex((l) => l.id === lectureId);
+      if (currIdx !== -1 && currIdx + 1 < currentSubjectLecs.length) {
+        const nextLec = currentSubjectLecs[currIdx + 1];
+        setActiveLecture(nextLec);
+        Alert.alert(
+          isGSEB ? '🎉 પ્રકરણ પૂર્ણ થયું!' : '🎉 Lesson Completed!',
+          isGSEB
+            ? `અભિનંદન! આગળનું પ્રકરણ અનલૉક થઈ ગયું છે:\n"${nextLec.titleGujarati || nextLec.title}"`
+            : `Great job! Next chapter unlocked:\n"${nextLec.title}"`
+        );
+      } else if (updated.length >= lectures.length) {
         Alert.alert(
           'Masterclass Series Completed! 🎓',
           'Congratulations! You have completed all masterclass lectures in this track.'
@@ -175,7 +239,9 @@ export default function VideoScreen() {
                 : `Class ${userGrade} Masterclasses`}
             </Text>
             <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-              {lectures.length} lessons • {isSchoolMode ? `${user?.board || 'CBSE'} Board (${user?.medium || 'English'})` : 'Campus Placement Track'}
+              {isSequentialMode
+                ? `${displayedLectures.length} of ${lectures.length} lessons unlocked • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`
+                : `${lectures.length} lessons • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`}
             </Text>
           </View>
         </View>
@@ -245,8 +311,8 @@ export default function VideoScreen() {
                     ]}
                   >
                     {isActiveCompleted
-                      ? 'Lesson Completed ✓ (Tap to Undo)'
-                      : 'Mark Lesson as Completed'}
+                      ? isGSEB ? 'પ્રકરણ પૂર્ણ થયું ✓ (Tap to Undo)' : 'Lesson Completed ✓ (Tap to Undo)'
+                      : isGSEB ? 'આ પ્રકરણ પૂર્ણ તરીકે ચિહ્નિત કરો (Mark as Completed)' : 'Mark Lesson as Completed'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -268,7 +334,7 @@ export default function VideoScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MaterialIcons name="school" size={20} color={colors.primary} />
                 <Text style={[styles.progressTitle, { color: colors.onSurface }]}>
-                  Course Completion Progress
+                  {isGSEB ? 'અભ્યાસક્રમ પ્રગતિ (Course Progress)' : 'Course Completion Progress'}
                 </Text>
               </View>
               <Text style={[styles.progressCountText, { color: colors.primary }]}>
@@ -325,13 +391,20 @@ export default function VideoScreen() {
             </ScrollView>
           </View>
 
-          {/* Dynamic Course Playlist with completed checkmarks */}
+          {/* Dynamic Course Playlist with sequential unlocking */}
           <UpNextList
-            lectures={lectures}
+            lectures={displayedLectures}
+            allLectures={lectures}
+            totalChaptersCount={lectures.length}
             activeLectureId={activeLecture?.id || ''}
             completedLectureIds={completedLectureIds}
+            isSequentialMode={isSequentialMode}
+            onToggleSequentialMode={() => setIsSequentialMode(!isSequentialMode)}
             onSelectLecture={(lec) => setActiveLecture(lec)}
             onToggleComplete={toggleComplete}
+            remainingLockedCount={remainingLockedCount}
+            nextLockedTitle={isGSEB ? nextLockedLecture?.titleGujarati || nextLockedLecture?.title : nextLockedLecture?.title}
+            isLectureUnlocked={isLectureUnlocked}
           />
         </ScrollView>
       )}

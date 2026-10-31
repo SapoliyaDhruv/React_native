@@ -81,14 +81,17 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
 
     const isCorrect = index === questionData.correctIndex;
 
+    const isSchool = userGrade !== 'college';
     Alert.alert(
-      isCorrect ? 'Brilliant! Correct Answer 🎯' : 'Good Attempt! 💪',
       isCorrect
-        ? '+1 Day added to your study streak! Challenge solved.'
-        : 'Review the explanation anytime using the Review button.',
+        ? (isSchool ? 'શાબાશ! સાચો જવાબ 🎯' : 'Brilliant! Correct Answer 🎯')
+        : (isSchool ? 'સારો પ્રયાસ! 💪' : 'Good Attempt! 💪'),
+      isCorrect
+        ? (isSchool ? '+૧ દિવસ તમારા અભ્યાસ સ્ટ્રીકમાં ઉમેરાયો! પડકાર ઉકેલાઈ ગયો.' : '+1 Day added to your study streak! Challenge solved.')
+        : (isSchool ? 'રિવ્યુ બટન પર ક્લિક કરીને વિગતવાર સમજૂતી જોઈ શકો છો.' : 'Review the explanation anytime using the Review button.'),
       [
         {
-          text: 'Got it ✓',
+          text: isSchool ? 'સમજાઈ ગયું ✓' : 'Got it ✓',
           onPress: () => setIsCollapsed(true),
         },
       ]
@@ -134,10 +137,10 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           />
           <View style={{ flex: 1 }}>
             <Text style={[styles.collapsedTitle, { color: colors.onSurface }]}>
-              Today's Challenge Solved! 🔥
+              {userGrade !== 'college' ? 'આજનો પ્રશ્ન ઉકેલાઈ ગયો! 🔥' : "Today's Challenge Solved! 🔥"}
             </Text>
             <Text style={[styles.collapsedSub, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-              {questionData.topic} • {isCorrect ? 'Correct 🎯' : 'Reviewed 💡'}
+              {questionData.topic} • {isCorrect ? (userGrade !== 'college' ? 'સાચો જવાબ 🎯' : 'Correct 🎯') : (userGrade !== 'college' ? 'ઉકેલ જોયો 💡' : 'Reviewed 💡')}
             </Text>
           </View>
         </View>

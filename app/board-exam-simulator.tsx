@@ -259,6 +259,27 @@ export default function BoardExamSimulatorScreen() {
 
   const percentage = totalMaxMarks > 0 ? Math.round((studentAwardedScore / totalMaxMarks) * 100) : 0;
 
+  const handleSafeExit = () => {
+    Alert.alert(
+      'Exit Board Exam Simulator?',
+      'Are you sure you want to quit the exam simulation? Your current paper draft will be discarded.',
+      [
+        { text: 'Continue Writing', style: 'cancel' },
+        {
+          text: 'Quit & Exit',
+          style: 'destructive',
+          onPress: () => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleFinishAndSave = async () => {
     try {
       if (user?.email) {
@@ -277,7 +298,11 @@ export default function BoardExamSimulatorScreen() {
     } catch (e) {
       console.warn('Failed to record board simulation score:', e);
     }
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
   };
 
   return (
@@ -292,7 +317,7 @@ export default function BoardExamSimulatorScreen() {
           },
         ]}
       >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleSafeExit} style={styles.backBtn}>
           <MaterialIcons name="close" size={22} color="#ffffff" />
         </TouchableOpacity>
 
@@ -302,6 +327,16 @@ export default function BoardExamSimulatorScreen() {
           </Text>
           <Text style={styles.examSub}>Total: 80 Marks • Standard 3-Hour Simulation</Text>
         </View>
+
+        {!isSubmitted && (
+          <TouchableOpacity
+            onPress={handleSubmitPaper}
+            style={styles.headerSubmitBtn}
+          >
+            <MaterialIcons name="done-all" size={16} color="#ffffff" />
+            <Text style={styles.headerSubmitBtnText}>Submit</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Timer Box */}
         <View style={[styles.timerBadge, { backgroundColor: timeLeft < 600 ? '#ef4444' : '#1e293b' }]}>
@@ -686,6 +721,20 @@ const styles = StyleSheet.create({
   examSub: {
     color: '#94a3b8',
     fontSize: 11,
+  },
+  headerSubmitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#10b981',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  headerSubmitBtnText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 12,
   },
   timerBadge: {
     flexDirection: 'row',

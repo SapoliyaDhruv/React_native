@@ -15,19 +15,28 @@ const { router: importantQuestionRoutes, autoSeedImportantQuestions } = require(
 const aiRoutes = require('./routes/aiRoutes');
 const duelRoutes = require('./routes/duelRoutes');
 
-const { createRateLimiter } = require('./middleware/rateLimiter');
+const { createRateLimiter, clearAllRateLimits } = require('./middleware/rateLimiter');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mindsprint';
 
+// Clear any stale rate limits on server start
+clearAllRateLimits();
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Security Rate Limiters
-const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30, message: 'Too many authentication attempts. Please try again after 15 minutes.' });
-const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
+// Security Rate Limiters (Generous for educational learning & development)
+const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 100, message: 'Too many authentication attempts. Please try again after 15 minutes.' });
+const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 2000 });
+
+// Reset rate limits helper endpoint
+app.get('/api/reset-limits', (req, res) => {
+  clearAllRateLimits();
+  res.json({ status: 'OK', message: 'Rate limits cleared successfully.' });
+});
 
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -57,22 +66,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error occurred.' });
 });
 
-// Database Connection & Server Start
+// Start Express server immediately for instant responses
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 MindSprint Backend Server running on http://0.0.0.0:${PORT}`);
+});
+
+// Database Connection & Auto-seed in Background (Non-blocking)
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(async () => {
     console.log('✅ Connected to MongoDB Atlas / Local Database');
-    await autoSeedVideos();
-    await autoSeedSamplePapers();
-    await autoSeedImportantQuestions();
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 MindSprint Backend Server running on http://0.0.0.0:${PORT} (LAN: http://192.168.137.244:${PORT})`);
-    });
+    try { await autoSeedVideos(); } catch (_) {}
+    try { await autoSeedSamplePapers(); } catch (_) {}
+    try { await autoSeedImportantQuestions(); } catch (_) {}
   })
   .catch((err) => {
-    console.log('⚠️ MongoDB Connection Note:', err.message);
-    console.log('Starting Express server with fallback dataset handler...');
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 MindSprint Backend Server running on http://0.0.0.0:${PORT} (LAN: http://192.168.137.244:${PORT})`);
-    });
+    console.log('⚠️ MongoDB Connection Note (operating in offline fallback mode):', err.message);
   });

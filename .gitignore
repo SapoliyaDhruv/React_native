@@ -50,3 +50,7 @@ backend/.env
 backend/.env.*
 !backend/.env.example
 *_backup.*
+
+*_backup_*
+__pycache__/
+*.pyc

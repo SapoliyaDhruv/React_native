@@ -379,6 +379,49 @@ export default function ExamScreen() {
     .filter((k) => markedForReview[parseInt(k, 10)])
     .map((k) => parseInt(k, 10));
 
+  const handleSafeExit = () => {
+    Alert.alert(
+      'Quit Exam?',
+      'Would you like to save your exam progress to resume later, or discard your current draft?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Discard & Exit',
+          style: 'destructive',
+          onPress: async () => {
+            await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)');
+            }
+          },
+        },
+        {
+          text: 'Save & Exit',
+          onPress: () => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const promptSubmitExam = () => {
+    Alert.alert(
+      'Submit Exam?',
+      `You have answered ${Object.keys(userAnswers).length} of ${questions.length} questions. Are you ready to finish?`,
+      [
+        { text: 'Review Answers', style: 'cancel' },
+        { text: 'Submit Now', onPress: handleSubmitExam },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: colors.background }]}
@@ -390,29 +433,8 @@ export default function ExamScreen() {
         currentQuestionIndex={currentIndex}
         totalQuestions={questions.length}
         onOpenPalette={() => setShowNavigator(true)}
-        onQuitExam={() => {
-          Alert.alert(
-            'Quit Exam?',
-            'Would you like to save your exam progress to resume later, or discard your current draft?',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Discard & Exit',
-                style: 'destructive',
-                onPress: async () => {
-                  await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
-                  router.back();
-                },
-              },
-              {
-                text: 'Save & Exit',
-                onPress: () => {
-                  router.back();
-                },
-              },
-            ]
-          );
-        }}
+        onQuitExam={handleSafeExit}
+        onSubmitExam={promptSubmitExam}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -438,16 +460,7 @@ export default function ExamScreen() {
         onClearChoice={handleClearChoice}
         onPrevious={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
         onNext={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-        onSubmit={() => {
-          Alert.alert(
-            'Submit Exam?',
-            `You have answered ${Object.keys(userAnswers).length} of ${questions.length} questions. Are you ready to finish?`,
-            [
-              { text: 'Review Answers', style: 'cancel' },
-              { text: 'Submit Now', onPress: handleSubmitExam },
-            ]
-          );
-        }}
+        onSubmit={promptSubmitExam}
       />
 
       {/* Advanced Question Navigator Grid Modal */}
@@ -460,6 +473,7 @@ export default function ExamScreen() {
         questionsList={questions}
         onSelectQuestion={(idx) => setCurrentIndex(idx)}
         onClose={() => setShowNavigator(false)}
+        onSubmitExam={promptSubmitExam}
       />
     </SafeAreaView>
   );

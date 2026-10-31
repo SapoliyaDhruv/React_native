@@ -323,7 +323,7 @@ router.post('/google', async (req, res) => {
         medium: 'English',
         academicStage: 'college',
         activeTrack: 'placement',
-        streakCount: 3,
+        streakCount: 1,
         targetCompany: 'All Companies',
       });
       await user.save();

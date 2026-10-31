@@ -979,7 +979,7 @@ export default function DashboardScreen() {
       <ShareProgressModal
         visible={showShareProgress}
         onClose={() => setShowShareProgress(false)}
-        streakDays={userStats?.streakCount || 5}
+        streakDays={userStats?.streakCount || 1}
       />
     </SafeAreaView>
   );

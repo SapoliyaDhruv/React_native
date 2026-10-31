@@ -6975,7 +6975,25 @@ router.get('/questions', async (req, res) => {
 router.get('/exams/daily-challenge', async (req, res) => {
   try {
     const grade = req.query.grade || 'college';
+    const isSchool = grade !== 'college';
     const today = new Date().toISOString().split('T')[0];
+
+    const formatQuestionResponse = (q) => {
+      const qText = isSchool && q.questionTextGujarati ? q.questionTextGujarati : q.questionText;
+      const qOpts = isSchool && q.optionsGujarati && q.optionsGujarati.length > 0 ? q.optionsGujarati : q.options;
+      const qTopic = isSchool && q.categoryGujarati ? q.categoryGujarati : (q.category || 'દૈનિક પડકાર');
+      const qExpl = isSchool && q.explanationGujarati ? q.explanationGujarati : (q.explanation || 'વિગતવાર સમજૂતી ઉપલબ્ધ છે.');
+      return {
+        id: q.id,
+        date: today,
+        grade,
+        topic: qTopic,
+        question: qText,
+        options: qOpts,
+        correctIndex: q.correctAnswer !== undefined ? q.correctAnswer : 0,
+        explanation: qExpl,
+      };
+    };
 
     if (mongoose.connection.readyState !== 1) {
       let pool = SEED_QUESTIONS.filter((q) => q.grades && q.grades.includes(grade));
@@ -6987,7 +7005,7 @@ router.get('/exams/daily-challenge', async (req, res) => {
         hash |= 0;
       }
       const index = Math.abs(hash) % pool.length;
-      return res.json({ question: pool[index], date: today, grade });
+      return res.json(formatQuestionResponse(pool[index]));
     }
 
     await ensureQuestionsSeeded();
@@ -7016,27 +7034,18 @@ router.get('/exams/daily-challenge', async (req, res) => {
     }
 
     if (question) {
-      return res.json({
-        id: question.id,
-        date: today,
-        grade,
-        topic: question.category,
-        question: question.questionText,
-        options: question.options,
-        correctIndex: question.correctAnswer,
-        explanation: question.explanation,
-      });
+      return res.json(formatQuestionResponse(question));
     }
 
     res.json({
       id: 201,
       date: today,
       grade,
-      topic: 'Mathematics',
-      question: 'Solve: 3x + 7 = 22. What is the value of x?',
+      topic: isSchool ? 'ગણિત (Mathematics)' : 'Quantitative Aptitude',
+      question: isSchool ? 'સમીકરણ ઉકેલો: 3x + 7 = 22. તો x ની કિંમત કેટલી થાય?' : 'Solve: 3x + 7 = 22. What is the value of x?',
       options: ['3', '5', '7', '15'],
       correctIndex: 1,
-      explanation: '3x = 22 - 7 = 15 => x = 5.',
+      explanation: isSchool ? '3x = 22 - 7 = 15 => x = 15 / 3 = 5.' : '3x = 22 - 7 = 15 => x = 5.',
     });
   } catch (error) {
     console.error('Error fetching daily challenge:', error);

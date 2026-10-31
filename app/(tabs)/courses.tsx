@@ -9,6 +9,7 @@ import {
   Linking,
   Dimensions,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,6 +22,7 @@ import { useAuth } from '@/context/AuthContext';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { ApiService, API_BASE_URL } from '@/services/api';
 import {
+  AcademicGrade,
   GradeCurriculum,
   SubjectChapter,
   ChapterVideo,
@@ -29,7 +31,6 @@ import {
   ImportantQuestion,
 } from '@/constants/academicData';
 import { GlossaryTooltip } from '@/components/mindsprint/GlossaryTooltip';
-import { AudioWalkmanPlayer, AudioTrackItem } from '@/components/mindsprint/AudioWalkmanPlayer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH - 48) * 9 / 16);
@@ -39,15 +40,17 @@ export default function CoursesScreen() {
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
-  const userGrade = user?.grade || '6';
+  const userGrade = user?.grade || '7';
   const isSchoolMode = userGrade !== 'college';
   const isGSEB = isSchoolMode;
+  // Official Gujarat State Board (GSSTB / Shalamitra) textbooks enabled for Classes 7 to 12
+  const isPdfEligibleGrade = ['7', '8', '9', '10', '11', '12'].includes(userGrade);
 
   const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
-    ACADEMIC_CURRICULUM[userGrade] || ACADEMIC_CURRICULUM['6']
+    ACADEMIC_CURRICULUM[userGrade as AcademicGrade] || ACADEMIC_CURRICULUM['7']
   );
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
-    ACADEMIC_CURRICULUM[userGrade]?.subjects?.[0]?.id || 'g6-math'
+    ACADEMIC_CURRICULUM[userGrade as AcademicGrade]?.subjects?.[0]?.id || 'g7-math'
   );
   const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'imp' | 'books' | 'papers' | 'videos' | 'practice' | 'formulas'>('all');
   const [samplePapers, setSamplePapers] = useState<SamplePaper[]>([]);
@@ -63,8 +66,6 @@ export default function CoursesScreen() {
   const [selectedChapterForQuiz, setSelectedChapterForQuiz] = useState<SubjectChapter | null>(null);
   const [selectedLimit, setSelectedLimit] = useState<number>(10);
   const [activeGlossaryTerm, setActiveGlossaryTerm] = useState<string | null>(null);
-  const [showWalkman, setShowWalkman] = useState<boolean>(false);
-  const [walkmanInitialTrack, setWalkmanInitialTrack] = useState<number>(0);
 
   // Chapter completion tracking state
   const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
@@ -74,19 +75,25 @@ export default function CoursesScreen() {
   const [bookmarkedChapterIds, setBookmarkedChapterIds] = useState<string[]>([]);
   const bookmarkKey = `@mindsprint_bookmarked_chapters_${userGrade}_${user?.email || 'guest'}`;
 
-  // Load Curriculum from MongoDB
+  // Load Curriculum: immediately seed from local curriculum and sync from backend
   useEffect(() => {
+    const localCurriculum = ACADEMIC_CURRICULUM[userGrade as AcademicGrade] || ACADEMIC_CURRICULUM['7'];
+    setCurriculum(localCurriculum);
+    if (!localCurriculum.subjects.some((s: any) => s.id === selectedSubjectId)) {
+      setSelectedSubjectId(localCurriculum.subjects[0]?.id || 'g7-math');
+    }
+
     async function loadCurriculum() {
       try {
         const currData = await ApiService.getCurriculum(userGrade);
         if (currData && currData.subjects && currData.subjects.length > 0) {
           setCurriculum(currData);
-          if (!selectedSubjectId || !currData.subjects.find((s: any) => s.id === selectedSubjectId)) {
+          if (!currData.subjects.some((s: any) => s.id === selectedSubjectId)) {
             setSelectedSubjectId(currData.subjects[0].id);
           }
         }
       } catch (e) {
-        console.warn('Courses curriculum load error:', e);
+        console.warn('Courses curriculum load note:', e);
       }
     }
     loadCurriculum();
@@ -165,27 +172,26 @@ export default function CoursesScreen() {
   const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
   const chapters = activeSubject?.chapters || [];
 
-  const audioTracks: AudioTrackItem[] = chapters.map((chap, idx) => ({
-    id: chap.id,
-    title: chap.title,
-    titleGujarati: chap.titleGujarati,
-    chapterNumber: chap.chapterNumber || idx + 1,
-    subject: activeSubject?.name || 'Curriculum',
-    duration: chap.duration || '15m',
-    contentToSpeak: `${isGSEB && chap.titleGujarati ? chap.titleGujarati : chap.title}. ${isGSEB && chap.summaryGujarati ? chap.summaryGujarati : chap.summary}. ${((isGSEB ? chap.keyFormulasGujarati : chap.keyFormulas) || []).join('. ')}`,
-  }));
-
   const handleOpenPdf = async (url?: string) => {
     if (!url) {
-      Alert.alert('Examination Paper', 'Exam paper will be available shortly.');
-      return;
+      // Default to official GSSTB online textbook portal
+      url = activeSubject?.officialTextbookPdf || 'https://gujarat-education.gov.in/textbook/textbook.htm';
     }
-    // Resolve relative backend routes (/api/sample-papers/render/...) to absolute server URL
+    // Resolve relative backend routes (/api/curriculum/textbook-view?...) to absolute server URL
     let fullUrl = url;
     if (!url.startsWith('http')) {
       const normalizedPath = url.startsWith('/') ? url : `/${url}`;
       const base = API_BASE_URL.replace(/\/api\/?$/, '');
       fullUrl = `${base}${normalizedPath}`;
+    }
+
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof window !== 'undefined') {
+          window.open(fullUrl, '_blank');
+          return;
+        }
+      } catch (_) {}
     }
 
     try {
@@ -197,7 +203,13 @@ export default function CoursesScreen() {
       try {
         await Linking.openURL(fullUrl);
       } catch (err) {
-        Alert.alert('Paper Vault', `Opening link: ${fullUrl}`);
+        // Fallback using Google Docs viewer for high compatibility on all devices
+        const gDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}`;
+        try {
+          await Linking.openURL(gDocsUrl);
+        } catch (_) {
+          Alert.alert('Official Textbook (શાળા મિત્ર)', `Opening official textbook:\n${fullUrl}`);
+        }
       }
     }
   };
@@ -221,9 +233,21 @@ export default function CoursesScreen() {
     }
   };
 
-  const handleLaunchExternalVideo = async (videoId: string) => {
-    const webUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const appUrl = `vnd.youtube://${videoId}`;
+  const handleLaunchExternalVideo = async (videoId: string, searchFallback?: string) => {
+    const webUrl = videoId
+      ? `https://www.youtube.com/watch?v=${videoId}`
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent(searchFallback || 'GSEB Gujarati Medium')}`;
+    const appUrl = videoId ? `vnd.youtube://${videoId}` : webUrl;
+
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof window !== 'undefined') {
+          window.open(webUrl, '_blank');
+          return;
+        }
+      } catch (_) {}
+    }
+
     try {
       const canOpen = await Linking.canOpenURL(appUrl);
       if (canOpen) {
@@ -475,7 +499,7 @@ export default function CoursesScreen() {
                     {(isGSEB && chap.summaryGujarati) ? chap.summaryGujarati : chap.summary}
                   </Text>
 
-                    {/* Actions Row (Read Notes, Listen Audio, Open Chapter PDF) */}
+                    {/* Actions Row (Read Notes, Open Chapter PDF) */}
                     <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                       <TouchableOpacity
                         style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#eef2ff' }]}
@@ -487,24 +511,13 @@ export default function CoursesScreen() {
                         </Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity
-                        style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.15)' : '#e0f2fe', borderColor: '#38bdf8' }]}
-                        onPress={() => {
-                          setWalkmanInitialTrack(idx);
-                          setShowWalkman(true);
-                        }}
-                      >
-                        <MaterialIcons name="headphones" size={16} color="#0284c7" />
-                        <Text style={[styles.pdfQuickBtnText, { color: '#0284c7' }]}>Listen 🎧</Text>
-                      </TouchableOpacity>
-
-                      {chap.textbookPdfUrl && (
+                      {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                         <TouchableOpacity
                           style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
-                          onPress={() => handleOpenPdf(chap.textbookPdfUrl)}
+                          onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
                         >
                           <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
-                          <Text style={styles.pdfQuickBtnText}>PDF</Text>
+                          <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -556,15 +569,27 @@ export default function CoursesScreen() {
                     ))}
                   </View>
 
-                  <TouchableOpacity
-                    style={styles.watchVideosActionBtn}
-                    onPress={() => handleOpenVideoModal(chap)}
-                  >
-                    <MaterialIcons name="smart-display" size={18} color="#ffffff" />
-                    <Text style={styles.watchVideosActionBtnText}>
-                      Watch & Choose Video Lesson ({videoCount})
-                    </Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                    <TouchableOpacity
+                      style={[styles.watchVideosActionBtn, { flex: 1.2 }]}
+                      onPress={() => handleOpenVideoModal(chap)}
+                    >
+                      <MaterialIcons name="smart-display" size={18} color="#ffffff" />
+                      <Text style={styles.watchVideosActionBtnText}>
+                        Watch Video ({videoCount})
+                      </Text>
+                    </TouchableOpacity>
+
+                    {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
+                      <TouchableOpacity
+                        style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444', paddingHorizontal: 12 }]}
+                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                      >
+                        <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
+                        <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
               );
             })}
@@ -1041,7 +1066,7 @@ export default function CoursesScreen() {
                     </View>
                   )}
 
-                  {/* 3 Pillars Action Row */}
+                  {/* Action Pillars Row: Notes, Video, Official PDF (GSSTB / Shalamitra), Quiz */}
                   <View style={styles.actionPillarsRow}>
                     {/* Pillar 1: Textbook Concept Reader */}
                     <TouchableOpacity
@@ -1049,7 +1074,7 @@ export default function CoursesScreen() {
                       style={[styles.pillarBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', borderColor: colors.outlineVariant }]}
                       onPress={() => setSelectedChapterForRead(chap)}
                     >
-                      <MaterialIcons name="auto-stories" size={16} color={colors.primary} />
+                      <MaterialIcons name="auto-stories" size={15} color={colors.primary} />
                       <Text style={[styles.pillarBtnText, { color: colors.primary }]}>
                         Read Notes
                       </Text>
@@ -1061,13 +1086,27 @@ export default function CoursesScreen() {
                       style={[styles.pillarBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2', borderColor: '#ef4444' }]}
                       onPress={() => handleOpenVideoModal(chap)}
                     >
-                      <MaterialIcons name="play-circle-filled" size={16} color="#ef4444" />
+                      <MaterialIcons name="play-circle-filled" size={15} color="#ef4444" />
                       <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
-                        {`Videos (${videoCount})`}
+                        Watch Video 🎬
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Pillar 3: Practice Chapter Quiz */}
+                    {/* Pillar 3: Official Chapter PDF (GSSTB / શાળા મિત્ર) */}
+                    {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={[styles.pillarBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
+                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                      >
+                        <MaterialIcons name="picture-as-pdf" size={15} color="#ef4444" />
+                        <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
+                          PDF 📄
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Pillar 4: Practice Chapter Quiz */}
                     <TouchableOpacity
                       activeOpacity={0.8}
                       style={[styles.pillarBtn, { backgroundColor: activeSubject?.color || '#3b82f6', borderColor: activeSubject?.color || '#3b82f6' }]}
@@ -1076,7 +1115,7 @@ export default function CoursesScreen() {
                         setShowConfigModal(true);
                       }}
                     >
-                      <MaterialIcons name="quiz" size={16} color="#ffffff" />
+                      <MaterialIcons name="quiz" size={15} color="#ffffff" />
                       <Text style={[styles.pillarBtnText, { color: '#ffffff' }]}>
                         Quiz 🎯
                       </Text>
@@ -1115,25 +1154,89 @@ export default function CoursesScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Embedded YouTube Player */}
+            {/* Embedded YouTube Player with Web iframe & Native Player */}
             {activeVideoOption && (
               <View style={styles.embeddedPlayerBox}>
-                <YoutubePlayer
-                  key={activeVideoOption.youtubeVideoId}
-                  height={VIDEO_HEIGHT}
-                  play={false}
-                  videoId={activeVideoOption.youtubeVideoId}
-                  initialPlayerParams={{
-                    controls: true,
-                    modestbranding: true,
-                    rel: false,
-                  }}
-                />
+                {Platform.OS === 'web' ? (
+                  <iframe
+                    key={activeVideoOption.youtubeVideoId}
+                    src={`https://www.youtube-nocookie.com/embed/${activeVideoOption.youtubeVideoId}?rel=0&modestbranding=1&enablejsapi=1`}
+                    width="100%"
+                    height={VIDEO_HEIGHT}
+                    style={{ border: 'none', borderRadius: 14 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : (
+                  <YoutubePlayer
+                    key={activeVideoOption.youtubeVideoId}
+                    height={VIDEO_HEIGHT}
+                    play={true}
+                    videoId={activeVideoOption.youtubeVideoId}
+                    initialPlayerParams={{
+                      controls: true,
+                      modestbranding: true,
+                      rel: false,
+                    }}
+                  />
+                )}
               </View>
             )}
 
-            {/* Quick Textbook PDF Bar for current chapter */}
-            {selectedChapterForVideo?.textbookPdfUrl && (
+            {/* Now Playing Bar with direct YouTube Launch button */}
+            {activeVideoOption && (
+              <View style={[styles.videoPlayerActionBar, { flexDirection: 'column', alignItems: 'stretch', gap: 8 }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.nowPlayingTitle, { color: colors.onSurface }]} numberOfLines={1}>
+                      {isGSEB && activeVideoOption.titleGujarati ? activeVideoOption.titleGujarati : activeVideoOption.title}
+                    </Text>
+                    <Text style={[styles.nowPlayingSub, { color: colors.onSurfaceVariant }]}>
+                      👨‍🏫 {activeVideoOption.teacher} • {activeVideoOption.tag} • {activeVideoOption.duration}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.openYtDirectBtn, { backgroundColor: '#ef4444', paddingHorizontal: 12, paddingVertical: 8 }]}
+                    onPress={() =>
+                      handleLaunchExternalVideo(
+                        activeVideoOption.youtubeVideoId,
+                        `${selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title} ધોરણ ${userGrade} ${activeSubject?.nameGujarati}`
+                      )
+                    }
+                  >
+                    <MaterialIcons name="smart-display" size={16} color="#ffffff" />
+                    <Text style={[styles.openYtDirectBtnText, { fontWeight: '700' }]}>YouTube ↗</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Direct Search Option if the user wants alternate teachers */}
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#eff6ff',
+                  }}
+                  onPress={() => {
+                    const chNum = selectedChapterForVideo?.chapterNumber ? `પ્રકરણ ${selectedChapterForVideo.chapterNumber} ` : '';
+                    const q = `ધોરણ ${userGrade} ${activeSubject?.nameGujarati || ''} ${chNum}${selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title || ''} GSEB ગુજરાતી માધ્યમ`;
+                    handleLaunchExternalVideo('', q);
+                  }}
+                >
+                  <MaterialIcons name="search" size={14} color={colors.primary} />
+                  <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>
+                    🔍 Search all "{selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title}" video lessons on YouTube
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Quick Textbook PDF Bar for current chapter (Classes 8 to 12 as requested) */}
+            {(isPdfEligibleGrade || selectedChapterForVideo?.textbookPdfUrl) && (
               <TouchableOpacity
                 activeOpacity={0.8}
                 style={[
@@ -1142,10 +1245,10 @@ export default function CoursesScreen() {
                     backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2',
                     borderColor: '#ef4444',
                     borderWidth: 1,
-                    marginVertical: 8,
+                    marginVertical: 4,
                   },
                 ]}
-                onPress={() => handleOpenPdf(selectedChapterForVideo.textbookPdfUrl)}
+                onPress={() => handleOpenPdf(selectedChapterForVideo?.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
               >
                 <View style={[styles.videoOptionIcon, { backgroundColor: '#ef4444' }]}>
                   <MaterialIcons name="picture-as-pdf" size={18} color="#ffffff" />
@@ -1444,14 +1547,6 @@ export default function CoursesScreen() {
         visible={!!activeGlossaryTerm}
         termKeyOrText={activeGlossaryTerm || ''}
         onClose={() => setActiveGlossaryTerm(null)}
-      />
-
-      {/* Audio Walkman Player Modal */}
-      <AudioWalkmanPlayer
-        visible={showWalkman}
-        tracks={audioTracks}
-        initialTrackIndex={walkmanInitialTrack}
-        onClose={() => setShowWalkman(false)}
       />
     </SafeAreaView>
   );
@@ -1842,21 +1937,52 @@ const styles = StyleSheet.create({
   },
   actionPillarsRow: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
   },
   pillarBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    paddingVertical: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 1,
   },
   pillarBtnText: {
     fontSize: 11.5,
     fontWeight: '700',
+  },
+  videoPlayerActionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    gap: 10,
+  },
+  nowPlayingTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  nowPlayingSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  openYtDirectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  openYtDirectBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800',
   },
   modalOverlay: {
     flex: 1,

@@ -61,12 +61,23 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {hasSelectedOption && (
-          <TouchableOpacity style={styles.clearBtn} activeOpacity={0.7} onPress={onClearChoice}>
-            <MaterialIcons name="close" size={14} color="#ef4444" />
-            <Text style={styles.clearText}>Clear Choice</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {hasSelectedOption && (
+            <TouchableOpacity style={styles.clearBtn} activeOpacity={0.7} onPress={onClearChoice}>
+              <MaterialIcons name="close" size={14} color="#ef4444" />
+              <Text style={styles.clearText}>Clear</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={[styles.finishEarlyBtn, { backgroundColor: '#10b98115', borderColor: '#10b981' }]}
+            activeOpacity={0.7}
+            onPress={onSubmit}
+          >
+            <MaterialIcons name="done-all" size={14} color="#10b981" />
+            <Text style={styles.finishEarlyText}>Finish Exam</Text>
           </TouchableOpacity>
-        )}
+        </View>
       </View>
 
       {/* Navigation Buttons Row */}
@@ -138,6 +149,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ef4444',
     fontWeight: '600',
+  },
+  finishEarlyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  finishEarlyText: {
+    fontSize: 11,
+    color: '#10b981',
+    fontWeight: '700',
   },
   navRow: {
     flexDirection: 'row',
