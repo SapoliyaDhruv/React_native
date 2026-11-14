@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { VoiceVivaPlayer } from '@/components/common/VoiceVivaPlayer';
@@ -207,7 +207,6 @@ const COLLEGE_INTERVIEW_TRACKS: Record<string, InterviewTrack> = {
 };
 
 export default function InterviewSimulatorScreen() {
-  const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
@@ -284,7 +283,7 @@ export default function InterviewSimulatorScreen() {
         const score = Math.min(10, Math.max(3, Math.round((matched.length / Math.max(1, kws.length)) * 7) + 3));
         const fallbackRes = {
           score,
-          rating: score >= 8 ? 'Strong Defense 👍' : 'Fair Attempt 📚',
+          rating: score >= 8 ? 'Strong answer' : 'Fair attempt',
           matchedKeywords: matched,
           missingKeywords: missing,
           feedback: `Good attempt covering ${matched.length} key concepts. Be sure to address ${missing.slice(0, 2).join(', ')} in your defense.`,
@@ -339,32 +338,10 @@ export default function InterviewSimulatorScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            {isSchoolMode
-              ? `Class ${userGrade} Oral Exam & Viva 🎙️`
-              : 'AI Mock Interview Simulator'}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode
-              ? 'Interactive Lab Viva & Concept Defense'
-              : 'Interactive Viva & Technical Rounds'}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title={isSchoolMode ? 'Viva practice' : 'Interview practice'}
+        subtitle={isSchoolMode ? `Class ${userGrade} · answer questions out loud or by typing` : 'HR and technical rounds'}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {!sessionStarted ? (
@@ -372,26 +349,26 @@ export default function InterviewSimulatorScreen() {
           /* TRACK SELECTION VIEW                                     */
           /* ======================================================== */
           <View style={{ gap: 16 }}>
-            <View style={[styles.introCard, { backgroundColor: '#1e1b4b' }, MindSprintShadows.glow]}>
+            <View style={[styles.introCard, { backgroundColor: '#12245C' }, MindSprintShadows.glow]}>
               <View style={styles.introBadge}>
                 <Text style={styles.introBadgeText}>
-                  {isSchoolMode ? 'AI VIVA COACH 🎙️' : 'AI INTERVIEW COACH 🎙️'}
+                  {isSchoolMode ? 'Viva coach' : 'Interview coach'}
                 </Text>
               </View>
               <Text style={styles.introTitle}>
                 {isSchoolMode
-                  ? `Practice Class ${userGrade} Viva & Concept Defense`
+                  ? `Practise your Class ${userGrade} viva`
                   : 'Simulate Real Placement & Viva Rounds'}
               </Text>
               <Text style={styles.introSub}>
                 {isSchoolMode
-                  ? 'Listen to viva questions, practice speaking your defense aloud, and reveal examiner model answers.'
+                  ? 'Hear a question, answer it out loud or by typing, then compare with a model answer.'
                   : 'Practice answering top questions under realistic pressure, reveal winning frameworks, and score your performance.'}
               </Text>
             </View>
 
             <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-              {isSchoolMode ? 'Choose Your Viva Track:' : 'Choose Your Interview Simulation Track:'}
+              {isSchoolMode ? 'Choose a subject' : 'Choose an interview round'}
             </Text>
 
             {Object.entries(availableTracks).map(([key, track]) => {
@@ -422,7 +399,7 @@ export default function InterviewSimulatorScreen() {
                     <MaterialIcons
                       name={track.icon as any}
                       size={24}
-                      color={isSelected ? '#ffffff' : colors.primary}
+                      color={isSelected ? colors.onPrimary : colors.primary}
                     />
                   </View>
 
@@ -451,7 +428,7 @@ export default function InterviewSimulatorScreen() {
             >
               <MaterialIcons name="record-voice-over" size={20} color="#ffffff" />
               <Text style={styles.startBtnText}>
-                {isSchoolMode ? 'Start Viva Simulator 🎯' : 'Start Mock Interview Simulator'}
+                {isSchoolMode ? 'Start viva practice' : 'Start interview practice'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -470,12 +447,12 @@ export default function InterviewSimulatorScreen() {
                 MindSprintShadows.card,
               ]}
             >
-              <View style={[styles.trophyBox, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
-                <MaterialIcons name="emoji-events" size={40} color="#10b981" />
+              <View style={[styles.trophyBox, { backgroundColor: 'rgba(18, 128, 92, 0.15)' }]}>
+                <MaterialIcons name="emoji-events" size={40} color="#12805C" />
               </View>
 
               <Text style={[styles.reportTitle, { color: colors.onSurface }]}>
-                {isSchoolMode ? 'Viva Practice Completed! 🎓' : 'Mock Interview Completed! 🎓'}
+                {isSchoolMode ? 'Viva practice finished' : 'Interview practice finished'}
               </Text>
               <Text style={[styles.reportTrack, { color: colors.primary }]}>
                 {isGSEB && activeTrack.titleGujarati ? activeTrack.titleGujarati : activeTrack.title}
@@ -488,7 +465,7 @@ export default function InterviewSimulatorScreen() {
               </View>
 
               {/* Tips Feedback Box */}
-              <View style={[styles.feedbackBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+              <View style={[styles.feedbackBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
                 <Text style={[styles.feedbackHeading, { color: colors.primary }]}>
                   {'AI Interviewer Feedback:'}
                 </Text>
@@ -521,9 +498,9 @@ export default function InterviewSimulatorScreen() {
               <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
                 {`Question ${currentQIndex + 1} of ${activeTrack.questions.length}`} • {(isGSEB && currentQuestion.categoryGujarati) ? currentQuestion.categoryGujarati : currentQuestion.category}
               </Text>
-              <View style={[styles.liveTag, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+              <View style={[styles.liveTag, { backgroundColor: 'rgba(200, 55, 45, 0.15)' }]}>
                 <View style={styles.liveDot} />
-                <Text style={styles.liveTagText}>{'LIVE SIMULATOR'}</Text>
+                <Text style={styles.liveTagText}>Live</Text>
               </View>
             </View>
 
@@ -572,7 +549,7 @@ export default function InterviewSimulatorScreen() {
                     key={i}
                     style={[
                       styles.kwPill,
-                      { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' },
+                      { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.15)' : '#E4EAF8' },
                     ]}
                   >
                     <Text style={[styles.kwText, { color: colors.primary }]}>{kw}</Text>
@@ -614,7 +591,7 @@ export default function InterviewSimulatorScreen() {
                 <>
                   <MaterialIcons name="auto-awesome" size={20} color="#ffffff" />
                   <Text style={styles.evalBtnText}>
-                    Evaluate My Spoken Answer with AI 🎙️
+                    Check my answer
                   </Text>
                 </>
               )}
@@ -627,7 +604,7 @@ export default function InterviewSimulatorScreen() {
                   styles.aiEvalCard,
                   {
                     backgroundColor: colors.surfaceContainerLowest,
-                    borderColor: evaluationResult.score >= 7 ? '#10b981' : '#f59e0b',
+                    borderColor: evaluationResult.score >= 7 ? '#12805C' : '#F4A30B',
                     borderLeftWidth: 4,
                   },
                   MindSprintShadows.card,
@@ -640,20 +617,20 @@ export default function InterviewSimulatorScreen() {
                       {
                         backgroundColor:
                           evaluationResult.score >= 7
-                            ? 'rgba(16, 185, 129, 0.15)'
-                            : 'rgba(245, 158, 11, 0.15)',
+                            ? 'rgba(18, 128, 92, 0.15)'
+                            : 'rgba(244, 163, 11, 0.15)',
                       },
                     ]}
                   >
                     <MaterialIcons
                       name={evaluationResult.score >= 7 ? 'verified' : 'analytics'}
                       size={18}
-                      color={evaluationResult.score >= 7 ? '#10b981' : '#f59e0b'}
+                      color={evaluationResult.score >= 7 ? '#12805C' : '#F4A30B'}
                     />
                     <Text
                       style={[
                         styles.aiScoreText,
-                        { color: evaluationResult.score >= 7 ? '#065f46' : '#b45309' },
+                        { color: evaluationResult.score >= 7 ? '#0B5C42' : '#8A5A00' },
                       ]}
                     >
                       AI Score: {evaluationResult.score}/10 • {evaluationResult.rating}
@@ -664,13 +641,13 @@ export default function InterviewSimulatorScreen() {
                 {/* Matched Concepts */}
                 {evaluationResult.matchedKeywords && evaluationResult.matchedKeywords.length > 0 && (
                   <View style={{ marginTop: 4 }}>
-                    <Text style={[styles.subLabel, { color: '#10b981' }]}>
-                      ✓ Concepts Mastered:
+                    <Text style={[styles.subLabel, { color: '#12805C' }]}>
+                      Covered well
                     </Text>
                     <View style={styles.kwWrap}>
                       {evaluationResult.matchedKeywords.map((kw, i) => (
-                        <View key={i} style={[styles.matchedKwPill, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
-                          <Text style={[styles.matchedKwText, { color: '#065f46' }]}>✓ {kw}</Text>
+                        <View key={i} style={[styles.matchedKwPill, { backgroundColor: 'rgba(18, 128, 92, 0.15)' }]}>
+                          <Text style={[styles.matchedKwText, { color: '#0B5C42' }]}>{kw}</Text>
                         </View>
                       ))}
                     </View>
@@ -680,13 +657,13 @@ export default function InterviewSimulatorScreen() {
                 {/* Missing Concepts */}
                 {evaluationResult.missingKeywords && evaluationResult.missingKeywords.length > 0 && (
                   <View style={{ marginTop: 4 }}>
-                    <Text style={[styles.subLabel, { color: '#f59e0b' }]}>
-                      ⚠️ Missed Concepts:
+                    <Text style={[styles.subLabel, { color: '#F4A30B' }]}>
+                      Missed
                     </Text>
                     <View style={styles.kwWrap}>
                       {evaluationResult.missingKeywords.map((kw, i) => (
-                        <View key={i} style={[styles.missingKwPill, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
-                          <Text style={[styles.missingKwText, { color: '#b45309' }]}>• {kw}</Text>
+                        <View key={i} style={[styles.missingKwPill, { backgroundColor: 'rgba(244, 163, 11, 0.15)' }]}>
+                          <Text style={[styles.missingKwText, { color: '#8A5A00' }]}>• {kw}</Text>
                         </View>
                       ))}
                     </View>
@@ -694,7 +671,7 @@ export default function InterviewSimulatorScreen() {
                 )}
 
                 {/* Examiner Feedback */}
-                <View style={[styles.aiFeedbackBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+                <View style={[styles.aiFeedbackBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
                   <Text style={[styles.feedbackHeading, { color: colors.primary }]}>
                     Examiner Feedback:
                   </Text>
@@ -705,8 +682,8 @@ export default function InterviewSimulatorScreen() {
 
                 {/* Examiner Tip */}
                 {evaluationResult.examinerTip && (
-                  <View style={[styles.tipBox, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
-                    <MaterialIcons name="lightbulb" size={16} color="#b45309" />
+                  <View style={[styles.tipBox, { backgroundColor: 'rgba(244, 163, 11, 0.12)' }]}>
+                    <MaterialIcons name="lightbulb" size={16} color="#8A5A00" />
                     <Text style={styles.tipText}>
                       Tip: {evaluationResult.examinerTip}
                     </Text>
@@ -719,8 +696,8 @@ export default function InterviewSimulatorScreen() {
                 >
                   <Text style={styles.nextQBtnText}>
                     {currentQIndex < activeTrack.questions.length - 1
-                      ? 'Proceed to Next Viva Question ➔'
-                      : 'Complete Viva & View Report Card 🏆'}
+                      ? 'Next question'
+                      : 'Finish and see my report'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -730,12 +707,12 @@ export default function InterviewSimulatorScreen() {
             {!isAnswerRevealed ? (
               <TouchableOpacity
                 activeOpacity={0.85}
-                style={[styles.revealBtn, { backgroundColor: '#3525cd' }]}
+                style={[styles.revealBtn, { backgroundColor: '#1D3A8A' }]}
                 onPress={() => setIsAnswerRevealed(true)}
               >
                 <MaterialIcons name="lightbulb" size={20} color="#ffffff" />
                 <Text style={styles.revealBtnText}>
-                  {'Reveal Model Answer & Reference Rubric 💡'}
+                  Show model answer
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -745,15 +722,15 @@ export default function InterviewSimulatorScreen() {
                     styles.winningAnswerCard,
                     {
                       backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                      borderColor: '#10b981',
+                      borderColor: '#12805C',
                     },
                     MindSprintShadows.card,
                   ]}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <MaterialIcons name="verified" size={20} color="#10b981" />
-                      <Text style={[styles.winningTitle, { color: '#10b981' }]}>
+                      <MaterialIcons name="verified" size={20} color="#12805C" />
+                      <Text style={[styles.winningTitle, { color: '#12805C' }]}>
                         {'Ideal Winning Response:'}
                       </Text>
                     </View>
@@ -766,8 +743,8 @@ export default function InterviewSimulatorScreen() {
                     {isGSEB && currentQuestion.winningAnswerGujarati ? currentQuestion.winningAnswerGujarati : currentQuestion.winningAnswer}
                   </Text>
 
-                  <View style={[styles.tipBox, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
-                    <Text style={[styles.tipTitle, { color: '#b45309' }]}>
+                  <View style={[styles.tipBox, { backgroundColor: 'rgba(244, 163, 11, 0.12)' }]}>
+                    <Text style={[styles.tipTitle, { color: '#8A5A00' }]}>
                       {'Panel Advice:'}
                     </Text>
                     <Text style={[styles.tipText, { color: colors.onSurface }]}>
@@ -857,18 +834,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   introTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 24,
+    lineHeight: 31,
     color: '#ffffff',
+    marginTop: 8,
   },
   introSub: {
     fontSize: 13,
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     lineHeight: 18,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 8,
+    marginBottom: 10,
   },
   trackCard: {
     flexDirection: 'row',
@@ -928,10 +910,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#C8372D',
   },
   liveTagText: {
-    color: '#ef4444',
+    color: '#C8372D',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -1092,7 +1074,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   scorePill: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#12805C',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 999,

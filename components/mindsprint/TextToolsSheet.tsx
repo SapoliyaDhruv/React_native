@@ -5,7 +5,7 @@ import { MindSprintShadows } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
 
 type ToolType = 'highlight' | 'underline' | 'note' | 'copy';
-type ColorType = '#fde047' | '#86efac' | '#93c5fd' | '#fca5a5';
+type ColorType = '#FFD166' | '#B5E5D2' | '#7FB0FF' | '#F5C6C0';
 
 interface TextToolsSheetProps {
   onClose?: () => void;
@@ -18,9 +18,9 @@ export const TextToolsSheet: React.FC<TextToolsSheetProps> = ({
 }) => {
   const { colors } = useTheme();
   const [activeTool, setActiveTool] = useState<ToolType>('highlight');
-  const [selectedColor, setSelectedColor] = useState<ColorType>('#fde047');
+  const [selectedColor, setSelectedColor] = useState<ColorType>('#FFD166');
 
-  const paletteColors: ColorType[] = ['#fde047', '#86efac', '#93c5fd', '#fca5a5'];
+  const paletteColors: ColorType[] = ['#FFD166', '#B5E5D2', '#7FB0FF', '#F5C6C0'];
 
   const handleColorChange = (color: ColorType) => {
     setSelectedColor(color);

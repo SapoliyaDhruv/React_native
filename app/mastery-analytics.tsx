@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
@@ -120,10 +121,10 @@ export default function MasteryAnalyticsScreen() {
           const avgSc = Math.round(apiStats?.avgScore || 0);
 
           const categories = [
-            { name: 'Quantitative Aptitude', color: '#f59e0b' },
-            { name: 'Data Structures & Algorithms', color: '#ef4444' },
-            { name: 'React & Frontend Core', color: '#10b981' },
-            { name: 'Logical Reasoning', color: '#3b82f6' },
+            { name: 'Quantitative Aptitude', color: '#F4A30B' },
+            { name: 'Data Structures & Algorithms', color: '#C8372D' },
+            { name: 'React & Frontend Core', color: '#12805C' },
+            { name: 'Logical Reasoning', color: '#2F6FD6' },
           ];
 
           const collegeTopics: SubjectMasteryItem[] = categories.map((cat) => {
@@ -174,50 +175,28 @@ export default function MasteryAnalyticsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            {isSchoolMode
-              ? `Class ${userGrade} Subject Mastery Radar`
-              : 'Placement Topic Mastery Radar'}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode
-              ? `${completedChapters}/${totalChapters} Chapters Done • Your Real Progress`
-              : 'Placement Topics Mastery'}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="My strengths"
+        subtitle={isSchoolMode ? `Class ${userGrade} · ${completedChapters}/${totalChapters} chapters done` : 'Placement topics'}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Overall Mastery Hero Card */}
-        <View style={[styles.heroCard, { backgroundColor: '#1e1b4b' }, MindSprintShadows.glow]}>
+        <View style={[styles.heroCard, { backgroundColor: '#12245C' }, MindSprintShadows.glow]}>
           <View style={styles.heroTopRow}>
             <View>
           <Text style={styles.heroBadgeText}>
-            AI MASTERY INDEX
+            Overall
           </Text>
-          <Text style={styles.heroTitle}>{overallMastery}% Mastery</Text>
+          <Text style={styles.heroTitle}>{overallMastery}% mastered</Text>
           <Text style={styles.heroSub}>
             {isSchoolMode
               ? `${completedChapters} of ${totalChapters} chapters completed`
               : 'Calculated across all your recent test responses'}
           </Text>
             </View>
-            <View style={[styles.dialCircle, { borderColor: '#10b981' }]}>
-              <MaterialIcons name="insights" size={32} color="#10b981" />
+            <View style={[styles.dialCircle, { borderColor: '#12805C' }]}>
+              <MaterialIcons name="insights" size={32} color="#12805C" />
             </View>
           </View>
         </View>
@@ -228,43 +207,42 @@ export default function MasteryAnalyticsScreen() {
             style={[
               styles.prescriptionCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
-                borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.3)' : '#fecaca',
+                backgroundColor: colors.surface,
+                borderColor: colors.outlineVariant,
               },
-              MindSprintShadows.card,
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={[styles.rxIconBox, { backgroundColor: '#ef4444' }]}>
-                <MaterialIcons name="auto-awesome" size={22} color="#ffffff" />
+              <View style={[styles.rxIconBox, { backgroundColor: colors.primaryFixed }]}>
+                <MaterialIcons name="track-changes" size={22} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.rxHeading, { color: '#991b1b' }]}>
-                  AI Recommended Revision Today:
+                <Text style={[styles.rxHeading, { color: colors.onSurfaceVariant }]}>
+                  Practise this today
                 </Text>
                 <Text style={[styles.rxTitle, { color: colors.onSurface }]}>
                   {weakestTopic.name}
                 </Text>
                 <Text style={[styles.rxSub, { color: colors.onSurfaceVariant }]}>
-                  Current accuracy: {weakestTopic.accuracy}% • Needs quick boost
+                  Current accuracy {weakestTopic.accuracy}%
                 </Text>
               </View>
             </View>
 
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[styles.rxQuizBtn, { backgroundColor: '#ef4444' }, MindSprintShadows.glow]}
+              style={[styles.rxQuizBtn, { backgroundColor: colors.accent }]}
               onPress={() => router.push(`/exam?limit=10&category=${encodeURIComponent(weakestTopic.name)}`)}
             >
-              <MaterialIcons name="play-arrow" size={18} color="#ffffff" />
-              <Text style={styles.rxQuizBtnText}>Practice 10 Target Questions 🎯</Text>
+              <MaterialIcons name="play-arrow" size={20} color={colors.onAccent} />
+              <Text style={[styles.rxQuizBtnText, { color: colors.onAccent }]}>Practise 10 questions</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Topic-by-Topic Mastery Breakdown */}
         <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-          Subject Breakdown — Your Real Progress:
+          By subject
         </Text>
 
         <View style={{ gap: 12 }}>
@@ -299,7 +277,7 @@ export default function MasteryAnalyticsScreen() {
               )}
 
               {/* Progress Bar */}
-              <View style={[styles.progressBarBg, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
+              <View style={[styles.progressBarBg, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}>
                 <View
                   style={[
                     styles.progressBarFill,
@@ -313,11 +291,11 @@ export default function MasteryAnalyticsScreen() {
 
               <View style={styles.topicFooterRow}>
                 <Text style={[styles.accuracyText, { color: item.color }]}>
-                  {item.accuracy}% Mastery
+                  {item.accuracy}% mastered
                 </Text>
                 <Text style={[styles.attemptedText, { color: colors.onSurfaceVariant }]}>
                   {isSchoolMode
-                    ? `${item.totalAttempted} chapters ✓`
+                    ? `${item.totalAttempted} chapters done`
                     : `${item.totalAttempted} questions solved`}
                 </Text>
               </View>
@@ -367,20 +345,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   heroBadgeText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#818cf8',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#B9C6EA',
   },
   heroTitle: {
-    fontSize: 26,
-    fontWeight: '900',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 30,
+    lineHeight: 38,
     color: '#ffffff',
-    marginVertical: 4,
   },
   heroSub: {
     fontSize: 12,
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     maxWidth: 200,
   },
   dialCircle: {
@@ -411,9 +388,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   rxTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 1,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 18,
+    lineHeight: 24,
   },
   rxSub: {
     fontSize: 12,
@@ -428,14 +405,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rxQuizBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 16,
   },
   sectionHeading: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 4,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 8,
+    marginBottom: 10,
   },
   topicCard: {
     borderRadius: 18,

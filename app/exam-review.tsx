@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
@@ -104,28 +105,10 @@ export default function ExamReviewScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
       edges={['top']}
     >
-      {/* App Bar Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Exam Solutions & Review
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {questions.length} Questions Analyzed
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Answers and explanations"
+        subtitle={`${questions.length} questions`}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Top Score Hero Card */}
@@ -145,12 +128,12 @@ export default function ExamReviewScreen() {
               style={[
                 styles.scoreCircle,
                 {
-                  backgroundColor: isPassed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                  borderColor: isPassed ? '#10b981' : '#ef4444',
+                  backgroundColor: isPassed ? 'rgba(18, 128, 92, 0.12)' : 'rgba(200, 55, 45, 0.12)',
+                  borderColor: isPassed ? '#12805C' : '#C8372D',
                 },
               ]}
             >
-              <Text style={[styles.circleScoreText, { color: isPassed ? '#10b981' : '#ef4444' }]}>
+              <Text style={[styles.circleScoreText, { color: isPassed ? '#12805C' : '#C8372D' }]}>
                 {examResult.scorePercentage}%
               </Text>
             </View>
@@ -161,17 +144,17 @@ export default function ExamReviewScreen() {
                 style={[
                   styles.outcomePill,
                   {
-                    backgroundColor: isPassed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    backgroundColor: isPassed ? 'rgba(18, 128, 92, 0.15)' : 'rgba(200, 55, 45, 0.15)',
                   },
                 ]}
               >
                 <MaterialIcons
                   name={isPassed ? 'emoji-events' : 'fitness-center'}
                   size={14}
-                  color={isPassed ? '#10b981' : '#ef4444'}
+                  color={isPassed ? '#12805C' : '#C8372D'}
                 />
-                <Text style={[styles.outcomePillText, { color: isPassed ? '#065f46' : '#991b1b' }]}>
-                  {isPassed ? 'PASSED TEST' : 'NEEDS PRACTICE'}
+                <Text style={[styles.outcomePillText, { color: isPassed ? '#0B5C42' : '#8E2219' }]}>
+                  {isPassed ? 'Passed' : 'Needs practice'}
                 </Text>
               </View>
 
@@ -199,15 +182,15 @@ export default function ExamReviewScreen() {
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <MaterialIcons name="auto-awesome" size={18} color="#f59e0b" />
+              <MaterialIcons name="auto-awesome" size={18} color="#F4A30B" />
               <Text style={[styles.weakSpotHeaderTitle, { color: colors.onSurface }]}>
                 AI Weak Spot Recommendations
               </Text>
             </View>
             <View style={styles.chipWrap}>
               {examResult.weakCategories.map((cat: string, idx: number) => (
-                <View key={idx} style={[styles.weakChip, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
-                  <Text style={[styles.weakChipText, { color: '#b45309' }]}>{cat}</Text>
+                <View key={idx} style={[styles.weakChip, { backgroundColor: 'rgba(244, 163, 11, 0.12)' }]}>
+                  <Text style={[styles.weakChipText, { color: '#8A5A00' }]}>{cat}</Text>
                 </View>
               ))}
             </View>
@@ -227,7 +210,7 @@ export default function ExamReviewScreen() {
           const userSelectedIdx =
             userAnswers[q.id] !== undefined ? userAnswers[q.id] : userAnswers[idx];
           const isUserCorrect = userSelectedIdx === q.correctAnswer;
-          const statusColor = isUserCorrect ? '#10b981' : '#ef4444';
+          const statusColor = isUserCorrect ? '#12805C' : '#C8372D';
 
           return (
             <View
@@ -244,7 +227,7 @@ export default function ExamReviewScreen() {
             >
               {/* Question Meta Row */}
               <View style={styles.qMetaRow}>
-                <View style={[styles.categoryTagPill, { backgroundColor: '#e0e7ff' }]}>
+                <View style={[styles.categoryTagPill, { backgroundColor: '#E4EAF8' }]}>
                   <Text style={styles.categoryTagPillText}>
                     Q{idx + 1} • {q.category}
                   </Text>
@@ -267,8 +250,8 @@ export default function ExamReviewScreen() {
                       styles.statusPill,
                       {
                         backgroundColor: isUserCorrect
-                          ? 'rgba(16, 185, 129, 0.12)'
-                          : 'rgba(239, 68, 68, 0.12)',
+                          ? 'rgba(18, 128, 92, 0.12)'
+                          : 'rgba(200, 55, 45, 0.12)',
                       },
                     ]}
                   >
@@ -277,7 +260,7 @@ export default function ExamReviewScreen() {
                       size={14}
                       color={statusColor}
                     />
-                    <Text style={[styles.statusPillText, { color: isUserCorrect ? '#065f46' : '#991b1b' }]}>
+                    <Text style={[styles.statusPillText, { color: isUserCorrect ? '#0B5C42' : '#8E2219' }]}>
                       {isUserCorrect ? 'Correct' : 'Incorrect'}
                     </Text>
                   </View>
@@ -299,26 +282,26 @@ export default function ExamReviewScreen() {
                   let optionBorder = colors.outlineVariant;
                   let textColor = colors.onSurface;
                   let badgeLabel = null;
-                  let badgeBg = '#10b981';
+                  let badgeBg = '#12805C';
 
                   if (isUserChosen && isCorrectAnswer) {
-                    optionBg = 'rgba(16, 185, 129, 0.12)';
-                    optionBorder = '#10b981';
-                    textColor = '#065f46';
-                    badgeLabel = 'Your Answer ✓';
-                    badgeBg = '#10b981';
+                    optionBg = 'rgba(18, 128, 92, 0.12)';
+                    optionBorder = '#12805C';
+                    textColor = '#0B5C42';
+                    badgeLabel = 'Your answer · correct';
+                    badgeBg = '#12805C';
                   } else if (isUserChosen && !isCorrectAnswer) {
-                    optionBg = 'rgba(239, 68, 68, 0.12)';
-                    optionBorder = '#ef4444';
-                    textColor = '#991b1b';
-                    badgeLabel = 'Your Choice ✗';
-                    badgeBg = '#ef4444';
+                    optionBg = 'rgba(200, 55, 45, 0.12)';
+                    optionBorder = '#C8372D';
+                    textColor = '#8E2219';
+                    badgeLabel = 'Your answer';
+                    badgeBg = '#C8372D';
                   } else if (isCorrectAnswer) {
-                    optionBg = 'rgba(16, 185, 129, 0.12)';
-                    optionBorder = '#10b981';
-                    textColor = '#065f46';
-                    badgeLabel = 'Correct Answer ✓';
-                    badgeBg = '#10b981';
+                    optionBg = 'rgba(18, 128, 92, 0.12)';
+                    optionBorder = '#12805C';
+                    textColor = '#0B5C42';
+                    badgeLabel = 'Correct answer';
+                    badgeBg = '#12805C';
                   }
 
                   return (
@@ -353,7 +336,7 @@ export default function ExamReviewScreen() {
               {q.explanation && (
                 <View style={[styles.solutionBox, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <View style={styles.solutionHeader}>
-                    <MaterialIcons name="lightbulb" size={18} color="#f59e0b" />
+                    <MaterialIcons name="lightbulb" size={18} color="#F4A30B" />
                     <Text style={[styles.solutionTitle, { color: colors.onSurface }]}>
                       Explanation & Solution:
                     </Text>
@@ -508,7 +491,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   categoryTagPillText: {
-    color: '#3730a3',
+    color: '#1D3A8A',
     fontSize: 12,
     fontWeight: '700',
   },

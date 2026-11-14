@@ -9,6 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
@@ -56,7 +58,7 @@ export default function ErrorVaultScreen() {
   };
 
   const handleRemove = async (id: string) => {
-    Alert.alert('Remove Mistake', 'Do you want to remove this question from your Error Vault?', [
+    Alert.alert('Remove question?', 'It will no longer appear in Fix my mistakes.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Remove',
@@ -83,88 +85,56 @@ export default function ErrorVaultScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header Bar */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Error Vault & Mistake Notebook 🛡️
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode ? `Class ${userGrade} • Fix Your Weak Concepts` : 'Placement Prep • Fix Past Errors'}
-          </Text>
-        </View>
-        <View style={[styles.badgePill, { backgroundColor: '#ef444420' }]}>
-          <MaterialIcons name="security" size={14} color="#ef4444" />
-          <Text style={[styles.badgeText, { color: '#ef4444' }]}>{needsPracticeCount} to fix</Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Fix my mistakes"
+        subtitle={isSchoolMode ? `Class ${userGrade} · questions you got wrong` : 'Placement prep · questions you got wrong'}
+        right={
+          needsPracticeCount > 0 ? (
+            <View style={[styles.badgePill, { backgroundColor: colors.errorContainer }]}>
+              <Text style={[styles.badgeText, { color: colors.error }]}>{needsPracticeCount} to fix</Text>
+            </View>
+          ) : undefined
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Intro Card */}
-        <View style={[styles.introCard, { backgroundColor: '#1e1b4b' }, MindSprintShadows.card]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={styles.introIconBox}>
-              <MaterialIcons name="psychology-alt" size={24} color="#ffffff" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.introTitle}>Smart Error Remediation</Text>
-              <Text style={styles.introSub}>
-                Every question answered incorrectly in Quizzes, Mock Exams, and Duels is saved here until you master it.
-              </Text>
-            </View>
-          </View>
+        {/* Intro: what this screen is, and the one action that matters */}
+        <View style={[styles.introCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
+          <Text style={[styles.introSub, { color: colors.onSurfaceVariant }]}>
+            Every question you get wrong in quizzes, tests and duels is kept here until you get it right.
+          </Text>
           {needsPracticeCount > 0 && (
             <TouchableOpacity
               activeOpacity={0.85}
-              style={{
-                marginTop: 12,
-                backgroundColor: '#ef4444',
-                borderRadius: 10,
-                paddingVertical: 10,
-                paddingHorizontal: 14,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
+              style={[styles.retestBtn, { backgroundColor: colors.accent }]}
               onPress={() => router.push(`/exam?isDiagnostic=true&limit=${Math.min(25, Math.max(5, needsPracticeCount))}`)}
+              accessibilityRole="button"
             >
-              <MaterialIcons name="replay" size={18} color="#ffffff" />
-              <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 13 }}>
-                Retest & Practice Weak Concepts ({needsPracticeCount})
+              <MaterialIcons name="replay" size={20} color={colors.onAccent} />
+              <Text style={[styles.retestText, { color: colors.onAccent }]}>
+                Practise these {needsPracticeCount} again
               </Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Tab Switcher */}
-        <View style={[styles.tabBar, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}>
+        <View style={[styles.tabBar, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' }]}>
           <TouchableOpacity
             style={[styles.tabBtn, activeTab === 'needs_practice' && { backgroundColor: colors.primary }]}
             onPress={() => setActiveTab('needs_practice')}
           >
-            <Text style={[styles.tabBtnText, { color: activeTab === 'needs_practice' ? '#ffffff' : colors.onSurface }]}>
-              Needs Practice ({needsPracticeCount})
+            <Text style={[styles.tabBtnText, { color: activeTab === 'needs_practice' ? colors.onPrimary : colors.onSurface }]}>
+              To fix ({needsPracticeCount})
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tabBtn, activeTab === 'mastered' && { backgroundColor: '#10b981' }]}
+            style={[styles.tabBtn, activeTab === 'mastered' && { backgroundColor: colors.tertiary }]}
             onPress={() => setActiveTab('mastered')}
           >
-            <Text style={[styles.tabBtnText, { color: activeTab === 'mastered' ? '#ffffff' : colors.onSurface }]}>
-              Mastered ({masteredCount}) ✓
+            <Text style={[styles.tabBtnText, { color: activeTab === 'mastered' ? colors.onPrimary : colors.onSurface }]}>
+              Fixed ({masteredCount})
             </Text>
           </TouchableOpacity>
         </View>
@@ -186,7 +156,7 @@ export default function ErrorVaultScreen() {
                   ]}
                   onPress={() => setSelectedSubject(sub)}
                 >
-                  <Text style={[styles.chipText, { color: isSel ? '#ffffff' : colors.onSurface }]}>
+                  <Text style={[styles.chipText, { color: isSel ? colors.onPrimary : colors.onSurface }]}>
                     {sub}
                   </Text>
                 </TouchableOpacity>
@@ -199,22 +169,22 @@ export default function ErrorVaultScreen() {
         {loading ? (
           <View style={styles.centerBox}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>Loading your error vault...</Text>
+            <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>Loading your mistakes…</Text>
           </View>
         ) : filteredMistakes.length === 0 ? (
           <View style={styles.centerBox}>
             <MaterialIcons
               name={activeTab === 'needs_practice' ? 'verified' : 'emoji-events'}
               size={56}
-              color={activeTab === 'needs_practice' ? '#10b981' : colors.outline}
+              color={activeTab === 'needs_practice' ? '#12805C' : colors.outline}
             />
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-              {activeTab === 'needs_practice' ? 'No Pending Mistakes! 🎉' : 'No Mastered Concepts Yet'}
+              {activeTab === 'needs_practice' ? 'Nothing to fix right now' : 'Nothing fixed yet'}
             </Text>
             <Text style={[styles.emptySub, { color: colors.onSurfaceVariant }]}>
               {activeTab === 'needs_practice'
-                ? 'You have zero pending errors in this subject. Keep taking quizzes to test your knowledge!'
-                : 'Solve your pending questions and mark them mastered to build your trophy vault.'}
+                ? 'Questions you get wrong in a quiz will appear here.'
+                : 'Open a question under “To fix”, read the solution, then mark it fixed.'}
             </Text>
           </View>
         ) : (
@@ -230,7 +200,7 @@ export default function ErrorVaultScreen() {
                   styles.mistakeCard,
                   {
                     backgroundColor: colors.surfaceContainerLowest,
-                    borderColor: item.status === 'needs_practice' ? '#ef4444' : '#10b981',
+                    borderColor: item.status === 'needs_practice' ? '#C8372D' : '#12805C',
                     borderLeftWidth: 4,
                   },
                   MindSprintShadows.card,
@@ -238,7 +208,7 @@ export default function ErrorVaultScreen() {
               >
                 {/* Meta Row */}
                 <View style={styles.metaRow}>
-                  <View style={[styles.subjectTag, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#e0e7ff' }]}>
+                  <View style={[styles.subjectTag, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : '#E4EAF8' }]}>
                     <Text style={[styles.subjectTagText, { color: colors.primary }]}>{item.subject}</Text>
                   </View>
                   {item.chapter && (
@@ -248,7 +218,7 @@ export default function ErrorVaultScreen() {
                   )}
                   <View style={{ flex: 1 }} />
                   <TouchableOpacity onPress={() => handleRemove(item.id)} style={styles.deleteBtn}>
-                    <MaterialIcons name="delete-outline" size={18} color="#ef4444" />
+                    <MaterialIcons name="delete-outline" size={18} color="#C8372D" />
                   </TouchableOpacity>
                 </View>
 
@@ -264,18 +234,18 @@ export default function ErrorVaultScreen() {
                       const isCorrect = String(optIdx) === String(item.correctAnswer) || opt === item.correctAnswerText;
                       const wasSelected = String(optIdx) === String(item.selectedAnswer);
 
-                      let optBg = isDarkMode ? colors.surfaceContainerLow : '#f8fafc';
+                      let optBg = isDarkMode ? colors.surfaceContainerLow : '#F5F7FB';
                       let optBorder = colors.outlineVariant;
                       let optTextColor = colors.onSurface;
 
                       if (isCorrect) {
-                        optBg = 'rgba(16, 185, 129, 0.15)';
-                        optBorder = '#10b981';
-                        optTextColor = '#10b981';
+                        optBg = 'rgba(18, 128, 92, 0.15)';
+                        optBorder = '#12805C';
+                        optTextColor = '#12805C';
                       } else if (wasSelected) {
-                        optBg = 'rgba(239, 68, 68, 0.15)';
-                        optBorder = '#ef4444';
-                        optTextColor = '#ef4444';
+                        optBg = 'rgba(200, 55, 45, 0.15)';
+                        optBorder = '#C8372D';
+                        optTextColor = '#C8372D';
                       }
 
                       return (
@@ -289,7 +259,7 @@ export default function ErrorVaultScreen() {
                           <MaterialIcons
                             name={isCorrect ? 'check-circle' : wasSelected ? 'cancel' : 'radio-button-unchecked'}
                             size={16}
-                            color={isCorrect ? '#10b981' : wasSelected ? '#ef4444' : colors.outline}
+                            color={isCorrect ? '#12805C' : wasSelected ? '#C8372D' : colors.outline}
                           />
                           <Text style={[styles.optionText, { color: optTextColor }]} numberOfLines={2}>
                             {opt}
@@ -302,7 +272,7 @@ export default function ErrorVaultScreen() {
 
                 {/* Toggle Model Answer / Explanation */}
                 <TouchableOpacity
-                  style={[styles.toggleAnsBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}
+                  style={[styles.toggleAnsBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' }]}
                   onPress={() => setExpandedId(isExpanded ? null : item.id)}
                 >
                   <MaterialIcons name={isExpanded ? 'visibility-off' : 'lightbulb'} size={16} color={colors.primary} />
@@ -313,8 +283,8 @@ export default function ErrorVaultScreen() {
 
                 {isExpanded && (
                   <View style={[styles.explanationCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#fafafa' }]}>
-                    <Text style={[styles.solutionHeading, { color: '#10b981' }]}>
-                      ✓ Verified Solution & Rule:
+                    <Text style={[styles.solutionHeading, { color: '#12805C' }]}>
+                      Solution
                     </Text>
                     <Text style={[styles.explanationText, { color: colors.onSurface }]}>
                       {displayExplanation || 'Refer to the textbook theorem or step-by-step formula for this question.'}
@@ -325,11 +295,11 @@ export default function ErrorVaultScreen() {
                 {/* Remediation Action Buttons */}
                 {item.status === 'needs_practice' && (
                   <TouchableOpacity
-                    style={[styles.masterBtn, { backgroundColor: '#10b981' }]}
+                    style={[styles.masterBtn, { backgroundColor: '#12805C' }]}
                     onPress={() => handleMarkResolved(item.id)}
                   >
                     <MaterialIcons name="done-all" size={18} color="#ffffff" />
-                    <Text style={styles.masterBtnText}>I Have Mastered This Concept ✓</Text>
+                    <Text style={styles.masterBtnText}>Mark as fixed</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -342,6 +312,20 @@ export default function ErrorVaultScreen() {
 }
 
 const styles = StyleSheet.create({
+  retestBtn: {
+    marginTop: 12,
+    minHeight: 48,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  retestText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 16,
+  },
   safeArea: {
     flex: 1,
   },
@@ -399,10 +383,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   introSub: {
-    fontSize: 12,
-    color: '#c7d2fe',
-    marginTop: 2,
-    lineHeight: 17,
+    fontSize: 14,
+    lineHeight: 20,
   },
   tabBar: {
     flexDirection: 'row',
@@ -447,9 +429,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   emptyTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    marginTop: 4,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 12,
+    textAlign: 'center',
   },
   emptySub: {
     fontSize: 13,

@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader, HeaderIconButton } from '@/components/mindsprint/ScreenHeader';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -33,13 +35,13 @@ const CACHE_KEY_QUESTIONS = '@mindsprint_offline_vault_qs';
 const getCategoryStyle = (category: string) => {
   switch (category) {
     case 'Quant Formulas':
-      return { borderLeftColor: '#3b82f6', bg: '#dbeafe', text: '#1e40af' };
+      return { borderLeftColor: '#2F6FD6', bg: '#E3EDFC', text: '#1B4C9C' };
     case 'DSA Time Complexities':
-      return { borderLeftColor: '#8b5cf6', bg: '#f3e8ff', text: '#6b21a8' };
+      return { borderLeftColor: '#2F6FD6', bg: '#E3EDFC', text: '#1B4C9C' };
     case 'React & JS':
-      return { borderLeftColor: '#10b981', bg: '#d1fae5', text: '#065f46' };
+      return { borderLeftColor: '#12805C', bg: '#DDF3EA', text: '#0B5C42' };
     default:
-      return { borderLeftColor: '#f59e0b', bg: '#fef3c7', text: '#92400e' };
+      return { borderLeftColor: '#F4A30B', bg: '#FFF1D2', text: '#8A5A00' };
   }
 };
 
@@ -185,40 +187,11 @@ export default function BookmarksScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Top App Bar Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Offline Revision Vault
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {questions.length} Questions • {savedFormulasList.length} Formulas • {bookmarkedChaptersList.length} Chapters
-          </Text>
-        </View>
-
-        <TouchableOpacity onPress={handleSyncOffline} style={styles.syncBtn}>
-          <MaterialIcons name="cloud-download" size={20} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Offline Status Badge */}
-      <View style={[styles.offlineBanner, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ecfdf5' }]}>
-        <MaterialIcons name="offline-bolt" size={16} color="#10b981" />
-        <Text style={styles.offlineBannerText}>
-          Offline Revision Vault Ready • All items cached locally
-        </Text>
-      </View>
+      <ScreenHeader
+        title="Saved for revision"
+        subtitle={`${questions.length} questions · ${savedFormulasList.length} formulas · ${bookmarkedChaptersList.length} chapters`}
+        right={<HeaderIconButton icon="cloud-download" onPress={handleSyncOffline} label="Save a copy for offline use" />}
+      />
 
       {/* Segmented Tab Switcher */}
       <View style={[styles.tabBar, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -251,7 +224,7 @@ export default function BookmarksScreen() {
               },
             ]}
           >
-            Exam Questions ({questions.length})
+            Questions ({questions.length})
           </Text>
         </TouchableOpacity>
 
@@ -284,7 +257,7 @@ export default function BookmarksScreen() {
               },
             ]}
           >
-            Formula Sheets ({savedFormulasList.length})
+            Formulas ({savedFormulasList.length})
           </Text>
         </TouchableOpacity>
 
@@ -324,7 +297,7 @@ export default function BookmarksScreen() {
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>
-            Loading your revision vault...
+            Loading saved items…
           </Text>
         </View>
       ) : activeTab === 'questions' ? (
@@ -333,11 +306,19 @@ export default function BookmarksScreen() {
           <View style={styles.centerBox}>
             <MaterialIcons name="bookmark-border" size={56} color={colors.outline} />
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-              No Bookmarked Questions Yet
+              No saved questions yet
             </Text>
             <Text style={[styles.emptySub, { color: colors.onSurfaceVariant }]}>
-              Bookmark hard questions during mock tests or chapter quizzes to practice them offline here!
+              During a quiz, tap “Mark for review” on a hard question and it will be saved here.
             </Text>
+            <TouchableOpacity
+              style={[styles.emptyCta, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/exam?limit=10')}
+              accessibilityRole="button"
+            >
+              <MaterialIcons name="play-arrow" size={20} color={colors.onPrimary} />
+              <Text style={[styles.emptyCtaText, { color: colors.onPrimary }]}>Start a quiz</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -360,7 +341,7 @@ export default function BookmarksScreen() {
                     <Text
                       style={[
                         styles.filterChipText,
-                        { color: isSelected ? '#ffffff' : colors.onSurface },
+                        { color: isSelected ? colors.onPrimary : colors.onSurface },
                       ]}
                     >
                       {cat}
@@ -385,7 +366,7 @@ export default function BookmarksScreen() {
               >
                 {/* Question Header */}
                 <View style={styles.qMetaRow}>
-                  <View style={[styles.categoryTagPill, { backgroundColor: '#e0e7ff' }]}>
+                  <View style={[styles.categoryTagPill, { backgroundColor: '#E4EAF8' }]}>
                     <Text style={styles.categoryTagPillText}>
                       Q{idx + 1} • {q.category}
                     </Text>
@@ -416,16 +397,16 @@ export default function BookmarksScreen() {
                           styles.optionCard,
                           {
                             backgroundColor: isCorrectAnswer
-                              ? 'rgba(16, 185, 129, 0.15)'
+                              ? 'rgba(18, 128, 92, 0.15)'
                               : colors.surfaceContainerHigh,
-                            borderColor: isCorrectAnswer ? '#10b981' : colors.outlineVariant,
+                            borderColor: isCorrectAnswer ? '#12805C' : colors.outlineVariant,
                           },
                         ]}
                       >
                         <Text
                           style={[
                             styles.optionLetter,
-                            { color: isCorrectAnswer ? '#065f46' : colors.onSurfaceVariant },
+                            { color: isCorrectAnswer ? '#0B5C42' : colors.onSurfaceVariant },
                           ]}
                         >
                           {String.fromCharCode(65 + optIdx)}
@@ -433,7 +414,7 @@ export default function BookmarksScreen() {
                         <Text
                           style={[
                             styles.optionText,
-                            { color: isCorrectAnswer ? '#065f46' : colors.onSurface },
+                            { color: isCorrectAnswer ? '#0B5C42' : colors.onSurface },
                           ]}
                         >
                           {opt}
@@ -449,7 +430,7 @@ export default function BookmarksScreen() {
                 </View>
 
                 {/* Step-by-Step Explanation */}
-                <View style={[styles.explContainer, { backgroundColor: 'rgba(53, 37, 205, 0.08)' }]}>
+                <View style={[styles.explContainer, { backgroundColor: 'rgba(29, 58, 138, 0.08)' }]}>
                   <View style={styles.explHeader}>
                     <MaterialIcons name="lightbulb" size={16} color={colors.primary} />
                     <Text style={[styles.explTitle, { color: colors.primary }]}>Explanation</Text>
@@ -468,17 +449,17 @@ export default function BookmarksScreen() {
           <View style={styles.centerBox}>
             <MaterialIcons name="menu-book" size={56} color={colors.outline} />
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-              No Saved Formulas Yet
+              No saved formulas yet
             </Text>
             <Text style={[styles.emptySub, { color: colors.onSurfaceVariant }]}>
-              Open Formula & Revision Cheat Sheets and tap the bookmark icon on any formula card to save it here!
+              Open the formula sheets and tap the bookmark on any formula to save it here.
             </Text>
             <TouchableOpacity
               style={[styles.exploreBtn, { backgroundColor: colors.primary }, MindSprintShadows.glow]}
               onPress={() => router.push('/cheatsheets')}
             >
               <MaterialIcons name="search" size={18} color="#ffffff" />
-              <Text style={styles.exploreBtnText}>Explore Formula Cheat Sheets</Text>
+              <Text style={styles.exploreBtnText}>Open formula sheets</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -543,7 +524,7 @@ export default function BookmarksScreen() {
                   </View>
 
                   {/* Pro Notes Footer */}
-                  <View style={[styles.notesBox, { backgroundColor: 'rgba(53, 37, 205, 0.08)' }]}>
+                  <View style={[styles.notesBox, { backgroundColor: 'rgba(29, 58, 138, 0.08)' }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <MaterialIcons name="tips-and-updates" size={18} color={colors.primary} />
                       <Text style={[styles.notesHeading, { color: colors.primary }]}>
@@ -565,11 +546,19 @@ export default function BookmarksScreen() {
           <View style={styles.centerBox}>
             <MaterialIcons name="bookmark-border" size={56} color={colors.outline} />
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-              {'No Chapters Bookmarked Yet'}
+              No saved chapters yet
             </Text>
             <Text style={[styles.emptySub, { color: colors.onSurfaceVariant }]}>
-              {'Go to Courses tab and tap the bookmark icon on any chapter to save it here.'}
+              In Courses, tap the bookmark on any chapter to save it here.
             </Text>
+            <TouchableOpacity
+              style={[styles.emptyCta, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/(tabs)/courses')}
+              accessibilityRole="button"
+            >
+              <MaterialIcons name="menu-book" size={20} color={colors.onPrimary} />
+              <Text style={[styles.emptyCtaText, { color: colors.onPrimary }]}>Open Courses</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 36 }} showsVerticalScrollIndicator={false}>
@@ -606,8 +595,8 @@ export default function BookmarksScreen() {
                 {/* Key Formulas count badge */}
                 {(chap.keyFormulas?.length || 0) > 0 && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 }}>
-                    <MaterialIcons name="functions" size={13} color="#8b5cf6" />
-                    <Text style={{ fontSize: 11, color: '#8b5cf6', fontWeight: '700' }}>
+                    <MaterialIcons name="functions" size={13} color="#2F6FD6" />
+                    <Text style={{ fontSize: 11, color: '#2F6FD6', fontWeight: '700' }}>
                       {chap.keyFormulas.length} formulas
                     </Text>
                   </View>
@@ -622,8 +611,8 @@ export default function BookmarksScreen() {
                     try { await AsyncStorage.setItem(chapterBookmarkKey, JSON.stringify(updated)); } catch (_) {}
                   }}
                 >
-                  <MaterialIcons name="bookmark-remove" size={14} color="#ef4444" />
-                  <Text style={[styles.removeText, { color: '#ef4444' }]}>
+                  <MaterialIcons name="bookmark-remove" size={14} color="#C8372D" />
+                  <Text style={[styles.removeText, { color: '#C8372D' }]}>
                     {'Remove Bookmark'}
                   </Text>
                 </TouchableOpacity>
@@ -637,6 +626,19 @@ export default function BookmarksScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 48,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    marginTop: 16,
+  },
+  emptyCtaText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 16,
+  },
   safeArea: {
     flex: 1,
   },
@@ -673,7 +675,7 @@ const styles = StyleSheet.create({
   offlineBannerText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#065f46',
+    color: '#0B5C42',
   },
   tabBar: {
     flexDirection: 'row',
@@ -709,8 +711,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 12,
+    textAlign: 'center',
   },
   emptySub: {
     fontSize: 13,
@@ -767,7 +772,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   categoryTagPillText: {
-    color: '#3730a3',
+    color: '#1D3A8A',
     fontSize: 11,
     fontWeight: '800',
   },
@@ -808,7 +813,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   correctPill: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#12805C',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,

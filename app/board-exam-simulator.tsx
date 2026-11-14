@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
@@ -216,7 +218,7 @@ export default function BoardExamSimulatorScreen() {
 
   const handleSubmitPaper = () => {
     Alert.alert(
-      'Submit Board Exam Paper?',
+      'Submit paper?',
       'Are you sure you want to finish the exam and enter the Self-Evaluation Step-by-Step Scoring Rubric?',
       [
         { text: 'Continue Writing', style: 'cancel' },
@@ -261,7 +263,7 @@ export default function BoardExamSimulatorScreen() {
 
   const handleSafeExit = () => {
     Alert.alert(
-      'Exit Board Exam Simulator?',
+      'Leave this paper?',
       'Are you sure you want to quit the exam simulation? Your current paper draft will be discarded.',
       [
         { text: 'Continue Writing', style: 'cancel' },
@@ -307,49 +309,38 @@ export default function BoardExamSimulatorScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Top Header Bar with Exam Timer */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: isDarkMode ? '#1e1b4b' : '#0f172a',
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={handleSafeExit} style={styles.backBtn}>
-          <MaterialIcons name="close" size={22} color="#ffffff" />
-        </TouchableOpacity>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.examTitle}>
-            {isSchoolMode ? `Class ${userGrade} GSEB/CBSE Board Exam` : 'Comprehensive Exam'}
-          </Text>
-          <Text style={styles.examSub}>Total: 80 Marks • Standard 3-Hour Simulation</Text>
-        </View>
-
-        {!isSubmitted && (
-          <TouchableOpacity
-            onPress={handleSubmitPaper}
-            style={styles.headerSubmitBtn}
-          >
-            <MaterialIcons name="done-all" size={16} color="#ffffff" />
-            <Text style={styles.headerSubmitBtnText}>Submit</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Timer Box */}
-        <View style={[styles.timerBadge, { backgroundColor: timeLeft < 600 ? '#ef4444' : '#1e293b' }]}>
-          <MaterialIcons name="timer" size={16} color="#ffffff" />
-          <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Board exam"
+        subtitle={isSchoolMode ? `Class ${userGrade} · 80 marks` : "80 marks"}
+        leadingIcon="close"
+        onBack={handleSafeExit}
+        right={
+          <>
+            <View
+              style={[styles.timerBadge, { backgroundColor: timeLeft < 600 ? colors.errorContainer : colors.surfaceContainerLow }]}
+              accessibilityLabel={`Time left ${formatTime(timeLeft)}`}
+            >
+              <MaterialIcons name="timer" size={16} color={timeLeft < 600 ? colors.error : colors.onSurfaceVariant} />
+              <Text style={[styles.timerText, { color: timeLeft < 600 ? colors.error : colors.onSurface }]}>{formatTime(timeLeft)}</Text>
+            </View>
+            {!isSubmitted && (
+              <TouchableOpacity
+                onPress={handleSubmitPaper}
+                style={[styles.headerSubmitBtn, { backgroundColor: colors.accent }]}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.headerSubmitBtnText, { color: colors.onAccent }]}>Submit</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        }
+      />
 
       {loading ? (
         <View style={styles.centerLoading}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>
-            Assembling official 80-mark blueprint from curriculum...
+            Preparing your 80-mark paper…
           </Text>
         </View>
       ) : !isSubmitted ? (
@@ -371,7 +362,7 @@ export default function BoardExamSimulatorScreen() {
                   ]}
                   onPress={() => handleSelectSubject(sub)}
                 >
-                  <Text style={[styles.subjectChipText, { color: isSelected ? '#ffffff' : colors.onSurface }]}>
+                  <Text style={[styles.subjectChipText, { color: isSelected ? colors.onPrimary : colors.onSurface }]}>
                     {sub}
                   </Text>
                 </TouchableOpacity>
@@ -405,7 +396,7 @@ export default function BoardExamSimulatorScreen() {
                     }
                   }}
                 >
-                  <Text style={[styles.secFilterText, { color: isSecSelected ? '#ffffff' : colors.onSurface }]}>
+                  <Text style={[styles.secFilterText, { color: isSecSelected ? colors.onPrimary : colors.onSurface }]}>
                     {sec === 'All' ? 'All Sections' : `Section ${sec}`} ({count})
                   </Text>
                 </TouchableOpacity>
@@ -426,13 +417,13 @@ export default function BoardExamSimulatorScreen() {
 
               if (isCurrent) {
                 pillBg = colors.primary;
-                textColor = '#ffffff';
+                textColor = colors.onPrimary;
               } else if (isReview) {
-                pillBg = '#f59e0b';
-                textColor = '#ffffff';
+                pillBg = colors.accent;
+                textColor = colors.onAccent;
               } else if (isAnswered) {
-                pillBg = '#10b981';
-                textColor = '#ffffff';
+                pillBg = colors.tertiary;
+                textColor = colors.onTertiary;
               }
 
               return (
@@ -457,42 +448,44 @@ export default function BoardExamSimulatorScreen() {
               MindSprintShadows.card,
             ]}
           >
-            {/* Meta Row */}
+            {/* Meta: section, marks, chapter, and a mark-for-review toggle */}
             <View style={styles.qMetaRow}>
-              <View style={[styles.sectionBadge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.sectionBadgeText}>SECTION {currentQ.section}</Text>
+              <View style={[styles.sectionBadge, { backgroundColor: colors.primaryFixed }]}>
+                <Text style={[styles.sectionBadgeText, { color: colors.primary }]}>Section {currentQ.section}</Text>
               </View>
-              <Text style={[styles.marksText, { color: colors.primary }]}>
-                {currentQ.marks} {currentQ.marks === 1 ? 'Mark' : 'Marks'}
+              <Text style={[styles.marksText, { color: colors.onSurfaceVariant }]}>
+                {currentQ.marks} {currentQ.marks === 1 ? 'mark' : 'marks'}
               </Text>
-              {currentQ.chapterTitle ? (
-                <Text style={[styles.chapterTag, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                  • {isGSEB && currentQ.chapterTitleGujarati ? currentQ.chapterTitleGujarati : currentQ.chapterTitle}
-                </Text>
-              ) : null}
               <View style={{ flex: 1 }} />
               <TouchableOpacity
                 style={[
                   styles.flagBtn,
-                  { backgroundColor: markedForReview.includes(currentQ.id) ? '#f59e0b' : colors.surfaceContainerHigh },
+                  { backgroundColor: markedForReview.includes(currentQ.id) ? colors.accentContainer : colors.surfaceContainerLow },
                 ]}
                 onPress={() => toggleMarkReview(currentQ.id)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: markedForReview.includes(currentQ.id) }}
               >
                 <MaterialIcons
-                  name="flag"
+                  name={markedForReview.includes(currentQ.id) ? 'bookmark' : 'bookmark-border'}
                   size={16}
-                  color={markedForReview.includes(currentQ.id) ? '#ffffff' : colors.onSurfaceVariant}
+                  color={markedForReview.includes(currentQ.id) ? colors.accent : colors.onSurfaceVariant}
                 />
                 <Text
                   style={[
                     styles.flagBtnText,
-                    { color: markedForReview.includes(currentQ.id) ? '#ffffff' : colors.onSurfaceVariant },
+                    { color: markedForReview.includes(currentQ.id) ? colors.onAccentContainer : colors.onSurfaceVariant },
                   ]}
                 >
-                  {markedForReview.includes(currentQ.id) ? 'Flagged' : 'Flag for Review'}
+                  {markedForReview.includes(currentQ.id) ? 'Marked' : 'Mark for review'}
                 </Text>
               </TouchableOpacity>
             </View>
+            {currentQ.chapterTitle ? (
+              <Text style={[styles.chapterTag, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                {isGSEB && currentQ.chapterTitleGujarati ? currentQ.chapterTitleGujarati : currentQ.chapterTitle}
+              </Text>
+            ) : null}
 
             {/* Question Text */}
             <Text style={[styles.qStatement, { color: colors.onSurface }]}>
@@ -510,16 +503,16 @@ export default function BoardExamSimulatorScreen() {
                       style={[
                         styles.optionBtn,
                         {
-                          backgroundColor: isSelected ? colors.primary : isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+                          backgroundColor: isSelected ? colors.primary : isDarkMode ? colors.surfaceContainerLow : '#F5F7FB',
                           borderColor: isSelected ? colors.primary : colors.outlineVariant,
                         },
                       ]}
                       onPress={() => handleSelectOption(currentQ.id, optIdx)}
                     >
-                      <View style={[styles.radioCircle, { borderColor: isSelected ? '#ffffff' : colors.outline }]}>
+                      <View style={[styles.radioCircle, { borderColor: isSelected ? colors.onPrimary : colors.outline }]}>
                         {isSelected && <View style={styles.radioInner} />}
                       </View>
-                      <Text style={[styles.optionLabel, { color: isSelected ? '#ffffff' : colors.onSurface }]}>
+                      <Text style={[styles.optionLabel, { color: isSelected ? colors.onPrimary : colors.onSurface }]}>
                         {opt}
                       </Text>
                     </TouchableOpacity>
@@ -530,13 +523,13 @@ export default function BoardExamSimulatorScreen() {
               /* Written Scratchpad for Theory / Numericals */
               <View style={styles.theoryBox}>
                 <Text style={[styles.scratchpadLabel, { color: colors.onSurfaceVariant }]}>
-                  Your Answer / Rough Calculation Scratchpad:
+                  Your answer (rough work is fine)
                 </Text>
                 <TextInput
                   style={[
                     styles.theoryInput,
                     {
-                      backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+                      backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB',
                       borderColor: colors.outlineVariant,
                       color: colors.onSurface,
                     },
@@ -571,16 +564,16 @@ export default function BoardExamSimulatorScreen() {
                 style={[styles.navBtn, { backgroundColor: colors.primary }]}
                 onPress={() => setActiveQIndex((prev) => Math.min(paperQuestions.length - 1, prev + 1))}
               >
-                <Text style={[styles.navBtnText, { color: '#ffffff' }]}>Next Question</Text>
-                <MaterialIcons name="chevron-right" size={20} color="#ffffff" />
+                <Text style={[styles.navBtnText, { color: colors.onPrimary }]}>Next</Text>
+                <MaterialIcons name="chevron-right" size={20} color={colors.onPrimary} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.navBtn, { backgroundColor: '#10b981' }]}
+                style={[styles.navBtn, { backgroundColor: colors.accent }]}
                 onPress={handleSubmitPaper}
               >
-                <MaterialIcons name="done-all" size={20} color="#ffffff" />
-                <Text style={[styles.navBtnText, { color: '#ffffff' }]}>Submit Paper</Text>
+                <MaterialIcons name="done-all" size={20} color={colors.onAccent} />
+                <Text style={[styles.navBtnText, { color: colors.onAccent }]}>Submit paper</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -589,8 +582,8 @@ export default function BoardExamSimulatorScreen() {
         /* STEP-BY-STEP SELF-EVALUATION SCORING RUBRIC */
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           {/* Report Header Card */}
-          <View style={[styles.scoreSummaryCard, { backgroundColor: '#1e1b4b' }, MindSprintShadows.card]}>
-            <MaterialIcons name="emoji-events" size={40} color="#f59e0b" />
+          <View style={[styles.scoreSummaryCard, { backgroundColor: '#12245C' }, MindSprintShadows.card]}>
+            <MaterialIcons name="emoji-events" size={40} color="#F4A30B" />
             <Text style={styles.scoreTitle}>Board Readiness Predictor</Text>
             <Text style={styles.scoreNumber}>
               {studentAwardedScore} / {totalMaxMarks} ({percentage}%)
@@ -622,7 +615,7 @@ export default function BoardExamSimulatorScreen() {
                     Q{idx + 1} (Section {q.section} • {q.marks}M)
                   </Text>
                   {isMcq && (
-                    <Text style={{ color: mcqCorrect ? '#10b981' : '#ef4444', fontWeight: '800', fontSize: 12 }}>
+                    <Text style={{ color: mcqCorrect ? '#12805C' : '#C8372D', fontWeight: '800', fontSize: 12 }}>
                       {mcqCorrect ? '+1 Mark (Auto-checked ✓)' : '0 Marks (Incorrect ✗)'}
                     </Text>
                   )}
@@ -633,8 +626,8 @@ export default function BoardExamSimulatorScreen() {
                 </Text>
 
                 {/* Model Answer */}
-                <View style={[styles.modelAnsBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-                  <Text style={[styles.modelAnsHeader, { color: '#10b981' }]}>
+                <View style={[styles.modelAnsBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
+                  <Text style={[styles.modelAnsHeader, { color: '#12805C' }]}>
                     Official Board Model Answer:
                   </Text>
                   <Text style={[styles.modelAnsBody, { color: colors.onSurface }]}>
@@ -659,8 +652,8 @@ export default function BoardExamSimulatorScreen() {
                           style={[
                             styles.rubricRow,
                             {
-                              backgroundColor: isChecked ? 'rgba(16, 185, 129, 0.15)' : colors.surfaceContainerLow,
-                              borderColor: isChecked ? '#10b981' : colors.outlineVariant,
+                              backgroundColor: isChecked ? 'rgba(18, 128, 92, 0.15)' : colors.surfaceContainerLow,
+                              borderColor: isChecked ? '#12805C' : colors.outlineVariant,
                             },
                           ]}
                           onPress={() => setEvalMarks((prev) => ({ ...prev, [key]: !prev[key] }))}
@@ -668,7 +661,7 @@ export default function BoardExamSimulatorScreen() {
                           <MaterialIcons
                             name={isChecked ? 'check-box' : 'check-box-outline-blank'}
                             size={20}
-                            color={isChecked ? '#10b981' : colors.outline}
+                            color={isChecked ? '#12805C' : colors.outline}
                           />
                           <Text style={[styles.rubricStepText, { color: colors.onSurface, flex: 1 }]}>
                             {rubricText}
@@ -719,35 +712,31 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   examSub: {
-    color: '#94a3b8',
+    color: '#9AA6C0',
     fontSize: 11,
   },
   headerSubmitBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#10b981',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    minHeight: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
   },
   headerSubmitBtnText: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 12,
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   timerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
+    minHeight: 32,
+    borderRadius: 16,
   },
   timerText: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 13,
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
+    fontVariant: ['tabular-nums'],
   },
   scrollContainer: {
     padding: 16,
@@ -786,13 +775,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   sectionBadgeText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 13,
   },
   marksText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   flagBtn: {
     flexDirection: 'row',
@@ -807,9 +795,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   qStatement: {
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 22,
+    fontFamily: MindSprintFonts.title,
+    fontSize: 18,
+    lineHeight: 27,
+    marginTop: 12,
+    marginBottom: 14,
   },
   optionsWrap: {
     gap: 10,
@@ -887,17 +877,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   scoreNumber: {
-    color: '#f59e0b',
+    color: '#F4A30B',
     fontSize: 28,
     fontWeight: '900',
   },
   scoreGradeBadge: {
-    color: '#10b981',
+    color: '#12805C',
     fontWeight: '800',
     fontSize: 14,
   },
   scoreInstruction: {
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 4,
@@ -1005,8 +995,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   chapterTag: {
-    fontSize: 11,
-    fontWeight: '600',
-    maxWidth: 160,
+    fontSize: 12.5,
+    marginTop: 6,
   },
 });

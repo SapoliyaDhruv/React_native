@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
   StyleSheet,
   ScrollView,
   Alert,
@@ -368,12 +367,12 @@ export default function ExamScreen() {
   const isSchoolUser = user?.grade && user?.grade !== 'college';
 
   const examHeaderTitle = isDiagnostic
-    ? '🎯 AI Diagnostic Test'
+    ? 'Diagnostic test'
     : isSchoolUser
-    ? `Class ${user?.grade} • ${examCategory || 'Practice Quiz'}`
+    ? `${examCategory || 'Practice quiz'} · Class ${user?.grade}`
     : examCompany && examCompany !== 'All Companies'
-    ? `${examCompany} Placement Mock`
-    : 'Aptitude & IT Mock Exam';
+    ? `${examCompany} mock test`
+    : 'Aptitude & IT mock test';
 
   const flaggedIndicesList = Object.keys(markedForReview)
     .filter((k) => markedForReview[parseInt(k, 10)])
@@ -381,12 +380,12 @@ export default function ExamScreen() {
 
   const handleSafeExit = () => {
     Alert.alert(
-      'Quit Exam?',
-      'Would you like to save your exam progress to resume later, or discard your current draft?',
+      'Leave this test?',
+      'Save your answers to finish later, or discard them.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Discard & Exit',
+          text: 'Discard answers',
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
@@ -398,7 +397,7 @@ export default function ExamScreen() {
           },
         },
         {
-          text: 'Save & Exit',
+          text: 'Save and leave',
           onPress: () => {
             if (router.canGoBack()) {
               router.back();
@@ -413,11 +412,11 @@ export default function ExamScreen() {
 
   const promptSubmitExam = () => {
     Alert.alert(
-      'Submit Exam?',
-      `You have answered ${Object.keys(userAnswers).length} of ${questions.length} questions. Are you ready to finish?`,
+      'Submit test?',
+      `You answered ${Object.keys(userAnswers).length} of ${questions.length} questions.`,
       [
-        { text: 'Review Answers', style: 'cancel' },
-        { text: 'Submit Now', onPress: handleSubmitExam },
+        { text: 'Keep answering', style: 'cancel' },
+        { text: 'Submit test', onPress: handleSubmitExam },
       ]
     );
   };

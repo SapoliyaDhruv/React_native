@@ -57,7 +57,7 @@ export const FlashcardDeck = () => {
   return (
     <View style={styles.container}>
       <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-        ⚡ Quick Revision Flashcards
+        Quick revision cards
       </Text>
       <ScrollView
         horizontal
@@ -105,7 +105,7 @@ export const FlashcardDeck = () => {
                     {card.frontTitle}
                   </Text>
                   <Text style={[styles.tapPrompt, { color: colors.outline }]}>
-                    Tap to reveal formula 💡
+                    Tap to show the formula
                   </Text>
                 </View>
               ) : (
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   catText: {
     fontSize: 11,
     fontWeight: '700',
-    textTransform: 'uppercase',
+
   },
   cardBody: {
     flex: 1,

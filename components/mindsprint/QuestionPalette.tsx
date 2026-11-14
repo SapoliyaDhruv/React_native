@@ -40,7 +40,7 @@ export const QuestionPalette: React.FC<QuestionPaletteProps> = ({
               <Text style={styles.legendText}>Answered</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.dot, { backgroundColor: '#f59e0b' }]} />
+              <View style={[styles.dot, { backgroundColor: '#F4A30B' }]} />
               <Text style={styles.legendText}>Review</Text>
             </View>
             <View style={styles.legendItem}>
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     color: MindSprintColors.onPrimary,
   },
   markedBox: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#F4A30B',
   },
   markedText: {
     color: '#ffffff',

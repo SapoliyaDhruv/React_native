@@ -38,7 +38,7 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
     return () => animation.stop();
   }, [opacityAnim]);
 
-  const baseColor = isDarkMode ? '#334155' : '#e2e8f0';
+  const baseColor = isDarkMode ? '#3A4560' : '#DCE2EE';
 
   return (
     <Animated.View

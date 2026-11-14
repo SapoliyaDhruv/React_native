@@ -51,7 +51,7 @@ export const GlossaryTooltip: React.FC<GlossaryTooltipProps> = ({
         <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest }, MindSprintShadows.glow]}>
           {/* Header */}
           <View style={styles.headerRow}>
-            <View style={[styles.subjectBadge, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#e0e7ff' }]}>
+            <View style={[styles.subjectBadge, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : '#E4EAF8' }]}>
               <Text style={[styles.subjectBadgeText, { color: colors.primary }]}>{term.subject}</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -66,7 +66,7 @@ export const GlossaryTooltip: React.FC<GlossaryTooltipProps> = ({
                 {term.englishTerm}
               </Text>
               <TouchableOpacity
-                style={[styles.audioBtn, { backgroundColor: isSpeaking ? '#10b981' : colors.primary }]}
+                style={[styles.audioBtn, { backgroundColor: isSpeaking ? '#12805C' : colors.primary }]}
                 onPress={() => handleSpeak(term.englishTerm)}
               >
                 <MaterialIcons name={isSpeaking ? 'volume-up' : 'volume-down'} size={18} color="#ffffff" />
@@ -86,7 +86,7 @@ export const GlossaryTooltip: React.FC<GlossaryTooltipProps> = ({
           </View>
 
           {/* Definitions */}
-          <View style={[styles.defCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+          <View style={[styles.defCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
             <Text style={[styles.defLabel, { color: colors.outline }]}>English Meaning:</Text>
             <Text style={[styles.defText, { color: colors.onSurface }]}>
               {term.definitionEnglish}
@@ -102,7 +102,7 @@ export const GlossaryTooltip: React.FC<GlossaryTooltipProps> = ({
 
           {/* Example Formula or Equation */}
           {term.exampleEnglish && (
-            <View style={[styles.exampleBox, { backgroundColor: 'rgba(59, 130, 246, 0.08)' }]}>
+            <View style={[styles.exampleBox, { backgroundColor: 'rgba(47, 111, 214, 0.08)' }]}>
               <Text style={[styles.exampleLabel, { color: '#2563eb' }]}>Equation / Example:</Text>
               <Text style={[styles.exampleText, { color: colors.onSurface }]}>
                 {term.exampleEnglish}

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { Question } from '@/constants/mindsprintData';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 
 interface ExamQuestionCardProps {
   question: Question;
@@ -21,7 +22,7 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
   isMarkedForReview = false,
   onSelectOption,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
@@ -30,7 +31,7 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
         <View
           style={[
             styles.categoryBadge,
-            { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' },
+            { backgroundColor: colors.primaryFixed },
           ]}
         >
           <Text style={[styles.categoryText, { color: colors.primary }]}>
@@ -39,9 +40,9 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
         </View>
 
         {isMarkedForReview && (
-          <View style={[styles.reviewBadge, { backgroundColor: isDarkMode ? '#78350f' : '#fef3c7' }]}>
-            <MaterialIcons name="bookmark" size={14} color="#f59e0b" />
-            <Text style={styles.reviewText}>પુનરાવર્તન માટે ચિહ્નિત</Text>
+          <View style={[styles.reviewBadge, { backgroundColor: colors.accentContainer }]}>
+            <MaterialIcons name="bookmark" size={14} color={colors.accent} />
+            <Text style={[styles.reviewText, { color: colors.onAccentContainer }]}>Marked for review</Text>
           </View>
         )}
       </View>
@@ -65,12 +66,13 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
               key={optIdx}
               activeOpacity={0.8}
               onPress={() => onSelectOption(optIdx)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={`Option ${letter}: ${option}`}
               style={[
                 styles.optionCard,
                 {
-                  backgroundColor: isSelected
-                    ? isDarkMode ? 'rgba(129,140,248,0.12)' : 'rgba(53, 37, 205, 0.06)'
-                    : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
+                  backgroundColor: isSelected ? colors.primaryFixed : colors.surface,
                   borderColor: isSelected ? colors.primary : colors.outlineVariant,
                   borderWidth: isSelected ? 2 : 1,
                 },
@@ -82,14 +84,14 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
                   {
                     backgroundColor: isSelected
                       ? colors.primary
-                      : isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9',
+                      : colors.surfaceContainerLow,
                   },
                 ]}
               >
                 <Text
                   style={[
                     styles.radioLetter,
-                    { color: isSelected ? '#ffffff' : colors.onSurfaceVariant },
+                    { color: isSelected ? colors.onPrimary : colors.onSurfaceVariant },
                   ]}
                 >
                   {letter}
@@ -99,13 +101,14 @@ export const ExamQuestionCard: React.FC<ExamQuestionCardProps> = ({
                 style={[
                   styles.optionText,
                   {
-                    color: isSelected ? colors.primary : colors.onSurface,
-                    fontWeight: isSelected ? '700' : '400',
+                    color: colors.onSurface,
+                    fontWeight: isSelected ? '600' : '400',
                   },
                 ]}
               >
                 {option}
               </Text>
+              {isSelected && <MaterialIcons name="check-circle" size={22} color={colors.primary} />}
             </TouchableOpacity>
           );
         })}
@@ -130,10 +133,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   categoryText: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontFamily: MindSprintFonts.label,
+    fontSize: 13,
   },
   reviewBadge: {
     flexDirection: 'row',
@@ -144,15 +145,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   reviewText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#d97706',
+    fontSize: 12,
+    fontWeight: '600',
   },
   questionText: {
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 26,
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.title,
+    fontSize: 19,
+    lineHeight: 28,
     marginBottom: 20,
   },
   optionsList: {
@@ -161,24 +160,26 @@ const styles = StyleSheet.create({
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    minHeight: 58,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     gap: 12,
   },
   radioCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioLetter: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
   },
   optionText: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 23,
   },
 });

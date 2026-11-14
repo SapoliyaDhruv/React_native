@@ -23,10 +23,10 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       <View
         style={[
           styles.iconCircle,
-          { backgroundColor: isDarkMode ? 'rgba(239,68,68,0.15)' : '#fee2e2' },
+          { backgroundColor: isDarkMode ? 'rgba(200, 55, 45,0.15)' : '#FBE3E0' },
         ]}
       >
-        <MaterialIcons name={iconName} size={36} color="#ef4444" />
+        <MaterialIcons name={iconName} size={36} color="#C8372D" />
       </View>
       <Text style={[styles.title, { color: colors.onSurface }]}>{title}</Text>
       <Text style={[styles.message, { color: colors.onSurfaceVariant }]}>{message}</Text>

@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -285,7 +286,7 @@ export default function DoubtSolverScreen() {
 
   const handlePromptVoice = () => {
     Alert.alert(
-      'Voice Doubt Search 🎙️',
+      'Ask by voice',
       'Select a spoken query or type your doubt into the search box:',
       [
         { text: 'Ohm\'s Law Formula', onPress: () => handleSearchDoubt('Ohm\'s Law') },
@@ -298,38 +299,20 @@ export default function DoubtSolverScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            AI Doubt Solver & OCR Scanner 📸
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            Instant Textbook Question Matching & Solutions
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Scan a doubt"
+        subtitle="Photo or type a question to get a step-by-step answer"
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Mode Switcher */}
-        <View style={[styles.modeBar, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}>
+        <View style={[styles.modeBar, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' }]}>
           <TouchableOpacity
             style={[styles.modeBtn, activeMode === 'search' && { backgroundColor: colors.primary }]}
             onPress={() => setActiveMode('search')}
           >
-            <MaterialIcons name="search" size={18} color={activeMode === 'search' ? '#ffffff' : colors.onSurface} />
-            <Text style={[styles.modeBtnText, { color: activeMode === 'search' ? '#ffffff' : colors.onSurface }]}>
+            <MaterialIcons name="search" size={18} color={activeMode === 'search' ? colors.onPrimary : colors.onSurface} />
+            <Text style={[styles.modeBtnText, { color: activeMode === 'search' ? colors.onPrimary : colors.onSurface }]}>
               Type / Speak Doubt
             </Text>
           </TouchableOpacity>
@@ -338,8 +321,8 @@ export default function DoubtSolverScreen() {
             style={[styles.modeBtn, activeMode === 'camera' && { backgroundColor: colors.primary }]}
             onPress={() => setActiveMode('camera')}
           >
-            <MaterialIcons name="document-scanner" size={18} color={activeMode === 'camera' ? '#ffffff' : colors.onSurface} />
-            <Text style={[styles.modeBtnText, { color: activeMode === 'camera' ? '#ffffff' : colors.onSurface }]}>
+            <MaterialIcons name="document-scanner" size={18} color={activeMode === 'camera' ? colors.onPrimary : colors.onSurface} />
+            <Text style={[styles.modeBtnText, { color: activeMode === 'camera' ? colors.onPrimary : colors.onSurface }]}>
               Camera Scanner
             </Text>
           </TouchableOpacity>
@@ -347,7 +330,7 @@ export default function DoubtSolverScreen() {
 
         {/* VIEW 1: CAMERA SCANNER VIEWFINDER */}
         {activeMode === 'camera' && (
-          <View style={[styles.cameraViewfinder, { backgroundColor: '#0f172a' }, MindSprintShadows.glow]}>
+          <View style={[styles.cameraViewfinder, { backgroundColor: '#16203A' }, MindSprintShadows.glow]}>
             <View style={styles.scannerCorners}>
               <View style={[styles.cornerTL, { borderColor: colors.primary }]} />
               <View style={[styles.cornerTR, { borderColor: colors.primary }]} />
@@ -372,7 +355,7 @@ export default function DoubtSolverScreen() {
               </View>
             ) : (
               <View style={styles.scannerContent}>
-                <MaterialIcons name="photo-camera" size={40} color="#94a3b8" />
+                <MaterialIcons name="photo-camera" size={40} color="#9AA6C0" />
                 <Text style={styles.scannerPrompt}>
                   Snap or select textbook question
                 </Text>
@@ -391,7 +374,7 @@ export default function DoubtSolverScreen() {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.cameraSnapBtn, { backgroundColor: '#334155' }]}
+                    style={[styles.cameraSnapBtn, { backgroundColor: '#3A4560' }]}
                     onPress={handlePickFromGallery}
                   >
                     <MaterialIcons name="photo-library" size={18} color="#ffffff" />
@@ -411,7 +394,7 @@ export default function DoubtSolverScreen() {
                   onPress={() => handleSimulateScan(doubt)}
                 >
                   <Text style={styles.demoPillText} numberOfLines={1}>
-                    📄 {isGSEB && doubt.titleGujarati ? doubt.titleGujarati : doubt.title}
+                    {isGSEB && doubt.titleGujarati ? doubt.titleGujarati : doubt.title}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -445,7 +428,7 @@ export default function DoubtSolverScreen() {
         {/* POPULAR DOUBTS CHIPS */}
         <View style={{ gap: 8 }}>
           <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-            🔥 Common Board Exam Doubts (Tap to solve):
+            Common board exam doubts
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
             {ALL_DOUBTS_CATALOG.slice(0, 8).map((d, i) => (
@@ -485,7 +468,7 @@ export default function DoubtSolverScreen() {
               styles.solutionCard,
               {
                 backgroundColor: colors.surfaceContainerLowest,
-                borderColor: '#10b981',
+                borderColor: '#12805C',
                 borderLeftWidth: 4,
               },
               MindSprintShadows.card,
@@ -499,26 +482,26 @@ export default function DoubtSolverScreen() {
                   {
                     backgroundColor:
                       matchedSolution.source === 'gemini'
-                        ? 'rgba(99, 102, 241, 0.18)'
-                        : 'rgba(16, 185, 129, 0.15)',
+                        ? 'rgba(29, 58, 138, 0.18)'
+                        : 'rgba(18, 128, 92, 0.15)',
                   },
                 ]}
               >
                 <MaterialIcons
                   name={matchedSolution.source === 'gemini' ? 'auto-awesome' : 'verified'}
                   size={16}
-                  color={matchedSolution.source === 'gemini' ? '#6366f1' : '#10b981'}
+                  color={matchedSolution.source === 'gemini' ? '#1D3A8A' : '#12805C'}
                 />
                 <Text
                   style={[
                     styles.matchBadgeText,
-                    matchedSolution.source === 'gemini' && { color: '#6366f1' },
+                    matchedSolution.source === 'gemini' && { color: '#1D3A8A' },
                   ]}
                 >
                   {matchedSolution.source === 'gemini'
-                    ? '✨ Gemini Multimodal AI'
+                    ? 'AI answer'
                     : matchedSolution.source === 'curriculum_database'
-                    ? '📚 Verified Curriculum Match'
+                    ? 'From your textbook'
                     : '98% Curriculum Match'}
                 </Text>
               </View>
@@ -537,7 +520,7 @@ export default function DoubtSolverScreen() {
               <Text style={[styles.keyConceptsLabel, { color: colors.outline }]}>Required Concepts:</Text>
               <View style={styles.kwWrap}>
                 {matchedSolution.formulaOrKeywords.map((kw, idx) => (
-                  <View key={idx} style={[styles.kwPill, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#e0e7ff' }]}>
+                  <View key={idx} style={[styles.kwPill, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : '#E4EAF8' }]}>
                     <Text style={[styles.kwText, { color: colors.primary }]}>{kw}</Text>
                   </View>
                 ))}
@@ -545,9 +528,9 @@ export default function DoubtSolverScreen() {
             </View>
 
             {/* Step-by-Step Model Answer */}
-            <View style={[styles.answerBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-              <Text style={[styles.answerHeading, { color: '#10b981' }]}>
-                📝 Step-by-Step Board Solution:
+            <View style={[styles.answerBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
+              <Text style={[styles.answerHeading, { color: '#12805C' }]}>
+                Step-by-step solution
               </Text>
               <Text style={[styles.answerBody, { color: colors.onSurface }]}>
                 {isGSEB && matchedSolution.solutionGujarati ? matchedSolution.solutionGujarati : matchedSolution.solution}
@@ -556,8 +539,8 @@ export default function DoubtSolverScreen() {
 
             {/* Examiner Tips */}
             {matchedSolution.examinerTips && (
-              <View style={[styles.tipBox, { backgroundColor: 'rgba(245, 158, 11, 0.12)' }]}>
-                <MaterialIcons name="lightbulb" size={16} color="#b45309" />
+              <View style={[styles.tipBox, { backgroundColor: 'rgba(244, 163, 11, 0.12)' }]}>
+                <MaterialIcons name="lightbulb" size={16} color="#8A5A00" />
                 <Text style={styles.tipText}>
                   Examiner Tip: {matchedSolution.examinerTips}
                 </Text>
@@ -567,11 +550,11 @@ export default function DoubtSolverScreen() {
             {/* Action Bar */}
             <View style={styles.actionRow}>
               <TouchableOpacity
-                style={[styles.speakBtn, { backgroundColor: isSpeaking ? '#ef4444' : '#10b981' }]}
+                style={[styles.speakBtn, { backgroundColor: isSpeaking ? '#C8372D' : '#12805C' }]}
                 onPress={handleToggleSpeak}
               >
                 <MaterialIcons name={isSpeaking ? 'stop' : 'volume-up'} size={18} color="#ffffff" />
-                <Text style={styles.speakBtnText}>{isSpeaking ? 'Stop' : 'Listen 🔊'}</Text>
+                <Text style={styles.speakBtnText}>{isSpeaking ? 'Stop' : 'Listen'}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -705,14 +688,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scannerSub: {
-    color: '#94a3b8',
+    color: '#9AA6C0',
     fontSize: 12,
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 16,
   },
   demoHeading: {
-    color: '#cbd5e1',
+    color: '#CDD6E4',
     fontSize: 11,
     fontWeight: '700',
     marginTop: 16,
@@ -800,7 +783,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   matchBadgeText: {
-    color: '#10b981',
+    color: '#12805C',
     fontSize: 11,
     fontWeight: '800',
   },
@@ -855,7 +838,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tipText: {
-    color: '#b45309',
+    color: '#8A5A00',
     fontSize: 12,
     lineHeight: 17,
     flex: 1,
@@ -910,7 +893,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#C8372D',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,

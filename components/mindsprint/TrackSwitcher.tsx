@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { MindSprintShadows } from '../../constants/mindsprintTheme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { MindSprintFonts } from '../../constants/mindsprintTheme';
 import { TrackType } from '../../constants/mindsprintData';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -12,28 +13,21 @@ interface TrackSwitcherProps {
 type TrackOption = {
   id: TrackType;
   label: string;
-  emoji: string;
+  icon: React.ComponentProps<typeof MaterialIcons>['name'];
 };
 
 const tracks: TrackOption[] = [
-  { id: 'placement', label: 'Placement Prep', emoji: '🎯' },
-  { id: 'it_skills', label: 'IT Skill Hub', emoji: '💻' },
-  { id: 'school', label: 'School (1-12)', emoji: '🎓' },
+  { id: 'placement', label: 'Placement prep', icon: 'work-outline' },
+  { id: 'it_skills', label: 'IT skills', icon: 'computer' },
+  { id: 'school', label: 'School (Class 7–12)', icon: 'school' },
 ];
 
-export const TrackSwitcher: React.FC<TrackSwitcherProps> = ({
-  activeTrack,
-  onSelectTrack,
-}) => {
+export const TrackSwitcher: React.FC<TrackSwitcherProps> = ({ activeTrack, onSelectTrack }) => {
   const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {tracks.map((track) => {
           const isActive = activeTrack === track.id;
           return (
@@ -41,27 +35,18 @@ export const TrackSwitcher: React.FC<TrackSwitcherProps> = ({
               key={track.id}
               activeOpacity={0.8}
               onPress={() => onSelectTrack(track.id)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
               style={[
                 styles.trackChip,
-                isActive
-                  ? { backgroundColor: '#3525cd' }
-                  : {
-                      backgroundColor: colors.surfaceContainerLowest,
-                      borderColor: colors.outlineVariant,
-                      borderWidth: 1,
-                    },
-                isActive && MindSprintShadows.glow,
+                {
+                  backgroundColor: isActive ? colors.primary : colors.surface,
+                  borderColor: isActive ? colors.primary : colors.outlineVariant,
+                },
               ]}
             >
-              <Text style={styles.emojiText}>{track.emoji}</Text>
-              <Text
-                style={[
-                  styles.labelText,
-                  { color: isActive ? '#ffffff' : colors.onSurface },
-                ]}
-              >
-                {track.label}
-              </Text>
+              <MaterialIcons name={track.icon} size={18} color={isActive ? colors.onPrimary : colors.primary} />
+              <Text style={[styles.labelText, { color: isActive ? colors.onPrimary : colors.onSurface }]}>{track.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -75,22 +60,20 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   scrollContent: {
-    gap: 10,
+    gap: 8,
     paddingRight: 16,
   },
   trackChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    gap: 8,
-  },
-  emojiText: {
-    fontSize: 14,
+    paddingHorizontal: 14,
+    minHeight: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
   },
   labelText: {
+    fontFamily: MindSprintFonts.label,
     fontSize: 14,
-    fontWeight: '600',
   },
 });

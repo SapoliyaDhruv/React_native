@@ -36,7 +36,7 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
   initialTrackIndex = 0,
   onClose,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   const [currentIndex, setCurrentIndex] = useState<number>(initialTrackIndex);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -244,16 +244,16 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={[styles.playerCard, { backgroundColor: '#0f172a' }, MindSprintShadows.glow]}>
+        <View style={[styles.playerCard, { backgroundColor: '#16203A' }, MindSprintShadows.glow]}>
           {/* Header */}
           <View style={styles.headerRow}>
             <View style={styles.tagBadge}>
-              <MaterialIcons name="headphones" size={14} color="#38bdf8" />
-              <Text style={styles.tagBadgeText}>AUDIO REVISION WALKMAN</Text>
+              <MaterialIcons name="headphones" size={14} color="#2F6FD6" />
+              <Text style={styles.tagBadgeText}>Listen and revise</Text>
             </View>
 
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <MaterialIcons name="keyboard-arrow-down" size={28} color="#94a3b8" />
+              <MaterialIcons name="keyboard-arrow-down" size={28} color="#9AA6C0" />
             </TouchableOpacity>
           </View>
 
@@ -261,7 +261,7 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
           <View style={styles.albumArtContainer}>
             <View style={[styles.vinylCircle, isPlaying && styles.vinylSpin]}>
               <View style={styles.vinylCenter}>
-                <MaterialIcons name="school" size={32} color="#38bdf8" />
+                <MaterialIcons name="school" size={32} color="#2F6FD6" />
               </View>
             </View>
             {isPlaying && (
@@ -321,12 +321,12 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
 
             {/* Prev Track */}
             <TouchableOpacity style={styles.navBtn} onPress={handlePrev} disabled={currentIndex === 0}>
-              <MaterialIcons name="skip-previous" size={32} color={currentIndex === 0 ? '#475569' : '#ffffff'} />
+              <MaterialIcons name="skip-previous" size={32} color={currentIndex === 0 ? '#5A6680' : '#ffffff'} />
             </TouchableOpacity>
 
             {/* Play / Pause Primary Button */}
             <TouchableOpacity style={styles.playBtn} onPress={handleTogglePlay}>
-              <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={38} color="#0f172a" />
+              <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={38} color="#16203A" />
             </TouchableOpacity>
 
             {/* Next Track */}
@@ -336,13 +336,13 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
 
             {/* Loop / Auto Advance Indicator */}
             <View style={styles.loopPill}>
-              <MaterialIcons name="repeat" size={18} color="#38bdf8" />
+              <MaterialIcons name="repeat" size={18} color="#2F6FD6" />
             </View>
           </View>
 
           {/* Listening Tip */}
           <Text style={styles.tipText}>
-            💡 Put on headphones and listen while traveling or before sleep to cement formulas in long-term memory.
+            Put on headphones and listen while traveling or before sleep to cement formulas in long-term memory.
           </Text>
         </View>
       </View>
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   tagBadgeText: {
-    color: '#38bdf8',
+    color: '#2F6FD6',
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
@@ -396,20 +396,20 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#26314F',
     borderWidth: 6,
-    borderColor: '#334155',
+    borderColor: '#3A4560',
     alignItems: 'center',
     justifyContent: 'center',
   },
   vinylSpin: {
-    borderColor: '#38bdf8',
+    borderColor: '#2F6FD6',
   },
   vinylCenter: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#16203A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -422,17 +422,17 @@ const styles = StyleSheet.create({
   waveBar: {
     width: 4,
     borderRadius: 2,
-    backgroundColor: '#38bdf8',
+    backgroundColor: '#2F6FD6',
   },
   trackInfo: {
     alignItems: 'center',
     gap: 4,
   },
   subjectText: {
-    color: '#38bdf8',
+    color: '#2F6FD6',
     fontSize: 12,
     fontWeight: '800',
-    textTransform: 'uppercase',
+
   },
   trackTitle: {
     color: '#ffffff',
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   counterText: {
-    color: '#94a3b8',
+    color: '#9AA6C0',
     fontSize: 12,
     marginTop: 2,
   },
@@ -455,21 +455,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#26314F',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#3A4560',
   },
   langPillActive: {
     backgroundColor: 'rgba(56, 189, 248, 0.2)',
-    borderColor: '#38bdf8',
+    borderColor: '#2F6FD6',
   },
   langPillText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: '#9AA6C0',
   },
   langPillTextActive: {
-    color: '#38bdf8',
+    color: '#2F6FD6',
   },
   progressContainer: {
     paddingVertical: 6,
@@ -477,12 +477,12 @@ const styles = StyleSheet.create({
   progressBarTrack: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#334155',
+    backgroundColor: '#3A4560',
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#38bdf8',
+    backgroundColor: '#2F6FD6',
     borderRadius: 3,
   },
   controlsRow: {
@@ -496,10 +496,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#26314F',
   },
   speedBtnText: {
-    color: '#38bdf8',
+    color: '#2F6FD6',
     fontWeight: '800',
     fontSize: 12,
   },
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#38bdf8',
+    backgroundColor: '#2F6FD6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   tipText: {
-    color: '#64748b',
+    color: '#5A6680',
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 16,

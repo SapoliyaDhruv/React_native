@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { MaterialIcons } from "@expo/vector-icons";
 import { MindSprintShadows } from "@/constants/mindsprintTheme";
 import { useTheme } from "@/context/ThemeContext";
@@ -113,9 +113,9 @@ function buildSchoolFlashcards(grade: AcademicGrade, isGSEB: boolean): Flashcard
 
 function buildSchoolFilters(grade: AcademicGrade, isGSEB: boolean) {
   const curriculum = ACADEMIC_CURRICULUM[grade];
-  if (!curriculum) return [{ key: "All", label: "All", color: "#6366f1" }];
+  if (!curriculum) return [{ key: "All", label: "All", color: "#1D3A8A" }];
   const filters: { key: string; label: string; color: string }[] = [
-    { key: "All", label: "All", color: "#6366f1" },
+    { key: "All", label: "All", color: "#1D3A8A" },
   ];
   curriculum.subjects.forEach((sub) => {
     const name = isGSEB ? (sub.nameGujarati || sub.name) : sub.name;
@@ -129,8 +129,8 @@ function buildSchoolFilters(grade: AcademicGrade, isGSEB: boolean) {
 }
 
 function difficultyColor(d: string) {
-  if (d === "Easy") return { bg: "#dcfce7", text: "#166534" };
-  if (d === "Hard") return { bg: "#fee2e2", text: "#991b1b" };
+  if (d === "Easy") return { bg: "#DDF3EA", text: "#166534" };
+  if (d === "Hard") return { bg: "#FBE3E0", text: "#8E2219" };
   return { bg: "#fef9c3", text: "#854d0e" };
 }
 
@@ -143,7 +143,6 @@ function typeIcon(t: string): keyof typeof MaterialIcons.glyphMap {
 }
 
 export default function FlashcardsScreen() {
-  const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
@@ -168,10 +167,10 @@ export default function FlashcardsScreen() {
 
   const schoolFilters = isSchoolMode ? buildSchoolFilters(userGrade, isGSEB) : [];
   const collegeFilters = [
-    { key: "All", label: "All", color: "#6366f1" },
-    { key: "HR Interview", label: "HR", color: "#f59e0b" },
-    { key: "React & JS", label: "React", color: "#38bdf8" },
-    { key: "Data Structures", label: "DSA", color: "#a78bfa" },
+    { key: "All", label: "All", color: "#1D3A8A" },
+    { key: "HR Interview", label: "HR", color: "#F4A30B" },
+    { key: "React & JS", label: "React", color: "#2F6FD6" },
+    { key: "Data Structures", label: "DSA", color: "#7FB0FF" },
   ];
   const filterList = isSchoolMode ? schoolFilters : collegeFilters;
 
@@ -206,7 +205,7 @@ export default function FlashcardsScreen() {
             answer: d.answer,
             difficulty: (d.difficulty || "Medium") as "Easy" | "Medium" | "Hard",
             type: "interview" as const,
-            color: "#6366f1",
+            color: "#1D3A8A",
           }));
           setAllCards(mapped);
           setCards(mapped);
@@ -276,7 +275,7 @@ export default function FlashcardsScreen() {
       ? masteredIds.filter((id) => id !== currentCard.id)
       : [...masteredIds, currentCard.id];
     if (!isMastered && updated.length === cards.length) {
-      Alert.alert("Deck Mastered! 🎓", "You have mastered all flashcards!");
+      Alert.alert("All cards learned", "You have learned every card in this deck.");
     }
     setMasteredIds(updated);
     try { await AsyncStorage.setItem(storageKey, JSON.stringify(updated)); } catch (_) {}
@@ -294,7 +293,7 @@ export default function FlashcardsScreen() {
   const frontRotate  = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "180deg"] });
   const backRotate   = flipAnim.interpolate({ inputRange: [0, 1], outputRange: ["180deg", "360deg"] });
 
-  const diffStyle   = currentCard ? difficultyColor(currentCard.difficulty) : { bg: "#f1f5f9", text: "#64748b" };
+  const diffStyle   = currentCard ? difficultyColor(currentCard.difficulty) : { bg: "#EEF2F8", text: "#5A6680" };
   const displayQ    = isGSEB && currentCard?.questionGujarati ? currentCard.questionGujarati : currentCard?.question || "";
   const displayA    = isGSEB && currentCard?.answerGujarati   ? currentCard.answerGujarati   : currentCard?.answer   || "";
   const displaySub  = currentCard?.subject || "";
@@ -302,29 +301,21 @@ export default function FlashcardsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["top"]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDarkMode ? "#1e1b4b" : "#eef2ff", borderBottomColor: colors.outlineVariant }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            {isSchoolMode ? `Class ${userGrade} Flashcards 📇` : "Placement Flashcards 📇"}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {cards.length} Cards • {masteredCount} Mastered ({progressPercent}%)
-          </Text>
-        </View>
-        <View style={[styles.progressPill, { backgroundColor: isDarkMode ? "rgba(16,185,129,0.2)" : "#dcfce7" }]}>
-          <MaterialIcons name="check-circle" size={13} color="#10b981" />
-          <Text style={styles.progressPillText}>{progressPercent}%</Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Flashcards"
+        subtitle={`${cards.length} cards · ${masteredCount} learned`}
+        right={
+          <View style={[styles.progressPill, { backgroundColor: colors.tertiaryContainer }]}>
+            <MaterialIcons name="check-circle" size={14} color={colors.tertiary} />
+            <Text style={[styles.progressPillText, { color: colors.onTertiaryContainer }]}>{progressPercent}%</Text>
+          </View>
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Progress bar */}
-        <View style={[styles.progressBarTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : "#e2e8f0" }]}>
-          <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: "#10b981" }]} />
+        <View style={[styles.progressBarTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : "#DCE2EE" }]}>
+          <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: "#12805C" }]} />
         </View>
 
         {/* Subject filter chips */}
@@ -357,13 +348,13 @@ export default function FlashcardsScreen() {
                 {`Card ${currentIndex + 1} of ${cards.length}`}
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
-                <TouchableOpacity style={[styles.actionBadgeBtn, { backgroundColor: isSkipped ? "rgba(239,68,68,0.15)" : colors.surfaceContainerHigh }]} onPress={toggleSkipped}>
-                  <MaterialIcons name={isSkipped ? "undo" : "skip-next"} size={16} color={isSkipped ? "#ef4444" : colors.outline} />
-                  <Text style={[styles.actionBadgeText, { color: isSkipped ? "#ef4444" : colors.onSurfaceVariant }]}>{isSkipped ? "Unskip" : "Skip"}</Text>
+                <TouchableOpacity style={[styles.actionBadgeBtn, { backgroundColor: isSkipped ? "rgba(200, 55, 45,0.15)" : colors.surfaceContainerHigh }]} onPress={toggleSkipped}>
+                  <MaterialIcons name={isSkipped ? "undo" : "skip-next"} size={16} color={isSkipped ? "#C8372D" : colors.outline} />
+                  <Text style={[styles.actionBadgeText, { color: isSkipped ? "#C8372D" : colors.onSurfaceVariant }]}>{isSkipped ? "Unskip" : "Skip"}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBadgeBtn, { backgroundColor: isMastered ? "rgba(16,185,129,0.15)" : colors.surfaceContainerHigh }]} onPress={toggleMastered}>
-                  <MaterialIcons name={isMastered ? "check-circle" : "radio-button-unchecked"} size={16} color={isMastered ? "#10b981" : colors.outline} />
-                  <Text style={[styles.actionBadgeText, { color: isMastered ? "#10b981" : colors.onSurfaceVariant }]}>{isMastered ? "Mastered ✓" : "Got It?"}</Text>
+                <TouchableOpacity style={[styles.actionBadgeBtn, { backgroundColor: isMastered ? "rgba(18, 128, 92,0.15)" : colors.surfaceContainerHigh }]} onPress={toggleMastered}>
+                  <MaterialIcons name={isMastered ? "check-circle" : "radio-button-unchecked"} size={16} color={isMastered ? "#12805C" : colors.outline} />
+                  <Text style={[styles.actionBadgeText, { color: isMastered ? "#12805C" : colors.onSurfaceVariant }]}>{isMastered ? "Learned" : "Got It?"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -383,7 +374,7 @@ export default function FlashcardsScreen() {
                         <Text style={[styles.difficultyText, { color: diffStyle.text }]}>{currentCard.difficulty}</Text>
                       </View>
                     </View>
-                    {displayChap ? <Text style={[styles.chapterLabel, { color: colors.onSurfaceVariant }]}>📌 {displayChap}</Text> : null}
+                    {displayChap ? <Text style={[styles.chapterLabel, { color: colors.onSurfaceVariant }]}>{displayChap}</Text> : null}
                     <View style={styles.cardBodyFront}>
                       <MaterialIcons name="help-outline" size={32} color={currentCard.color + "60"} />
                       <Text style={[styles.questionText, { color: colors.onSurface }]}>{displayQ}</Text>
@@ -405,7 +396,7 @@ export default function FlashcardsScreen() {
                       </View>
                     </View>
                     <View style={styles.cardBodyBack}>
-                      <Text style={[styles.answerHeading, { color: currentCard.color }]}>✅ Answer:</Text>
+                      <Text style={[styles.answerHeading, { color: currentCard.color }]}>Answer</Text>
                       <Text style={[styles.answerText, { color: colors.onSurface }]}>{displayA}</Text>
                     </View>
                     <View style={[styles.flipHint, { backgroundColor: currentCard.color + "12" }]}>
@@ -421,7 +412,7 @@ export default function FlashcardsScreen() {
 
             {/* Navigation */}
             <View style={styles.controlsRow}>
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : "#f1f5f9", borderColor: colors.outlineVariant }]} onPress={handlePrev}>
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : "#EEF2F8", borderColor: colors.outlineVariant }]} onPress={handlePrev}>
                 <MaterialIcons name="chevron-left" size={22} color={colors.onSurface} />
                 <Text style={[styles.navBtnText, { color: colors.onSurface }]}>Prev</Text>
               </TouchableOpacity>
@@ -429,7 +420,7 @@ export default function FlashcardsScreen() {
                 <MaterialIcons name="flip" size={20} color="#ffffff" />
                 <Text style={styles.flipBtnText}>{isFlipped ? "Question" : "Answer"}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : "#f1f5f9", borderColor: colors.outlineVariant }]} onPress={handleNext}>
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : "#EEF2F8", borderColor: colors.outlineVariant }]} onPress={handleNext}>
                 <Text style={[styles.navBtnText, { color: colors.onSurface }]}>Next</Text>
                 <MaterialIcons name="chevron-right" size={22} color={colors.onSurface} />
               </TouchableOpacity>
@@ -439,9 +430,9 @@ export default function FlashcardsScreen() {
             <View style={[styles.statsRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : "#ffffff", borderColor: colors.outlineVariant }]}>
               {[
                 { label: "Total", value: cards.length, color: colors.primary },
-                { label: "Mastered", value: masteredCount, color: "#10b981" },
-                { label: "Remaining", value: cards.length - masteredCount, color: "#f59e0b" },
-                { label: "Skipped", value: skippedIds.filter((id) => cards.some((c) => c.id === id)).length, color: "#ef4444" },
+                { label: "Mastered", value: masteredCount, color: "#12805C" },
+                { label: "Remaining", value: cards.length - masteredCount, color: "#F4A30B" },
+                { label: "Skipped", value: skippedIds.filter((id) => cards.some((c) => c.id === id)).length, color: "#C8372D" },
               ].map((stat) => (
                 <View key={stat.label} style={styles.statItem}>
                   <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
@@ -463,7 +454,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 15.5, fontWeight: "800", letterSpacing: -0.2 },
   headerSub: { fontSize: 11.5, marginTop: 2 },
   progressPill: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 14 },
-  progressPillText: { fontSize: 10.5, fontWeight: "800", color: "#10b981" },
+  progressPillText: { fontSize: 10.5, fontWeight: "800", color: "#12805C" },
   scrollContainer: { padding: 16, gap: 14, paddingBottom: 40 },
   progressBarTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
   progressBarFill: { height: "100%", borderRadius: 3 },

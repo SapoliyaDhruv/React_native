@@ -13,10 +13,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
@@ -42,7 +43,7 @@ const SCHOOL_SUBJECT_OPTIONS: SubjectOption[] = [
     name: 'All Subjects Mixed',
     nameGujarati: 'સર્વ વિષયો (મિશ્ર લડાઈ)',
     icon: 'shuffle',
-    color: '#6366f1',
+    color: '#1D3A8A',
     subtitle: 'Fast 5-question blitz across all subjects',
     subtitleGujarati: 'બધા વિષયોમાંથી રેન્ડમ ૫ ઝડપી પ્રશ્નો',
   },
@@ -51,7 +52,7 @@ const SCHOOL_SUBJECT_OPTIONS: SubjectOption[] = [
     name: 'Mathematics',
     nameGujarati: 'ગણિત',
     icon: 'calculate',
-    color: '#3b82f6',
+    color: '#2F6FD6',
     subtitle: 'Numbers, fractions, integers & geometry',
     subtitleGujarati: 'સંખ્યાઓ, અપૂર્ણાંક, પૂર્ણાંકો & ભૂમિતિ',
   },
@@ -60,7 +61,7 @@ const SCHOOL_SUBJECT_OPTIONS: SubjectOption[] = [
     name: 'Science & Experiments',
     nameGujarati: 'વિજ્ઞાન અને પ્રયોગો',
     icon: 'biotech',
-    color: '#10b981',
+    color: '#12805C',
     subtitle: 'Food, circuits, living organisms & matter',
     subtitleGujarati: 'પ્રકાશ, પરિપથ, વનસ્પતિ & સજીવો',
   },
@@ -69,7 +70,7 @@ const SCHOOL_SUBJECT_OPTIONS: SubjectOption[] = [
     name: 'Social Science',
     nameGujarati: 'સામાજિક વિજ્ઞાન',
     icon: 'public',
-    color: '#f59e0b',
+    color: '#F4A30B',
     subtitle: 'History, civilizations, maps & Earth',
     subtitleGujarati: 'ઇતિહાસ, હડપ્પીય સભ્યતા & પૃથ્વી',
   },
@@ -89,28 +90,28 @@ const COLLEGE_SUBJECT_OPTIONS: SubjectOption[] = [
     id: 'All',
     name: 'All Topics Mixed',
     icon: 'shuffle',
-    color: '#6366f1',
+    color: '#1D3A8A',
     subtitle: 'Quant, DSA & Web fundamentals',
   },
   {
     id: 'Quantitative Aptitude',
     name: 'Quantitative Aptitude',
     icon: 'calculate',
-    color: '#f59e0b',
+    color: '#F4A30B',
     subtitle: 'Arithmetic, speed math & time-distance',
   },
   {
     id: 'Data Structures & Algorithms',
     name: 'Data Structures & Algorithms',
     icon: 'code',
-    color: '#a78bfa',
+    color: '#7FB0FF',
     subtitle: 'Arrays, Trees, Stacks & Complexity',
   },
   {
     id: 'React & JavaScript',
     name: 'React & JavaScript',
     icon: 'language',
-    color: '#38bdf8',
+    color: '#2F6FD6',
     subtitle: 'Hooks, Async/Await, ES6 & Event Loop',
   },
 ];
@@ -605,80 +606,53 @@ export default function QuizDuelScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Top Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            if (phase === 'duel') {
-              Alert.alert(
-                'Quit Active Duel?',
-                'Leaving now will forfeit this match.',
-                [
-                  { text: 'Resume', style: 'cancel' },
-                  { text: 'Quit Match', style: 'destructive', onPress: () => router.back() },
-                ]
-              );
-            } else {
-              router.back();
-            }
-          }}
-          style={styles.backBtn}
-        >
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            1v1 Speed Quiz Duel ⚔️
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode
-              ? `Class ${userGrade} • Live Peer Battle`
-              : 'Placement Aptitude Speed Battle'}
-          </Text>
-        </View>
-
-        {/* XP Badge Pill */}
-        <View style={[styles.xpPill, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
-          <MaterialIcons name="local-fire-department" size={16} color="#f59e0b" />
-          <Text style={styles.xpPillText}>{totalUserXp} XP</Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="1v1 duel"
+        subtitle={isSchoolMode ? `Class ${userGrade} · race a classmate` : 'Aptitude speed race'}
+        onBack={() => {
+          if (phase === 'duel') {
+            Alert.alert('Leave this duel?', 'Leaving now ends the match and counts as a loss.', [
+              { text: 'Keep playing', style: 'cancel' },
+              { text: 'Leave duel', style: 'destructive', onPress: () => router.back() },
+            ]);
+          } else {
+            router.back();
+          }
+        }}
+        right={
+          <View style={[styles.xpPill, { backgroundColor: colors.accentContainer }]}>
+            <MaterialIcons name="local-fire-department" size={16} color={colors.accent} />
+            <Text style={[styles.xpPillText, { color: colors.onAccentContainer }]}>{totalUserXp} XP</Text>
+          </View>
+        }
+      />
 
       {/* PHASE 1: PRE-DUEL SUBJECT SELECTION */}
       {phase === 'select_subject' && (
         <ScrollView contentContainerStyle={styles.selectionScroll} showsVerticalScrollIndicator={false}>
           {/* Banner */}
-          <View style={[styles.heroCard, { backgroundColor: '#1e1b4b' }, MindSprintShadows.glow]}>
+          <View style={[styles.heroCard, { backgroundColor: '#12245C' }, MindSprintShadows.glow]}>
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>
-                LIVE 1v1 PEER ARENA ⚔️
+                Race a classmate
               </Text>
             </View>
             <Text style={styles.heroTitle}>
-              Choose Your Battle Subject & Beat the Clock!
+              Pick a subject and race the clock
             </Text>
             <Text style={styles.heroSub}>
-              5 fast questions, 12 seconds per question. Highest score wins bonus leaderboard XP!
+              5 questions, 12 seconds each. The higher score wins extra XP.
             </Text>
           </View>
 
           {/* Duel Mode Selector: Quick Match vs Create Room vs Join Room */}
-          <View style={[styles.modeTabsRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}>
+          <View style={[styles.modeTabsRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' }]}>
             <TouchableOpacity
               style={[styles.modeTabBtn, roomMode === 'random' && { backgroundColor: colors.primary }]}
               onPress={() => setRoomMode('random')}
             >
-              <Text style={[styles.modeTabBtnText, { color: roomMode === 'random' ? '#ffffff' : colors.onSurface }]}>
-                ⚡ Random Peer
+              <Text style={[styles.modeTabBtnText, { color: roomMode === 'random' ? colors.onPrimary : colors.onSurface }]}>
+                Random opponent
               </Text>
             </TouchableOpacity>
 
@@ -691,8 +665,8 @@ export default function QuizDuelScreen() {
                 }
               }}
             >
-              <Text style={[styles.modeTabBtnText, { color: roomMode === 'create_room' ? '#ffffff' : colors.onSurface }]}>
-                👥 Create Room
+              <Text style={[styles.modeTabBtnText, { color: roomMode === 'create_room' ? colors.onPrimary : colors.onSurface }]}>
+                Create room
               </Text>
             </TouchableOpacity>
 
@@ -700,8 +674,8 @@ export default function QuizDuelScreen() {
               style={[styles.modeTabBtn, roomMode === 'join_room' && { backgroundColor: colors.primary }]}
               onPress={() => setRoomMode('join_room')}
             >
-              <Text style={[styles.modeTabBtnText, { color: roomMode === 'join_room' ? '#ffffff' : colors.onSurface }]}>
-                🔑 Join Room
+              <Text style={[styles.modeTabBtnText, { color: roomMode === 'join_room' ? colors.onPrimary : colors.onSurface }]}>
+                Join room
               </Text>
             </TouchableOpacity>
           </View>
@@ -715,7 +689,7 @@ export default function QuizDuelScreen() {
                   <Text style={[styles.roomSub, { color: colors.onSurfaceVariant, marginTop: 2 }]}>
                     {isCreatingRoom
                       ? 'Generating live room...'
-                      : '🟢 Live Room Active • Waiting for classmate...'}
+                      : 'Room is open · waiting for your classmate…'}
                   </Text>
                 </View>
                 <View style={[styles.codeBadge, { backgroundColor: colors.primary }]}>
@@ -743,14 +717,14 @@ export default function QuizDuelScreen() {
                   }}
                 >
                   <MaterialIcons name="share" size={16} color="#ffffff" />
-                  <Text style={styles.waShareBtnText}>Share PIN on WhatsApp 💬</Text>
+                  <Text style={styles.waShareBtnText}>Share PIN on WhatsApp</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.waShareBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9', borderWidth: 1, borderColor: colors.outlineVariant }]}
+                  style={[styles.waShareBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#EEF2F8', borderWidth: 1, borderColor: colors.outlineVariant }]}
                   onPress={() => startMatchmaking(selectedSubjectId)}
                 >
-                  <Text style={[styles.waShareBtnText, { color: colors.onSurface }]}>Play vs Bot 🤖</Text>
+                  <Text style={[styles.waShareBtnText, { color: colors.onSurface }]}>Play against the computer</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -762,7 +736,7 @@ export default function QuizDuelScreen() {
               <Text style={[styles.roomLabel, { color: colors.onSurface }]}>Enter Classmate's 4-Digit Room Code:</Text>
               <View style={styles.joinInputRow}>
                 <TextInput
-                  style={[styles.pinInput, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', color: colors.onSurface, borderColor: colors.outlineVariant }]}
+                  style={[styles.pinInput, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB', color: colors.onSurface, borderColor: colors.outlineVariant }]}
                   placeholder="e.g. 8421"
                   placeholderTextColor={colors.outline}
                   keyboardType="number-pad"
@@ -778,7 +752,7 @@ export default function QuizDuelScreen() {
                   {isJoiningRoom ? (
                     <ActivityIndicator size="small" color="#ffffff" />
                   ) : (
-                    <Text style={styles.joinBtnText}>Join Battle ⚔️</Text>
+                    <Text style={styles.joinBtnText}>Join duel</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -786,7 +760,7 @@ export default function QuizDuelScreen() {
           )}
 
           <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-            Select Battle Subject:
+            Choose a subject
           </Text>
 
           <View style={styles.subjectsGrid}>
@@ -833,7 +807,7 @@ export default function QuizDuelScreen() {
       {/* PHASE 2: MATCHMAKING RADAR */}
       {phase === 'matching' && (
         <View style={styles.matchmakingCenter}>
-          <View style={[styles.radarOuterCircle, { borderColor: isDarkMode ? 'rgba(99, 102, 241, 0.3)' : '#c7d2fe' }]}>
+          <View style={[styles.radarOuterCircle, { borderColor: isDarkMode ? 'rgba(29, 58, 138, 0.3)' : '#C9D5F5' }]}>
             <Animated.View
               style={[
                 styles.radarScanner,
@@ -872,7 +846,7 @@ export default function QuizDuelScreen() {
       {phase === 'duel' && (
         <View style={styles.arenaContainer}>
           {/* Live Head-to-Head Scoreboard Bar */}
-          <View style={[styles.scoreboardCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#1e1b4b' }, MindSprintShadows.card]}>
+          <View style={[styles.scoreboardCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#12245C' }, MindSprintShadows.card]}>
             <View style={styles.playerCol}>
               <Text style={styles.sbName}>🧑‍🎓 You</Text>
               <Text style={styles.sbPoints}>{myScore} pts</Text>
@@ -882,7 +856,7 @@ export default function QuizDuelScreen() {
             <View
               style={[
                 styles.timerBubble,
-                { backgroundColor: timerSeconds <= 4 ? '#ef4444' : '#f59e0b' },
+                { backgroundColor: timerSeconds <= 4 ? '#C8372D' : '#F4A30B' },
               ]}
             >
               <Text style={styles.timerText}>{timerSeconds}s</Text>
@@ -926,19 +900,19 @@ export default function QuizDuelScreen() {
                   const isSelected = selectedOpt === idx;
                   const isCorrect = idx === currentQ.correctAnswer;
 
-                  let bg = isDarkMode ? colors.surfaceContainerLow : '#f8fafc';
-                  let border = isDarkMode ? colors.outlineVariant : '#e2e8f0';
+                  let bg = isDarkMode ? colors.surfaceContainerLow : '#F5F7FB';
+                  let border = isDarkMode ? colors.outlineVariant : '#DCE2EE';
                   let textClr = colors.onSurface;
 
                   if (isRoundAnswered) {
                     if (isCorrect) {
-                      bg = isDarkMode ? 'rgba(16, 185, 129, 0.25)' : '#d1fae5';
-                      border = '#10b981';
-                      textClr = '#065f46';
+                      bg = isDarkMode ? 'rgba(18, 128, 92, 0.25)' : '#DDF3EA';
+                      border = '#12805C';
+                      textClr = '#0B5C42';
                     } else if (isSelected && !isCorrect) {
-                      bg = isDarkMode ? 'rgba(239, 68, 68, 0.25)' : '#fee2e2';
-                      border = '#ef4444';
-                      textClr = '#991b1b';
+                      bg = isDarkMode ? 'rgba(200, 55, 45, 0.25)' : '#FBE3E0';
+                      border = '#C8372D';
+                      textClr = '#8E2219';
                     }
                   }
 
@@ -954,7 +928,7 @@ export default function QuizDuelScreen() {
                       ]}
                       onPress={() => handleAnswer(idx)}
                     >
-                      <View style={[styles.optLetterCircle, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
+                      <View style={[styles.optLetterCircle, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}>
                         <Text style={[styles.optLetterText, { color: colors.onSurface }]}>
                           {String.fromCharCode(65 + idx)}
                         </Text>
@@ -985,22 +959,22 @@ export default function QuizDuelScreen() {
             <View
               style={[
                 styles.resultIconCircle,
-                { backgroundColor: myScore > oppScore ? 'rgba(16, 185, 129, 0.15)' : myScore === oppScore ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+                { backgroundColor: myScore > oppScore ? 'rgba(18, 128, 92, 0.15)' : myScore === oppScore ? 'rgba(244, 163, 11, 0.15)' : 'rgba(200, 55, 45, 0.15)' },
               ]}
             >
               <MaterialIcons
                 name={myScore > oppScore ? 'emoji-events' : myScore === oppScore ? 'handshake' : 'sports-kabaddi'}
                 size={44}
-                color={myScore > oppScore ? '#10b981' : myScore === oppScore ? '#f59e0b' : '#ef4444'}
+                color={myScore > oppScore ? '#12805C' : myScore === oppScore ? '#F4A30B' : '#C8372D'}
               />
             </View>
 
             <Text style={[styles.duelResultHeading, { color: colors.onSurface }]}>
               {myScore > oppScore
-                ? 'VICTORY! 🏆'
+                ? 'You won'
                 : myScore === oppScore
-                ? 'WELL PLAYED! TIE 🤝'
-                : 'GOOD FIGHT! 💪'}
+                ? 'It’s a tie'
+                : 'Good try'}
             </Text>
 
             {/* Score Comparison Box */}
@@ -1018,13 +992,13 @@ export default function QuizDuelScreen() {
               <View style={styles.playerScoreBox}>
                 <Text style={styles.scoreAvatar}>{opponent.avatar}</Text>
                 <Text style={[styles.playerName, { color: colors.onSurface }]}>{opponent.name}</Text>
-                <Text style={[styles.scoreBig, { color: '#ef4444' }]}>{oppScore} pts</Text>
+                <Text style={[styles.scoreBig, { color: '#C8372D' }]}>{oppScore} pts</Text>
               </View>
             </View>
 
             {/* Earned XP Pill */}
-            <View style={[styles.rewardPill, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
-              <MaterialIcons name="local-fire-department" size={18} color="#f59e0b" />
+            <View style={[styles.rewardPill, { backgroundColor: 'rgba(244, 163, 11, 0.15)' }]}>
+              <MaterialIcons name="local-fire-department" size={18} color="#F4A30B" />
               <Text style={styles.rewardText}>
                 {`+${earnedXp} Duel XP added to your leaderboard standing! (Total: ${totalUserXp} XP)`}
               </Text>
@@ -1037,7 +1011,7 @@ export default function QuizDuelScreen() {
             >
               <MaterialIcons name="replay" size={20} color="#ffffff" />
               <Text style={styles.rematchBtnText}>
-                Play Rematch ⚔️
+                Play again
               </Text>
             </TouchableOpacity>
 
@@ -1047,7 +1021,7 @@ export default function QuizDuelScreen() {
             >
               <MaterialIcons name="grid-view" size={18} color={colors.primary} />
               <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>
-                Change Subject 🔄
+                Change subject
               </Text>
             </TouchableOpacity>
           </View>
@@ -1091,7 +1065,7 @@ const styles = StyleSheet.create({
   xpPillText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#b45309',
+    color: '#8A5A00',
   },
   selectionScroll: {
     padding: 16,
@@ -1116,20 +1090,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   heroTitle: {
-    fontSize: 19,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 24,
+    lineHeight: 31,
     color: '#ffffff',
-    lineHeight: 25,
+    marginTop: 8,
   },
   heroSub: {
     fontSize: 13,
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     lineHeight: 18,
   },
   sectionHeading: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 4,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 8,
+    marginBottom: 10,
   },
   subjectsGrid: {
     gap: 12,
@@ -1235,12 +1212,12 @@ const styles = StyleSheet.create({
   sbName: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#c7d2fe',
+    color: '#C9D5F5',
   },
   sbPoints: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#34d399',
+    color: '#4FCB9C',
   },
   timerBubble: {
     width: 48,
@@ -1361,7 +1338,7 @@ const styles = StyleSheet.create({
   rewardText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#b45309',
+    color: '#8A5A00',
     flex: 1,
   },
   rematchBtn: {

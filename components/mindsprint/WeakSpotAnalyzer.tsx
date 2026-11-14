@@ -55,7 +55,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.1)' }]}>
+        <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : 'rgba(29,58,138,0.1)' }]}>
           <MaterialIcons name="psychology" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
@@ -85,12 +85,12 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
           let badgeText = 'Average';
 
           if (item.isStrong) {
-            barColor = '#10b981';
-            badgeColor = '#10b981';
+            barColor = '#12805C';
+            badgeColor = '#12805C';
             badgeText = 'Mastered';
           } else if (item.isWeak) {
-            barColor = '#ef4444';
-            badgeColor = '#ef4444';
+            barColor = '#C8372D';
+            badgeColor = '#C8372D';
             badgeText = 'Needs Practice';
           }
 
@@ -114,7 +114,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 </View>
               </View>
 
-              <View style={[styles.trackBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9' }]}>
+              <View style={[styles.trackBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#EEF2F8' }]}>
                 <View
                   style={[
                     styles.fillBar,
@@ -133,7 +133,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
           <View style={styles.recommendHeader}>
             <MaterialIcons name="auto-fix-high" size={20} color={colors.primary} />
             <Text style={[styles.recommendTitle, { color: colors.primary }]}>
-              🎯 AI Recommended Recovery Plan
+              What to practise next
             </Text>
           </View>
 
@@ -144,14 +144,14 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 styles.weakItemCard,
                 {
                   backgroundColor: colors.surfaceContainerLowest,
-                  borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.4)' : '#fecaca',
+                  borderColor: isDarkMode ? 'rgba(200, 55, 45, 0.4)' : '#F5C6C0',
                 },
                 MindSprintShadows.card,
               ]}
             >
               <View style={styles.weakTextContent}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <MaterialIcons name="warning-amber" size={18} color="#ef4444" />
+                  <MaterialIcons name="warning-amber" size={18} color="#C8372D" />
                   <Text style={[styles.weakAlertTitle, { color: colors.onSurface }]}>
                     {`Focus Area: ${weak.category}`}
                   </Text>
@@ -169,7 +169,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 >
                   <MaterialIcons name="play-circle-filled" size={16} color="#ffffff" />
                   <Text style={styles.actionBtnText}>
-                    Watch Masterclass 🎬
+                    Watch lesson
                   </Text>
                 </TouchableOpacity>
 
@@ -179,7 +179,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 >
                   <MaterialIcons name="style" size={16} color={colors.primary} />
                   <Text style={[styles.secondaryActionBtnText, { color: colors.primary }]}>
-                    Flashcards 📇
+                    Flashcards
                   </Text>
                 </TouchableOpacity>
               </View>

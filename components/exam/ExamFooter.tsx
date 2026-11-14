@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 
 interface ExamFooterProps {
@@ -16,6 +16,10 @@ interface ExamFooterProps {
   onSubmit: () => void;
 }
 
+/**
+ * Sticky bottom bar: small utilities (mark / clear / submit early) above a
+ * Previous · Next row. On the last question Next becomes "Submit test".
+ */
 export const ExamFooter: React.FC<ExamFooterProps> = ({
   currentIndex,
   totalQuestions,
@@ -27,89 +31,78 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
   onNext,
   onSubmit,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex >= totalQuestions - 1;
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-          borderTopColor: colors.outlineVariant,
-        },
-      ]}
-    >
-      {/* Utilities Row */}
+    <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
       <View style={styles.utilityRow}>
         <TouchableOpacity
-          style={styles.actionBtn}
+          style={[styles.chip, isMarkedForReview && { backgroundColor: colors.accentContainer }]}
           activeOpacity={0.7}
           onPress={onToggleReview}
+          accessibilityRole="button"
+          accessibilityState={{ selected: isMarkedForReview }}
         >
           <MaterialIcons
             name={isMarkedForReview ? 'bookmark' : 'bookmark-border'}
             size={18}
-            color={isMarkedForReview ? '#f59e0b' : colors.outline}
+            color={isMarkedForReview ? colors.accent : colors.onSurfaceVariant}
           />
-          <Text
-            style={[
-              styles.actionLabel,
-              { color: isMarkedForReview ? '#d97706' : colors.onSurfaceVariant },
-            ]}
-          >
-            {isMarkedForReview ? 'Marked' : 'Mark for Review'}
+          <Text style={[styles.chipText, { color: isMarkedForReview ? colors.onAccentContainer : colors.onSurfaceVariant }]}>
+            {isMarkedForReview ? 'Marked for review' : 'Mark for review'}
           </Text>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {hasSelectedOption && (
-            <TouchableOpacity style={styles.clearBtn} activeOpacity={0.7} onPress={onClearChoice}>
-              <MaterialIcons name="close" size={14} color="#ef4444" />
-              <Text style={styles.clearText}>Clear</Text>
+            <TouchableOpacity style={styles.chip} activeOpacity={0.7} onPress={onClearChoice} accessibilityRole="button">
+              <MaterialIcons name="backspace" size={16} color={colors.onSurfaceVariant} />
+              <Text style={[styles.chipText, { color: colors.onSurfaceVariant }]}>Clear</Text>
             </TouchableOpacity>
           )}
-
-          <TouchableOpacity
-            style={[styles.finishEarlyBtn, { backgroundColor: '#10b98115', borderColor: '#10b981' }]}
-            activeOpacity={0.7}
-            onPress={onSubmit}
-          >
-            <MaterialIcons name="done-all" size={14} color="#10b981" />
-            <Text style={styles.finishEarlyText}>Finish Exam</Text>
-          </TouchableOpacity>
+          {!isLast && (
+            <TouchableOpacity style={styles.chip} activeOpacity={0.7} onPress={onSubmit} accessibilityRole="button">
+              <MaterialIcons name="done-all" size={16} color={colors.tertiary} />
+              <Text style={[styles.chipText, { color: colors.tertiary }]}>Submit test</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* Navigation Buttons Row */}
       <View style={styles.navRow}>
-        {currentIndex > 0 && (
-          <TouchableOpacity
-            style={[styles.prevBtn, { borderColor: colors.outlineVariant }]}
-            activeOpacity={0.7}
-            onPress={onPrevious}
-          >
-            <MaterialIcons name="chevron-left" size={20} color={colors.onSurface} />
-            <Text style={[styles.prevText, { color: colors.onSurface }]}>Previous</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.prevBtn, { borderColor: colors.outlineVariant, opacity: isFirst ? 0.4 : 1 }]}
+          activeOpacity={0.7}
+          onPress={onPrevious}
+          disabled={isFirst}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isFirst }}
+        >
+          <MaterialIcons name="chevron-left" size={22} color={colors.onSurface} />
+          <Text style={[styles.btnText, { color: colors.onSurface }]}>Previous</Text>
+        </TouchableOpacity>
 
-        {currentIndex < totalQuestions - 1 ? (
+        {!isLast ? (
           <TouchableOpacity
-            style={[styles.nextBtn, { backgroundColor: colors.primary }, MindSprintShadows.glow]}
+            style={[styles.mainBtn, { backgroundColor: colors.primary }]}
             activeOpacity={0.85}
             onPress={onNext}
+            accessibilityRole="button"
           >
-            <Text style={styles.nextText}>Next Question</Text>
-            <MaterialIcons name="chevron-right" size={20} color="#ffffff" />
+            <Text style={[styles.btnText, { color: colors.onPrimary }]}>Next</Text>
+            <MaterialIcons name="chevron-right" size={22} color={colors.onPrimary} />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[styles.submitBtn, { backgroundColor: '#10b981' }, MindSprintShadows.glow]}
+            style={[styles.mainBtn, { backgroundColor: colors.accent }]}
             activeOpacity={0.85}
             onPress={onSubmit}
+            accessibilityRole="button"
           >
-            <MaterialIcons name="check-circle" size={20} color="#ffffff" />
-            <Text style={styles.submitText}>Submit Exam</Text>
+            <MaterialIcons name="done-all" size={20} color={colors.onAccent} />
+            <Text style={[styles.btnText, { color: colors.onAccent }]}>Submit test</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -119,50 +112,28 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
+    paddingTop: 8,
+    paddingBottom: 12,
+    gap: 8,
   },
   utilityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  actionBtn: {
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingVertical: 4,
-  },
-  actionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  clearBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingVertical: 4,
-  },
-  clearText: {
-    fontSize: 12,
-    color: '#ef4444',
-    fontWeight: '600',
-  },
-  finishEarlyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    minHeight: 36,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 4,
+    borderRadius: 18,
   },
-  finishEarlyText: {
-    fontSize: 11,
-    color: '#10b981',
-    fontWeight: '700',
+  chipText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   navRow: {
     flexDirection: 'row',
@@ -172,42 +143,24 @@ const styles = StyleSheet.create({
   prevBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    gap: 4,
+    gap: 2,
   },
-  prevText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  nextBtn: {
+  mainBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
+    minHeight: 52,
+    borderRadius: 14,
     gap: 4,
   },
-  nextText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  submitBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 6,
-  },
-  submitText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
+  btnText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 16,
   },
 });

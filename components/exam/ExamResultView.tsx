@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { Question } from '@/constants/mindsprintData';
@@ -84,7 +84,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
             styles.resultCard,
             {
               backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-              borderColor: isDiagnostic ? '#8b5cf6' : colors.outlineVariant,
+              borderColor: isDiagnostic ? '#2F6FD6' : colors.outlineVariant,
               borderWidth: isDiagnostic ? 2 : 1,
             },
             MindSprintShadows.card,
@@ -92,26 +92,26 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
         >
           {isDiagnostic && (
             <View style={styles.diagnosticPill}>
-              <MaterialIcons name="auto-awesome" size={14} color="#8b5cf6" />
-              <Text style={styles.diagnosticPillText}>AI DIAGNOSTIC REPORT</Text>
+              <MaterialIcons name="auto-awesome" size={14} color="#2F6FD6" />
+              <Text style={styles.diagnosticPillText}>Diagnostic report</Text>
             </View>
           )}
 
           <View
             style={[
               styles.trophyCircle,
-              { backgroundColor: isPassed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+              { backgroundColor: isPassed ? 'rgba(18, 128, 92, 0.15)' : 'rgba(200, 55, 45, 0.15)' },
             ]}
           >
             <MaterialIcons
               name={isPassed ? 'emoji-events' : 'school'}
               size={36}
-              color={isPassed ? '#10b981' : '#ef4444'}
+              color={isPassed ? '#12805C' : '#C8372D'}
             />
           </View>
 
           <Text style={[styles.resultTitle, { color: colors.onSurface }]}>
-            {isPassed ? (percentage >= 80 ? 'Outstanding Mastery! 🌟' : 'Assessment Passed! 🎉') : 'Assessment Completed'}
+            {isPassed ? (percentage >= 80 ? 'Excellent work' : 'You passed') : 'Test finished'}
           </Text>
           <Text style={[styles.resultSubtitle, { color: colors.onSurfaceVariant }]}>
             {examTitle}
@@ -119,17 +119,17 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
 
           {/* Score & Pass Badge */}
           <View style={styles.scoreRow}>
-            <Text style={[styles.scoreNumber, { color: isPassed ? '#10b981' : colors.primary }]}>
+            <Text style={[styles.scoreNumber, { color: isPassed ? '#12805C' : colors.primary }]}>
               {percentage}%
             </Text>
             <View
               style={[
                 styles.passBadge,
-                { backgroundColor: isPassed ? '#10b981' : '#ef4444' },
+                { backgroundColor: isPassed ? '#12805C' : '#C8372D' },
               ]}
             >
               <Text style={styles.passText}>
-                {isPassed ? 'PASSED & VERIFIED 🚀' : 'NEEDS PRACTICE 💪'}
+                {isPassed ? 'Passed' : 'Needs practice'}
               </Text>
             </View>
           </View>
@@ -138,15 +138,15 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           <View
             style={[
               styles.statsGrid,
-              { borderTopColor: isDarkMode ? colors.outlineVariant : '#e5e7eb' },
+              { borderTopColor: isDarkMode ? colors.outlineVariant : '#DCE2EE' },
             ]}
           >
             <View style={styles.statBox}>
-              <Text style={[styles.statVal, { color: '#10b981' }]}>{correctCount}</Text>
+              <Text style={[styles.statVal, { color: '#12805C' }]}>{correctCount}</Text>
               <Text style={[styles.statLbl, { color: colors.outline }]}>Correct</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statVal, { color: '#ef4444' }]}>
+              <Text style={[styles.statVal, { color: '#C8372D' }]}>
                 {questions.length - correctCount}
               </Text>
               <Text style={[styles.statLbl, { color: colors.outline }]}>Incorrect</Text>
@@ -163,12 +163,12 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           <View style={styles.actionButtonsRow}>
             {isCertificateEligible && (
               <TouchableOpacity
-                style={[styles.certActionBtn, { backgroundColor: '#f59e0b' }, MindSprintShadows.glow]}
+                style={[styles.certActionBtn, { backgroundColor: '#F4A30B' }, MindSprintShadows.glow]}
                 activeOpacity={0.85}
                 onPress={() => setShowCertModal(true)}
               >
                 <MaterialIcons name="workspace-premium" size={18} color="#ffffff" />
-                <Text style={styles.certActionBtnText}>View Certificate 🎖️</Text>
+                <Text style={styles.certActionBtnText}>View certificate</Text>
               </TouchableOpacity>
             )}
 
@@ -178,7 +178,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               onPress={handleShareScorecard}
             >
               <MaterialIcons name="share" size={18} color="#ffffff" />
-              <Text style={styles.shareActionBtnText}>Share Scorecard</Text>
+              <Text style={styles.shareActionBtnText}>Share score</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -188,7 +188,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
 
         {/* Solutions & Explanations */}
         <Text style={[styles.solutionsHeading, { color: colors.onSurface }]}>
-          Solutions & Detailed Explanations
+          Answers and explanations
         </Text>
 
         {questions.map((q, idx) => {
@@ -202,7 +202,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                 styles.explanationCard,
                 {
                   backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                  borderColor: isCorrect ? '#10b981' : userAns !== undefined ? '#ef4444' : colors.outlineVariant,
+                  borderColor: isCorrect ? '#12805C' : userAns !== undefined ? '#C8372D' : colors.outlineVariant,
                 },
                 MindSprintShadows.card,
               ]}
@@ -215,10 +215,10 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                   <View
                     style={[
                       styles.statusBadge,
-                      { backgroundColor: isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+                      { backgroundColor: isCorrect ? 'rgba(18, 128, 92, 0.15)' : 'rgba(200, 55, 45, 0.15)' },
                     ]}
                   >
-                    <Text style={[styles.statusText, { color: isCorrect ? '#10b981' : '#ef4444' }]}>
+                    <Text style={[styles.statusText, { color: isCorrect ? '#12805C' : '#C8372D' }]}>
                       {isCorrect ? 'Correct ✓' : userAns === undefined ? 'Skipped' : 'Incorrect ✗'}
                     </Text>
                   </View>
@@ -243,25 +243,25 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                   const isCorrectAnswer = optIdx === q.correctAnswer;
                   const isUserChosen = optIdx === userAns;
 
-                  let bg = isDarkMode ? colors.surfaceContainerLow : '#f8fafc';
-                  let border = isDarkMode ? colors.outlineVariant : '#e2e8f0';
+                  let bg = isDarkMode ? colors.surfaceContainerLow : '#F5F7FB';
+                  let border = isDarkMode ? colors.outlineVariant : '#DCE2EE';
                   let textClr = colors.onSurface;
                   let badge = null;
 
                   if (isUserChosen && isCorrectAnswer) {
-                    bg = 'rgba(16, 185, 129, 0.15)';
-                    border = '#10b981';
-                    textClr = '#065f46';
+                    bg = 'rgba(18, 128, 92, 0.15)';
+                    border = '#12805C';
+                    textClr = '#0B5C42';
                     badge = 'Your Answer ✓';
                   } else if (isUserChosen && !isCorrectAnswer) {
-                    bg = 'rgba(239, 68, 68, 0.15)';
-                    border = '#ef4444';
-                    textClr = '#991b1b';
+                    bg = 'rgba(200, 55, 45, 0.15)';
+                    border = '#C8372D';
+                    textClr = '#8E2219';
                     badge = 'Your Choice ✗';
                   } else if (isCorrectAnswer) {
-                    bg = 'rgba(16, 185, 129, 0.15)';
-                    border = '#10b981';
-                    textClr = '#065f46';
+                    bg = 'rgba(18, 128, 92, 0.15)';
+                    border = '#12805C';
+                    textClr = '#0B5C42';
                     badge = 'Correct Answer ✓';
                   }
 
@@ -288,7 +288,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                             paddingHorizontal: 8,
                             paddingVertical: 2,
                             borderRadius: 6,
-                            backgroundColor: isUserChosen && !isCorrectAnswer ? '#ef4444' : '#10b981',
+                            backgroundColor: isUserChosen && !isCorrectAnswer ? '#C8372D' : '#12805C',
                           }}
                         >
                           <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
@@ -305,7 +305,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               <View
                 style={[
                   styles.explBox,
-                  { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' },
+                  { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' },
                 ]}
               >
                 <Text style={[styles.explTitle, { color: colors.primary }]}>Explanation:</Text>
@@ -339,7 +339,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           <View style={[styles.certModalCard, { backgroundColor: '#ffffff' }, MindSprintShadows.glow]}>
             {/* Certificate Header Banner */}
             <View style={styles.certHeader}>
-              <MaterialIcons name="verified" size={28} color="#f59e0b" />
+              <MaterialIcons name="verified" size={28} color="#F4A30B" />
               <Text style={styles.certBrand}>MINDSPRINT ACADEMY</Text>
               <Text style={styles.certMainTitle}>CERTIFICATE OF EXCELLENCE</Text>
               <Text style={styles.certSubText}>This is to officially certify that</Text>
@@ -365,7 +365,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                 <Text style={styles.certMetaVal}>{todayDate}</Text>
               </View>
               <View style={styles.qrBox}>
-                <MaterialIcons name="qr-code" size={44} color="#1e1b4b" />
+                <MaterialIcons name="qr-code" size={44} color="#12245C" />
                 <Text style={styles.qrSub}>{certId}</Text>
               </View>
             </View>
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'rgba(47, 111, 214, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   diagnosticPillText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#8b5cf6',
+    color: '#2F6FD6',
     letterSpacing: 0.5,
   },
   trophyCircle: {
@@ -430,8 +430,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   resultTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 26,
+    lineHeight: 34,
+    textAlign: 'center',
+    marginTop: 12,
   },
   resultSubtitle: {
     fontSize: 13,
@@ -444,8 +447,9 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   scoreNumber: {
-    fontSize: 44,
-    fontWeight: '900',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 48,
+    lineHeight: 56,
   },
   passBadge: {
     paddingHorizontal: 12,
@@ -511,9 +515,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   solutionsHeading: {
-    fontSize: 17,
-    fontWeight: '700',
-    marginVertical: 14,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 24,
+    marginBottom: 12,
   },
   explanationCard: {
     padding: 14,
@@ -589,7 +595,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#f59e0b',
+    borderColor: '#F4A30B',
   },
   certHeader: {
     alignItems: 'center',
@@ -598,41 +604,41 @@ const styles = StyleSheet.create({
   certBrand: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#f59e0b',
+    color: '#F4A30B',
     letterSpacing: 1,
   },
   certMainTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#1e1b4b',
+    color: '#12245C',
     marginTop: 2,
   },
   certSubText: {
     fontSize: 12,
-    color: '#64748b',
+    color: '#5A6680',
     marginTop: 6,
   },
   certStudentName: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#3525cd',
+    color: '#1D3A8A',
     marginTop: 8,
     textAlign: 'center',
   },
   certLine: {
     height: 2,
     width: 140,
-    backgroundColor: '#cbd5e1',
+    backgroundColor: '#CDD6E4',
     marginVertical: 8,
   },
   certBodyText: {
     fontSize: 12,
-    color: '#475569',
+    color: '#5A6680',
     textAlign: 'center',
     lineHeight: 18,
   },
   certScoreBadge: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#12805C',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 999,
@@ -650,19 +656,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: '#DCE2EE',
     paddingTop: 12,
     marginTop: 6,
   },
   certMetaLabel: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#9AA6C0',
     fontWeight: '700',
   },
   certMetaVal: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#1e1b4b',
+    color: '#12245C',
     marginTop: 2,
   },
   qrBox: {
@@ -671,7 +677,7 @@ const styles = StyleSheet.create({
   qrSub: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#64748b',
+    color: '#5A6680',
   },
   certModalActionRow: {
     width: '100%',
@@ -696,7 +702,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   certCloseBtnText: {
-    color: '#64748b',
+    color: '#5A6680',
     fontSize: 13,
     fontWeight: '600',
   },

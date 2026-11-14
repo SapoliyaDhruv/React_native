@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintColors } from '../../constants/mindsprintTheme';
+import { MindSprintFonts } from '../../constants/mindsprintTheme';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ExamHeaderProps {
   title: string;
@@ -10,6 +11,7 @@ interface ExamHeaderProps {
   totalQuestions: number;
   onOpenPalette: () => void;
   onQuitExam: () => void;
+  /** Submit lives in the exam's bottom bar; kept for API compatibility. */
   onSubmitExam?: () => void;
 }
 
@@ -20,50 +22,52 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
   totalQuestions,
   onOpenPalette,
   onQuitExam,
-  onSubmitExam,
 }) => {
+  const { colors } = useTheme();
   const formatTime = (totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
     return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+  const lowTime = secondsLeft <= 60;
+  const progress = totalQuestions > 0 ? (currentQuestionIndex + 1) / totalQuestions : 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
       <View style={styles.topRow}>
-        <TouchableOpacity style={styles.closeBtn} onPress={onQuitExam}>
-          <MaterialIcons name="close" size={24} color={MindSprintColors.onSurfaceVariant} />
+        <TouchableOpacity style={styles.iconBtn} onPress={onQuitExam} accessibilityRole="button" accessibilityLabel="Leave test">
+          <MaterialIcons name="close" size={24} color={colors.onSurface} />
         </TouchableOpacity>
 
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
-
-        <TouchableOpacity style={styles.paletteBtn} onPress={onOpenPalette}>
-          <MaterialIcons name="grid-view" size={22} color={MindSprintColors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.bottomRow}>
-        <View style={styles.counterBadge}>
-          <Text style={styles.counterText}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[styles.title, { color: colors.onSurface }]} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={[styles.counter, { color: colors.onSurfaceVariant }]}>
             Question {currentQuestionIndex + 1} of {totalQuestions}
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <View style={styles.timerBadge}>
-            <MaterialIcons name="timer" size={16} color={MindSprintColors.error} />
-            <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
-          </View>
-
-          {onSubmitExam && (
-            <TouchableOpacity style={styles.submitHeaderBtn} onPress={onSubmitExam}>
-              <MaterialIcons name="done-all" size={15} color="#ffffff" />
-              <Text style={styles.submitHeaderBtnText}>Submit</Text>
-            </TouchableOpacity>
-          )}
+        <View
+          style={[styles.timer, { backgroundColor: lowTime ? colors.errorContainer : colors.surfaceContainerLow }]}
+          accessibilityLabel={`Time left ${formatTime(secondsLeft)}`}
+        >
+          <MaterialIcons name="timer" size={16} color={lowTime ? colors.error : colors.onSurfaceVariant} />
+          <Text style={[styles.timerText, { color: lowTime ? colors.error : colors.onSurface }]}>{formatTime(secondsLeft)}</Text>
         </View>
+
+        <TouchableOpacity
+          style={[styles.iconBtn, { backgroundColor: colors.primaryFixed }]}
+          onPress={onOpenPalette}
+          accessibilityRole="button"
+          accessibilityLabel="Show all questions"
+        >
+          <MaterialIcons name="grid-view" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={[styles.track, { backgroundColor: colors.surfaceContainerLow }]}>
+        <View style={[styles.fill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
       </View>
     </View>
   );
@@ -71,83 +75,53 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: MindSprintColors.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: MindSprintColors.outlineVariant,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 10,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    gap: 8,
   },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '700',
-    color: MindSprintColors.onSurface,
-    textAlign: 'center',
-    marginHorizontal: 8,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 18,
+    lineHeight: 24,
   },
-  paletteBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: MindSprintColors.surfaceContainerHigh,
-    alignItems: 'center',
-    justifyContent: 'center',
+  counter: {
+    fontSize: 12.5,
   },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  counterBadge: {
-    backgroundColor: MindSprintColors.surfaceContainerLow,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  counterText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MindSprintColors.onSurfaceVariant,
-  },
-  timerBadge: {
+  timer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: MindSprintColors.errorContainer,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+    minHeight: 32,
+    borderRadius: 16,
   },
   timerText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: MindSprintColors.error,
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
+    fontVariant: ['tabular-nums'],
   },
-  submitHeaderBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#10b981',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+  track: {
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 8,
+    overflow: 'hidden',
   },
-  submitHeaderBtnText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#ffffff',
+  fill: {
+    height: 4,
+    borderRadius: 2,
   },
 });

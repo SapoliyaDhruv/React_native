@@ -8,7 +8,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
@@ -17,7 +18,6 @@ import { ApiService } from '@/services/api';
 import { AcademicGrade, ACADEMIC_CURRICULUM } from '@/constants/academicData';
 
 export default function LeaderboardScreen() {
-  const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
@@ -29,7 +29,7 @@ export default function LeaderboardScreen() {
   const curriculum = ACADEMIC_CURRICULUM[userGrade];
   const subjectFilters = isSchool && curriculum
     ? [
-        { key: 'All', label: 'બધા વિષયો', color: '#6366f1' },
+        { key: 'All', label: 'બધા વિષયો', color: '#1D3A8A' },
         ...curriculum.subjects.map((s) => ({
           key: s.name,
           label: s.nameGujarati || s.name,
@@ -37,10 +37,10 @@ export default function LeaderboardScreen() {
         })),
       ]
     : [
-        { key: 'All', label: 'All', color: '#6366f1' },
-        { key: 'Quantitative Aptitude', label: 'Quant', color: '#f59e0b' },
-        { key: 'Data Structures & Algorithms', label: 'DSA', color: '#a78bfa' },
-        { key: 'React & JS', label: 'React', color: '#38bdf8' },
+        { key: 'All', label: 'All', color: '#1D3A8A' },
+        { key: 'Quantitative Aptitude', label: 'Quant', color: '#F4A30B' },
+        { key: 'Data Structures & Algorithms', label: 'DSA', color: '#7FB0FF' },
+        { key: 'React & JS', label: 'React', color: '#2F6FD6' },
       ];
 
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
@@ -78,28 +78,10 @@ export default function LeaderboardScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header Bar */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            {isSchool ? `Class ${userGrade} Peer Leaderboard` : 'Campus Placement Leaderboard'}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchool ? 'Top Scholars in Your Syllabus' : 'Top Candidates Targeting TCS, Infosys & FAANG'}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Rankings"
+        subtitle={isSchool ? `Class ${userGrade} · students on your syllabus` : 'Campus placement candidates'}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
@@ -117,7 +99,7 @@ export default function LeaderboardScreen() {
         <View
           style={[
             styles.tabBar,
-            { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' },
+            { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' },
           ]}
         >
           <TouchableOpacity
@@ -130,10 +112,10 @@ export default function LeaderboardScreen() {
             <Text
               style={[
                 styles.tabBtnText,
-                { color: selectedTab === 'weekly' ? '#ffffff' : colors.onSurface },
+                { color: selectedTab === 'weekly' ? colors.onPrimary : colors.onSurface },
               ]}
             >
-              This Week's Sprints ⚡
+              This week
             </Text>
           </TouchableOpacity>
 
@@ -147,10 +129,10 @@ export default function LeaderboardScreen() {
             <Text
               style={[
                 styles.tabBtnText,
-                { color: selectedTab === 'allTime' ? '#ffffff' : colors.onSurface },
+                { color: selectedTab === 'allTime' ? colors.onPrimary : colors.onSurface },
               ]}
             >
-              All-Time Legends 👑
+              All time
             </Text>
           </TouchableOpacity>
         </View>
@@ -171,7 +153,7 @@ export default function LeaderboardScreen() {
                 ]}
                 onPress={() => setSelectedSubject(f.key)}
               >
-                <Text style={[styles.subjectChipText, { color: isSel ? '#ffffff' : colors.onSurface }]}>
+                <Text style={[styles.subjectChipText, { color: isSel ? colors.onPrimary : colors.onSurface }]}>
                   {f.label}
                 </Text>
               </TouchableOpacity>
@@ -182,43 +164,43 @@ export default function LeaderboardScreen() {
           <View style={styles.podiumContainer}>
             {/* Rank 2 - Silver */}
             <View style={[styles.podiumColumn, { marginTop: 24 }]}>
-              <View style={[styles.podiumAvatarCircle, { borderColor: '#94a3b8' }]}>
+              <View style={[styles.podiumAvatarCircle, { borderColor: '#9AA6C0' }]}>
                 <Text style={styles.podiumEmoji}>{top3[1].avatar}</Text>
               </View>
               <Text style={[styles.podiumName, { color: colors.onSurface }]} numberOfLines={1}>
                 {top3[1].name.split(' ')[0]}
               </Text>
-              <Text style={[styles.podiumPoints, { color: '#94a3b8' }]}>{top3[1].points} pts</Text>
-              <View style={[styles.podiumBar, { height: 75, backgroundColor: '#94a3b8' }]}>
+              <Text style={[styles.podiumPoints, { color: '#9AA6C0' }]}>{top3[1].points} pts</Text>
+              <View style={[styles.podiumBar, { height: 75, backgroundColor: '#9AA6C0' }]}>
                 <Text style={styles.podiumRankNumber}>2</Text>
               </View>
             </View>
 
             {/* Rank 1 - Gold (Center, Highest) */}
             <View style={styles.podiumColumn}>
-              <MaterialIcons name="emoji-events" size={24} color="#f59e0b" style={{ marginBottom: -4 }} />
-              <View style={[styles.podiumAvatarCircle, { borderColor: '#f59e0b', width: 62, height: 62, borderRadius: 31 }]}>
+              <MaterialIcons name="emoji-events" size={24} color="#F4A30B" style={{ marginBottom: -4 }} />
+              <View style={[styles.podiumAvatarCircle, { borderColor: '#F4A30B', width: 62, height: 62, borderRadius: 31 }]}>
                 <Text style={[styles.podiumEmoji, { fontSize: 26 }]}>{top3[0].avatar}</Text>
               </View>
               <Text style={[styles.podiumName, { color: colors.onSurface, fontWeight: '800' }]} numberOfLines={1}>
                 {top3[0].name.split(' ')[0]}
               </Text>
-              <Text style={[styles.podiumPoints, { color: '#f59e0b', fontWeight: '800' }]}>{top3[0].points} pts</Text>
-              <View style={[styles.podiumBar, { height: 100, backgroundColor: '#f59e0b' }]}>
+              <Text style={[styles.podiumPoints, { color: '#F4A30B', fontWeight: '800' }]}>{top3[0].points} pts</Text>
+              <View style={[styles.podiumBar, { height: 100, backgroundColor: '#F4A30B' }]}>
                 <Text style={styles.podiumRankNumber}>1</Text>
               </View>
             </View>
 
             {/* Rank 3 - Bronze */}
             <View style={[styles.podiumColumn, { marginTop: 36 }]}>
-              <View style={[styles.podiumAvatarCircle, { borderColor: '#d97706' }]}>
+              <View style={[styles.podiumAvatarCircle, { borderColor: '#8A5A00' }]}>
                 <Text style={styles.podiumEmoji}>{top3[2].avatar}</Text>
               </View>
               <Text style={[styles.podiumName, { color: colors.onSurface }]} numberOfLines={1}>
                 {top3[2].name.split(' ')[0]}
               </Text>
-              <Text style={[styles.podiumPoints, { color: '#d97706' }]}>{top3[2].points} pts</Text>
-              <View style={[styles.podiumBar, { height: 55, backgroundColor: '#d97706' }]}>
+              <Text style={[styles.podiumPoints, { color: '#8A5A00' }]}>{top3[2].points} pts</Text>
+              <View style={[styles.podiumBar, { height: 55, backgroundColor: '#8A5A00' }]}>
                 <Text style={styles.podiumRankNumber}>3</Text>
               </View>
             </View>
@@ -231,7 +213,7 @@ export default function LeaderboardScreen() {
             style={[
               styles.yourStandingCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eff6ff',
+                backgroundColor: isDarkMode ? 'rgba(147,172,255,0.15)' : '#E3EDFC',
                 borderColor: colors.primary,
               },
               MindSprintShadows.glow,
@@ -243,10 +225,10 @@ export default function LeaderboardScreen() {
               </View>
               <View>
                 <Text style={[styles.standingTitle, { color: colors.onSurface }]}>
-                  Your Standing ({user?.name || 'You'})
+                  You
                 </Text>
                 <Text style={[styles.standingSub, { color: colors.onSurfaceVariant }]}>
-                  {userRank.accuracy}% Accuracy • 🔥 {userRank.streak} Days
+                  {userRank.accuracy}% accuracy · {userRank.streak}-day streak
                 </Text>
               </View>
             </View>
@@ -258,7 +240,7 @@ export default function LeaderboardScreen() {
 
         {/* Rest of Leaderboard List */}
         <Text style={[styles.listSectionHeading, { color: colors.onSurface }]}>
-          Complete Leaderboard Rankings
+          All rankings
         </Text>
 
         <View style={styles.ranksList}>
@@ -294,8 +276,8 @@ export default function LeaderboardScreen() {
                   {item.points} pts
                 </Text>
                 <View style={styles.streakSmallRow}>
-                  <MaterialIcons name="local-fire-department" size={13} color="#f59e0b" />
-                  <Text style={[styles.streakSmallText, { color: '#f59e0b' }]}>
+                  <MaterialIcons name="local-fire-department" size={13} color="#F4A30B" />
+                  <Text style={[styles.streakSmallText, { color: '#F4A30B' }]}>
                     {item.streak}d
                   </Text>
                 </View>
@@ -444,13 +426,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   standingPoints: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
   },
   listSectionHeading: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 4,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
+    marginTop: 8,
+    marginBottom: 10,
   },
   ranksList: {
     gap: 10,

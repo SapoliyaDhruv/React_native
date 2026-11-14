@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CONFETTI_COUNT = 45;
-const CONFETTI_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f43f5e'];
+const CONFETTI_COLORS = ['#2F6FD6', '#12805C', '#F4A30B', '#ec4899', '#2F6FD6', '#06b6d4', '#f43f5e'];
 
 interface ConfettiPieceProps {
   index: number;

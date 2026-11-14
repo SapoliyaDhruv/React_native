@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 
 interface QuestionNavigatorModalProps {
   visible: boolean;
@@ -54,7 +54,7 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <MaterialIcons name="grid-view" size={22} color={colors.primary} />
               <Text style={[styles.headerTitle, { color: colors.onSurface }]}>
-                Question Navigator
+                All questions
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -63,17 +63,17 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
           </View>
 
           {/* Status Counter Summary */}
-          <View style={[styles.summaryRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+          <View style={[styles.summaryRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
             <View style={styles.statItem}>
-              <View style={[styles.dot, { backgroundColor: '#10b981' }]} />
+              <View style={[styles.dot, { backgroundColor: '#12805C' }]} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{answeredCount}</Text>
               <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Answered</Text>
             </View>
 
             <View style={styles.statItem}>
-              <View style={[styles.dot, { backgroundColor: '#f59e0b' }]} />
+              <View style={[styles.dot, { backgroundColor: '#F4A30B' }]} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{flaggedCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Flagged</Text>
+              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Marked</Text>
             </View>
 
             <View style={styles.statItem}>
@@ -100,12 +100,12 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
               let textColor = colors.onSurface;
 
               if (isAnswered) {
-                bg = '#10b981';
-                borderColor = '#10b981';
+                bg = '#12805C';
+                borderColor = '#12805C';
                 textColor = '#ffffff';
               } else if (isFlagged) {
-                bg = '#f59e0b';
-                borderColor = '#f59e0b';
+                bg = '#F4A30B';
+                borderColor = '#F4A30B';
                 textColor = '#ffffff';
               }
 
@@ -143,7 +143,7 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
           {/* Modal Actions */}
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
             <TouchableOpacity
-              style={[styles.resumeBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}
+              style={[styles.resumeBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}
               onPress={onClose}
             >
               <Text style={[styles.resumeBtnText, { color: colors.onSurface }]}>Resume Exam</Text>
@@ -151,7 +151,7 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
 
             {onSubmitExam && (
               <TouchableOpacity
-                style={[styles.resumeBtn, { flex: 1.2, backgroundColor: '#10b981' }]}
+                style={[styles.resumeBtn, { flex: 1.2, backgroundColor: '#12805C' }]}
                 onPress={() => {
                   onClose();
                   onSubmitExam();
@@ -186,8 +186,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
   },
   closeBtn: {
     padding: 4,

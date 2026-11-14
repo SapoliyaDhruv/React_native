@@ -6,7 +6,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 export default function AboutModalScreen() {
   const router = useRouter();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -20,15 +20,15 @@ export default function AboutModalScreen() {
         </Text>
 
         <View style={styles.infoRow}>
-          <MaterialIcons name="verified" size={16} color="#10b981" />
+          <MaterialIcons name="verified" size={16} color="#12805C" />
           <Text style={[styles.infoText, { color: colors.onSurface }]}>CBSE & GSEB Class 6–12 Curriculum Aligned</Text>
         </View>
         <View style={styles.infoRow}>
-          <MaterialIcons name="code" size={16} color="#3b82f6" />
+          <MaterialIcons name="code" size={16} color="#2F6FD6" />
           <Text style={[styles.infoText, { color: colors.onSurface }]}>GTU & Engineering Campus Recruitment Tracks</Text>
         </View>
         <View style={styles.infoRow}>
-          <MaterialIcons name="auto-awesome" size={16} color="#8b5cf6" />
+          <MaterialIcons name="auto-awesome" size={16} color="#2F6FD6" />
           <Text style={[styles.infoText, { color: colors.onSurface }]}>Multimodal Gemini AI Doubt Solver & Voice Viva</Text>
         </View>
 
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#2F6FD6',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

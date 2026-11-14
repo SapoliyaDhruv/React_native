@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
@@ -24,23 +24,22 @@ import * as Clipboard from 'expo-clipboard';
 const getCategoryStyle = (category: string) => {
   switch (category) {
     case 'School Math':
-      return { borderLeftColor: '#3b82f6', bg: '#dbeafe', text: '#1e40af' };
+      return { borderLeftColor: '#2F6FD6', bg: '#E3EDFC', text: '#1B4C9C' };
     case 'School Science':
     case 'Physics & Chemistry':
-      return { borderLeftColor: '#10b981', bg: '#d1fae5', text: '#065f46' };
+      return { borderLeftColor: '#12805C', bg: '#DDF3EA', text: '#0B5C42' };
     case 'Quant Formulas':
-      return { borderLeftColor: '#3b82f6', bg: '#dbeafe', text: '#1e40af' };
+      return { borderLeftColor: '#2F6FD6', bg: '#E3EDFC', text: '#1B4C9C' };
     case 'DSA Time Complexities':
-      return { borderLeftColor: '#8b5cf6', bg: '#f3e8ff', text: '#6b21a8' };
+      return { borderLeftColor: '#2F6FD6', bg: '#E3EDFC', text: '#1B4C9C' };
     case 'React & JS':
-      return { borderLeftColor: '#059669', bg: '#d1fae5', text: '#065f46' };
+      return { borderLeftColor: '#059669', bg: '#DDF3EA', text: '#0B5C42' };
     default:
-      return { borderLeftColor: '#f59e0b', bg: '#fef3c7', text: '#92400e' };
+      return { borderLeftColor: '#F4A30B', bg: '#FFF1D2', text: '#8A5A00' };
   }
 };
 
 export default function CheatSheetsScreen() {
-  const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
 
@@ -95,9 +94,9 @@ export default function CheatSheetsScreen() {
       } else {
         await Clipboard.setStringAsync(formulaText);
       }
-      Alert.alert('Formula Copied 📋', `"${formulaText}" copied to clipboard!`);
+      Alert.alert('Formula copied', `"${formulaText}" copied to clipboard!`);
     } catch (e) {
-      Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+      Alert.alert('Formula copied', `"${formulaText}" copied for quick revision!`);
     }
   };
 
@@ -105,7 +104,7 @@ export default function CheatSheetsScreen() {
     const res = await FormulaStorage.toggleSave(user?.email, item.id);
     setSavedIds(res.ids);
     Alert.alert(
-      res.saved ? 'Bookmark Saved ⭐️' : 'Bookmark Removed',
+      res.saved ? 'Saved for revision' : 'Removed from saved',
       res.saved
         ? `"${item.title}" saved to your Bookmarks collection!`
         : `"${item.title}" removed from saved formulas.`
@@ -118,30 +117,12 @@ export default function CheatSheetsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header Bar */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            {isSchoolMode ? `Class ${userGrade} Formula Hub` : 'Formula & Revision Cheat Sheets'}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode
-              ? `${user?.board || 'CBSE'} • ${user?.medium === 'Gujarati' ? 'ગુજરાતી માધ્યમ' : 'English Medium'}`
-              : 'Quant Formulas, Complexities & Tech Notes'}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Formula sheets"
+        subtitle={isSchoolMode
+          ? `Class ${userGrade} · ${user?.board || 'CBSE'} · ${user?.medium === 'Gujarati' ? 'ગુજરાતી માધ્યમ' : 'English medium'}`
+          : 'Quant formulas, complexities and tech notes'}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Search Bar */}
@@ -189,7 +170,7 @@ export default function CheatSheetsScreen() {
                 <Text
                   style={[
                     styles.filterChipText,
-                    { color: isSelected ? '#ffffff' : colors.onSurface },
+                    { color: isSelected ? colors.onPrimary : colors.onSurface },
                   ]}
                 >
                   {cat}
@@ -264,7 +245,7 @@ export default function CheatSheetsScreen() {
                 </View>
 
                 {/* Formulas List Box */}
-                <View style={[styles.formulaBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
+                <View style={[styles.formulaBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
                   {item.formulas.map((formula, idx) => (
                     <View
                       key={idx}
@@ -288,7 +269,7 @@ export default function CheatSheetsScreen() {
                 </View>
 
                 {/* Key Takeaways */}
-                <View style={[styles.notesBox, { backgroundColor: 'rgba(53, 37, 205, 0.08)' }]}>
+                <View style={[styles.notesBox, { backgroundColor: 'rgba(29, 58, 138, 0.08)' }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <MaterialIcons name="tips-and-updates" size={18} color={colors.primary} />
                     <Text style={[styles.notesHeading, { color: colors.primary }]}>
