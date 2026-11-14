@@ -183,14 +183,14 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
             <Text style={styles.qotdText}>QUESTION OF THE DAY</Text>
           </View>
           <View style={styles.topicPill}>
-            <Text style={styles.topicText}>{questionData.topic}</Text>
+            <Text style={styles.topicText} numberOfLines={1}>{questionData.topic}</Text>
           </View>
         </View>
 
         <View style={styles.rightHeaderActions}>
           <View style={styles.streakBadge}>
             <MaterialIcons name="local-fire-department" size={15} color="#f59e0b" />
-            <Text style={styles.streakText}>+1 STREAK</Text>
+            <Text style={styles.streakText}>+1</Text>
           </View>
 
           {isAnswered && (
@@ -310,8 +310,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
   badgeRow: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -336,6 +339,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexShrink: 1,
   },
   topicText: {
     fontSize: 10,

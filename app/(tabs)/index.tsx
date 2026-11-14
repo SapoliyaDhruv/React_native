@@ -44,6 +44,9 @@ import { getLastChapter, LastChapter } from '@/services/learningProgress';
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
 
+// Number of chapters previewed on Home; the full list is in Courses.
+const HOME_CHAPTER_PREVIEW = 4;
+
 export default function DashboardScreen() {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode, colors } = useTheme();
@@ -267,11 +270,11 @@ export default function DashboardScreen() {
               <View style={[styles.gradeBannerIcon, { backgroundColor: colors.primary }]}>
                 <MaterialIcons name="school" size={14} color="#ffffff" />
               </View>
-              <View>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[styles.gradeBannerLabel, { color: colors.onSurfaceVariant }]}>
                   {isSchoolMode ? 'CURRENT SYLLABUS' : 'CAREER GOAL'}
                 </Text>
-                <Text style={[styles.gradeBannerText, { color: colors.onSurface }]}>
+                <Text numberOfLines={1} style={[styles.gradeBannerText, { color: colors.onSurface }]}>
                   {currentGradeLabel} {isSchoolMode ? `• ${user?.board || 'CBSE'} (${user?.medium || 'English'})` : '• Campus Placements'}
                 </Text>
               </View>
@@ -330,7 +333,7 @@ export default function DashboardScreen() {
                 >
                   <MaterialIcons name="play-arrow" size={20} color="#1e1b4b" />
                   <Text style={styles.heroPrimaryBtnText}>
-                    Quick 10 Qs Quiz 🎯
+                    Quick 10-Q quiz
                   </Text>
                 </TouchableOpacity>
 
@@ -341,7 +344,7 @@ export default function DashboardScreen() {
                 >
                   <MaterialIcons name="menu-book" size={17} color="#ffffff" />
                   <Text style={styles.heroSecondaryBtnText}>
-                    Syllabus 📚
+                    All chapters
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -596,11 +599,11 @@ export default function DashboardScreen() {
               {/* Section Header: Subjects */}
               <View style={styles.sectionHeaderRow}>
                 <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-                  📚 Your Subjects ({activeSubjects.length})
+                  Your subjects
                 </Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} activeOpacity={0.7}>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                   <Text style={[styles.sectionHeaderLink, { color: colors.primary }]}>
-                    View Syllabus →
+                    Open Courses →
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -664,10 +667,11 @@ export default function DashboardScreen() {
               {/* Chapter-by-Chapter Learning Cards */}
               <View style={styles.chaptersSection}>
                 <Text style={[styles.subSectionHeading, { color: colors.onSurfaceVariant }]}>
-                  📖 {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} પ્રકરણો` : `${activeSubject?.name} Chapters`} ({activeSubject?.chapters?.length || 0})
+                  {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} પ્રકરણો` : `${activeSubject?.name} chapters`} ({activeSubject?.chapters?.length || 0})
                 </Text>
 
-                {(activeSubject?.chapters || []).map((chap) => {
+                {/* Home shows a short preview; the full list lives in Courses */}
+                {(activeSubject?.chapters || []).slice(0, HOME_CHAPTER_PREVIEW).map((chap) => {
                   const chapterTitle =
                     isGSEB && chap.titleGujarati
                       ? `${chap.chapterNumber}. ${chap.titleGujarati}`
@@ -698,7 +702,7 @@ export default function DashboardScreen() {
                             {chapterTitle}
                           </Text>
                           <Text style={[styles.chapterSub, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
-                            {chap.summary}
+                            {(isGSEB && chap.summaryGujarati) || chap.summary}
                           </Text>
                         </View>
                       </View>
@@ -711,7 +715,7 @@ export default function DashboardScreen() {
                         >
                           <MaterialIcons name="menu-book" size={14} color={colors.primary} />
                           <Text style={[styles.readNotesBtnText, { color: colors.primary }]}>
-                            Read Summary
+                            Summary
                           </Text>
                         </TouchableOpacity>
 
@@ -722,13 +726,27 @@ export default function DashboardScreen() {
                         >
                           <MaterialIcons name="quiz" size={14} color="#ffffff" />
                           <Text style={styles.startChapterQuizText}>
-                            Start Quiz ({chap.questionCount || 10} Qs)
+                            Quiz ({chap.questionCount || 10} Qs)
                           </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
                   );
                 })}
+
+                {(activeSubject?.chapters?.length || 0) > HOME_CHAPTER_PREVIEW && (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    onPress={() => router.push('/(tabs)/courses')}
+                    style={[styles.seeAllChaptersBtn, { borderColor: colors.outlineVariant, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff' }]}
+                  >
+                    <Text style={[styles.seeAllChaptersText, { color: colors.primary }]}>
+                      See all {activeSubject?.chapters?.length} chapters, videos and PDFs
+                    </Text>
+                    <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ) : (
@@ -1281,6 +1299,19 @@ const styles = StyleSheet.create({
   chaptersSection: {
     gap: 12,
     marginBottom: 16,
+  },
+  seeAllChaptersBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  seeAllChaptersText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   chapterCard: {
     borderRadius: 18,

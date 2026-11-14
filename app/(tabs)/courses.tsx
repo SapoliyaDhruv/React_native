@@ -458,13 +458,11 @@ export default function CoursesScreen() {
           <View style={[styles.headerIconCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.1)' }]}>
             <MaterialIcons name="menu-book" size={22} color={colors.primary} />
           </View>
-          <View>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>
-              {isSchoolMode
-                ? `Class ${userGrade} Subject Learning Hub`
-                : 'Placement Course & Concept Hub'}
+          <View style={styles.headerTextCol}>
+            <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.primary }]}>
+              {isSchoolMode ? `Class ${userGrade} Courses` : 'Placement Courses'}
             </Text>
-            <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
+            <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
               {isSchoolMode ? `${user?.board || 'CBSE'} Board • ${user?.medium || 'English'} Medium` : 'Campus Recruitment Tracks'}
             </Text>
           </View>
@@ -475,15 +473,16 @@ export default function CoursesScreen() {
             onPress={toggleLanguage}
             accessibilityRole="button"
             accessibilityLabel={useGujarati ? 'Switch names to English' : 'Switch names to Gujarati'}
-            style={[styles.langToggle, { borderColor: colors.primary }]}
+            style={[styles.langToggle, { borderColor: colors.outlineVariant, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff' }]}
           >
-            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>{useGujarati ? 'ગુજ → EN' : 'EN → ગુજ'}</Text>
+            <MaterialIcons name="translate" size={14} color={colors.primary} />
+            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>{useGujarati ? 'ગુજ' : 'EN'}</Text>
           </TouchableOpacity>
         )}
 
         <View style={[styles.headerProgressPill, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7' }]}>
           <MaterialIcons name="check-circle" size={13} color="#10b981" />
-          <Text style={styles.headerProgressText}>{progressPercent}% DONE</Text>
+          <Text style={styles.headerProgressText}>{progressPercent}%</Text>
         </View>
       </View>
 
@@ -581,15 +580,15 @@ export default function CoursesScreen() {
         </View>
 
         {/* 360° Learning Feature Pillar Tabs */}
-        <View style={styles.pillarTabsSection}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillarTabsSection}>
           {[
-            { key: 'all', label: 'All Modules' },
-            { key: 'imp', label: 'Imp Qs (1M-4M) ⭐' },
-            { key: 'books', label: 'Textbooks 📚' },
-            { key: 'papers', label: 'Board Papers 📄' },
-            { key: 'videos', label: 'Video Options 🎬' },
-            { key: 'practice', label: 'Practice Drills 🎯' },
-            { key: 'formulas', label: 'Formulas & Notes 📝' },
+            { key: 'all', label: 'All' },
+            { key: 'videos', label: 'Videos' },
+            { key: 'books', label: 'Textbooks' },
+            { key: 'formulas', label: 'Formulas' },
+            { key: 'imp', label: 'Imp Questions' },
+            { key: 'papers', label: 'Board Papers' },
+            { key: 'practice', label: 'Practice' },
           ].map((tab) => {
             const isSelected = activeFilterTab === tab.key;
             return (
@@ -617,7 +616,7 @@ export default function CoursesScreen() {
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
 
         {/* Subject Card Banner with Progress Tracker & Official Textbook PDF Button */}
         <View
@@ -636,7 +635,7 @@ export default function CoursesScreen() {
                 {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} (${activeSubject.name})` : activeSubject?.name}
               </Text>
               <Text style={[styles.subjectHeroSub, { color: colors.onSurfaceVariant }]}>
-                {chapters.length} Official Textbook Chapters • {completedInSubject} Completed
+                {chapters.length} chapters • {completedInSubject} done
               </Text>
             </View>
             <View style={[styles.subjectProgressBadge, { backgroundColor: `${activeSubject?.color || '#3b82f6'}15` }]}>
@@ -657,11 +656,11 @@ export default function CoursesScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={[styles.officialTextbookPdfTitle, { color: colors.primary }]}>
                   {isGSEB
-                    ? `📕 ${activeSubject.textbookTitleGujarati || activeSubject.nameGujarati} e-Textbook (PDF)`
-                    : `📕 Official ${activeSubject.textbookTitle || activeSubject.name} e-Textbook (PDF)`}
+                    ? `${activeSubject.textbookTitleGujarati || activeSubject.nameGujarati} – full textbook`
+                    : `${activeSubject.textbookTitle || activeSubject.name} – full textbook`}
                 </Text>
                 <Text style={[styles.officialTextbookPdfSub, { color: colors.onSurfaceVariant }]}>
-                  Read official NCERT / State Board Textbook
+                  Official {user?.board === 'GSEB' ? 'GSEB' : 'board'} PDF
                 </Text>
               </View>
               <MaterialIcons name="open-in-new" size={18} color={colors.primary} />
@@ -682,7 +681,7 @@ export default function CoursesScreen() {
         {activeFilterTab === 'books' && (
           <View style={styles.chaptersList}>
             <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              📚 {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} Textbook Chapters (${chapters.length}):` : `${activeSubject?.name} Textbook Chapters (${chapters.length}):`}
+              {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} – textbook chapters (${chapters.length})` : `${activeSubject?.name} – textbook chapters (${chapters.length})`}
             </Text>
             {chapters.map((chap, idx) => {
               const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
@@ -726,7 +725,7 @@ export default function CoursesScreen() {
                           onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                         >
                           <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
-                          <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
+                          <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -759,7 +758,7 @@ export default function CoursesScreen() {
         {activeFilterTab === 'videos' && (
           <View style={styles.chaptersList}>
             <Text style={[styles.viewSectionTitle, { color: '#ef4444' }]}>
-              🎬 Chapter Video Masterclasses & Teacher Choices:
+              Chapter videos
             </Text>
             {chapters.map((chap) => {
               const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
@@ -817,7 +816,7 @@ export default function CoursesScreen() {
                         onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                       >
                         <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
-                        <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
+                        <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -831,7 +830,7 @@ export default function CoursesScreen() {
         {activeFilterTab === 'practice' && (
           <View style={styles.chaptersList}>
             <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              🎯 Chapter-Wise Practice Tests & Assessments:
+              Chapter practice tests
             </Text>
             {chapters.map((chap) => {
               const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
@@ -913,7 +912,7 @@ export default function CoursesScreen() {
         {activeFilterTab === 'papers' && (
           <View style={styles.chaptersList}>
             <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              📄 Official Board & Model Exam Papers:
+              Board & model exam papers
             </Text>
 
             {/* Real 80-Mark Board Exam Simulator Banner */}
@@ -968,7 +967,7 @@ export default function CoursesScreen() {
                       </Text>
                     </View>
                     <Text style={{ fontSize: 12, color: colors.onSurfaceVariant, fontWeight: '600' }}>
-                      ⏱️ {paper.durationMinutes} mins • 🎯 {paper.totalMarks} Marks
+                      {paper.durationMinutes} min • {paper.totalMarks} marks
                     </Text>
                   </View>
 
@@ -1318,7 +1317,7 @@ export default function CoursesScreen() {
                     >
                       <MaterialIcons name="play-circle-filled" size={15} color="#ef4444" />
                       <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
-                        {chap.videos?.[0]?.duration ? `Watch · ${chap.videos[0].duration}` : 'Watch Video 🎬'}
+                        {chap.videos?.[0]?.duration ? `Watch · ${chap.videos[0].duration}` : 'Find video'}
                       </Text>
                     </TouchableOpacity>
 
@@ -1331,7 +1330,7 @@ export default function CoursesScreen() {
                       >
                         <MaterialIcons name="picture-as-pdf" size={15} color="#ef4444" />
                         <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
-                          PDF 📄
+                          Chapter PDF
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -1347,7 +1346,7 @@ export default function CoursesScreen() {
                     >
                       <MaterialIcons name="quiz" size={15} color="#ffffff" />
                       <Text style={[styles.pillarBtnText, { color: '#ffffff' }]}>
-                        Quiz 🎯
+                        Quiz
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1374,7 +1373,7 @@ export default function CoursesScreen() {
             <View style={styles.modalHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.modalTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                  🎬 {isGSEB && selectedChapterForVideo?.titleGujarati ? selectedChapterForVideo.titleGujarati : selectedChapterForVideo?.title}
+                  {isGSEB && selectedChapterForVideo?.titleGujarati ? selectedChapterForVideo.titleGujarati : selectedChapterForVideo?.title}
                 </Text>
                 <Text style={[styles.modalSubtitle, { color: colors.onSurfaceVariant }]}>
                   Choose your preferred teacher & explanation style
@@ -1700,7 +1699,7 @@ export default function CoursesScreen() {
               >
                 <MaterialIcons name="quiz" size={16} color="#ffffff" />
                 <Text style={styles.optionalQuizBtnText}>
-                  Take Quiz 🎯
+                  Take Quiz
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1775,7 +1774,7 @@ export default function CoursesScreen() {
               onPress={handleStartExam}
             >
               <Text style={styles.launchExamBtnText}>
-                Begin Practice Drill 🎯
+                Start Practice
               </Text>
               <MaterialIcons name="play-arrow" size={20} color="#ffffff" />
             </TouchableOpacity>
@@ -1828,13 +1827,20 @@ const styles = StyleSheet.create({
     marginTop: 1,
     fontWeight: '500',
   },
+  headerTextCol: {
+    flex: 1,
+    minWidth: 0,
+  },
   langToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 10,
     minHeight: 32,
-    justifyContent: 'center',
-    marginRight: 8,
+    marginLeft: 8,
+    marginRight: 6,
   },
   searchBox: {
     flexDirection: 'row',
@@ -1907,17 +1913,18 @@ const styles = StyleSheet.create({
   },
   pillarTabsSection: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
+    paddingVertical: 2,
   },
   pillarTabChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    minHeight: 34,
+    justifyContent: 'center',
+    borderRadius: 17,
     borderWidth: 1,
   },
   pillarTabText: {
-    fontSize: 11.5,
+    fontSize: 12.5,
     fontWeight: '700',
   },
   subjectHeroCard: {
@@ -2206,24 +2213,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
+  // 2×2 grid so every chapter card has the same tidy shape (no lone wrapped button)
   actionPillarsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     marginTop: 4,
   },
   pillarBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 7,
+    gap: 6,
+    flexGrow: 1,
+    flexBasis: '45%',
+    minHeight: 40,
     paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 1,
   },
   pillarBtnText: {
-    fontSize: 11.5,
+    fontSize: 13,
     fontWeight: '700',
   },
   videoPlayerActionBar: {

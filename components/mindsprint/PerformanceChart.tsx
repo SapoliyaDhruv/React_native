@@ -31,9 +31,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   const [activeTab, setActiveTab] = useState<'trend' | 'metrics'>('trend');
 
   const hasRealData = scoresHistory.length > 0;
-  const displayScores = hasRealData
-    ? scoresHistory.slice(-6)
-    : [50, 60, 65, 75, 70, 85]; // Preview benchmark
+  const displayScores = scoresHistory.slice(-6);
 
   const lastScore = displayScores[displayScores.length - 1] || 0;
   const firstScore = displayScores[0] || 0;
@@ -43,13 +41,47 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   const maxScore = Math.max(...displayScores);
   const avgScore = Math.round(displayScores.reduce((a, b) => a + b, 0) / displayScores.length);
 
+  // No tests yet: show an honest empty state instead of made-up sample scores.
+  if (!hasRealData) {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.title, { color: colors.onSurface }]}>
+          {isGSEB ? 'તમારી પ્રગતિ' : 'Your accuracy trend'}
+        </Text>
+        <View
+          style={[
+            styles.chartCard,
+            styles.emptyCard,
+            { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant },
+          ]}
+        >
+          <MaterialIcons name="insights" size={28} color={colors.primary} />
+          <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+            {isGSEB
+              ? 'હજુ કોઈ ટેસ્ટ આપ્યો નથી. એક ઝડપી ટેસ્ટ આપો અને અહીં તમારી પ્રગતિ જુઓ.'
+              : 'No test scores yet. Take a quick test and your accuracy trend will appear here.'}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            onPress={() => router.push('/exam?limit=10')}
+            style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
+          >
+            <MaterialIcons name="play-arrow" size={18} color="#ffffff" />
+            <Text style={styles.emptyBtnText}>Take a 10-question test</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Title & Trend Pill */}
       <View style={styles.titleRow}>
-        <View>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.title, { color: colors.onSurface }]}>
-            📊 Accuracy & Performance Curve
+            Accuracy & performance
           </Text>
           <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
             {hasRealData
@@ -267,6 +299,31 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
 };
 
 const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 22,
+  },
+  emptyText: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    textAlign: 'center',
+    maxWidth: 300,
+  },
+  emptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  emptyBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   container: {
     marginVertical: 12,
   },

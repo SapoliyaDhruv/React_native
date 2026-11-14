@@ -230,15 +230,15 @@ export default function VideoScreen() {
           <View style={[styles.headerIconCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.1)' }]}>
             <MaterialIcons name="play-circle-filled" size={24} color={colors.primary} />
           </View>
-          <View>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.primary }]}>
               {!isSchoolMode
                 ? 'Placement Masterclasses'
                 : isGSEB
                 ? `ધોરણ ${userGrade} GSEB ગુજરાત બોર્ડ`
                 : `Class ${userGrade} Masterclasses`}
             </Text>
-            <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
+            <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
               {isSequentialMode
                 ? `${displayedLectures.length} of ${lectures.length} lessons unlocked • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`
                 : `${lectures.length} lessons • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`}
@@ -427,6 +427,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
   },
   headerIconCircle: {
     width: 42,
