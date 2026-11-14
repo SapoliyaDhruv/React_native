@@ -38,7 +38,11 @@ import { AcademicGradeModal } from '@/components/mindsprint/AcademicGradeModal';
 import { DailyChallengeCard } from '@/components/mindsprint/DailyChallengeCard';
 import { MorningSprintModal } from '@/components/mindsprint/MorningSprintModal';
 import { ShareProgressModal } from '@/components/mindsprint/ShareProgressModal';
-import { ContinueLearningCard } from '@/components/mindsprint/ContinueLearningCard';
+import { TodayCard } from '@/components/mindsprint/home/TodayCard';
+import { TextbookShelf } from '@/components/mindsprint/home/TextbookShelf';
+import { ToolList, ToolItem } from '@/components/mindsprint/home/ToolList';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { getLastChapter, LastChapter } from '@/services/learningProgress';
 
 const AVATAR_URL =
@@ -77,6 +81,18 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedChapterForRead, setSelectedChapterForRead] = useState<SubjectChapter | null>(null);
   const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
+  const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
+
+  // Chapter completion is written by Courses; read it so the shelf shows real progress.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      AsyncStorage.getItem(`@mindsprint_completed_chapters_${userGrade}_${user?.email || 'guest'}`)
+        .then((raw) => { if (active) setCompletedChapterIds(raw ? JSON.parse(raw) : []); })
+        .catch(() => {});
+      return () => { active = false; };
+    }, [userGrade, user?.email])
+  );
 
   // "Continue where you left off": refreshed every time the Home tab comes into view
   useFocusEffect(
@@ -166,594 +182,183 @@ export default function DashboardScreen() {
   const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
   const currentGradeLabel = GRADE_OPTIONS.find((g) => g.grade === userGrade)?.label || 'Class ' + userGrade;
 
+  // Practice tools: one calm list. Wording says what each tool does.
+  const practiceTools: ToolItem[] = isSchoolMode
+    ? [
+        { key: 'quiz', icon: 'bolt', title: 'Quick 10-question quiz', subtitle: `${activeSubject?.name || 'Mixed'} · about 5 minutes`, onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(activeSubject?.name || 'Science')}`) },
+        { key: 'board', icon: 'assignment', title: 'Board exam paper', subtitle: 'Full 80-mark timed paper', onPress: () => router.push('/board-exam-simulator' as any) },
+        { key: 'imp', icon: 'star-outline', title: 'Important questions', subtitle: '1 to 4 mark questions by chapter', onPress: () => router.push('/(tabs)/courses') },
+        { key: 'sprint', icon: 'timer', title: '2-minute revision', subtitle: 'Recall what you studied before', onPress: () => setShowMorningSprint(true) },
+        { key: 'vault', icon: 'replay', title: 'Fix my mistakes', subtitle: 'Retry questions you got wrong', onPress: () => router.push('/error-vault' as any) },
+        { key: 'doubt', icon: 'photo-camera', title: 'Scan a doubt', subtitle: 'Photo of a question → step-by-step help', onPress: () => router.push('/doubt-solver' as any) },
+      ]
+    : [
+        { key: 'mock', icon: 'tune', title: 'Custom mock test', subtitle: 'Pick topics and number of questions', onPress: () => setShowExamModal(true) },
+        { key: 'interview', icon: 'record-voice-over', title: 'Interview practice', subtitle: 'Answer HR and technical questions', onPress: () => router.push('/interview-simulator') },
+        { key: 'cards', icon: 'style', title: 'Flashcards', subtitle: 'HR and technical Q&A', onPress: () => router.push('/flashcards') },
+        { key: 'sprint', icon: 'timer', title: '2-minute revision', subtitle: 'Recall what you studied before', onPress: () => setShowMorningSprint(true) },
+        { key: 'vault', icon: 'replay', title: 'Fix my mistakes', subtitle: 'Retry questions you got wrong', onPress: () => router.push('/error-vault' as any) },
+        { key: 'doubt', icon: 'photo-camera', title: 'Scan a doubt', subtitle: 'Photo of a question → step-by-step help', onPress: () => router.push('/doubt-solver' as any) },
+      ];
+
+  const competeTools: { key: string; icon: React.ComponentProps<typeof MaterialIcons>['name']; label: string; onPress: () => void }[] = [
+    { key: 'duel', icon: 'sports-kabaddi', label: '1v1 duel', onPress: () => router.push('/quiz-duel') },
+    { key: 'board', icon: 'emoji-events', label: 'Rankings', onPress: () => router.push('/leaderboard') },
+    { key: 'radar', icon: 'insights', label: 'Strengths', onPress: () => router.push('/mastery-analytics') },
+    { key: 'share', icon: 'ios-share', label: 'Share', onPress: () => setShowShareProgress(true) },
+  ];
+
+  // Hero: resume the last chapter, otherwise suggest the first unfinished chapter.
+  const firstSubject = activeSubjects[0];
+  const suggestedChapter = firstSubject?.chapters?.find((c) => !completedChapterIds.includes(c.id)) || firstSubject?.chapters?.[0];
+  const firstName = (user?.name || '').split(' ')[0] || 'there';
+  const gradeLine = isSchoolMode
+    ? `Class ${userGrade} · ${user?.board || 'GSEB'}`
+    : 'College · Campus placements';
+
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-      edges={['top']}
-    >
-      {/* Top App Bar with Welcome Greeting & Profile Access */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <View style={styles.headerLeft}>
-          <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/(tabs)/profile')}>
-            {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
-              <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
-                <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
-              </View>
-            ) : (
-              <Image source={{ uri: user?.avatarUrl || AVATAR_URL }} style={styles.avatar} />
-            )}
-          </TouchableOpacity>
-          <View>
-            <Text style={[styles.headerGreeting, { color: colors.onSurfaceVariant }]}>
-              Welcome back 👋
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* Header: who you are and which syllabus you're on (tap to change) */}
+      <View style={styles.header}>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/(tabs)/profile')} accessibilityLabel="Open profile">
+          {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
+            <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: colors.primaryFixed }]}>
+              <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
+            </View>
+          ) : (
+            <Image source={{ uri: user?.avatarUrl || AVATAR_URL }} style={styles.avatar} />
+          )}
+        </TouchableOpacity>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[styles.headerTitle, { color: colors.onSurface }]} numberOfLines={1}>
+            Hi, {firstName}
+          </Text>
+          <TouchableOpacity onPress={() => setShowGradeModal(true)} activeOpacity={0.7} style={styles.gradeLine} accessibilityRole="button" accessibilityLabel={`Change class. Current: ${gradeLine}`}>
+            <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+              {gradeLine}
             </Text>
-            <Text style={[styles.headerTitle, { color: colors.onSurface }]} numberOfLines={1}>
-              {user?.name || 'MindSprint Learner'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.headerRight}>
-          {/* Quick Streak Counter Pill */}
-          <TouchableOpacity
-            style={[styles.streakPillHeader, { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#fef3c7' }]}
-            onPress={() => router.push('/(tabs)/profile')}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="local-fire-department" size={17} color="#f59e0b" />
-            <Text style={styles.streakPillHeaderText}>{userStats?.streakCount || 1}</Text>
-          </TouchableOpacity>
-
-          {/* Search Toggle */}
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}
-            onPress={() => setShowSearchBar(!showSearchBar)}
-          >
-            <MaterialIcons name="search" size={20} color={colors.onSurface} />
-          </TouchableOpacity>
-
-          {/* Dark / Light Toggle */}
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}
-            onPress={toggleDarkMode}
-          >
-            <MaterialIcons
-              name={isDarkMode ? 'dark-mode' : 'light-mode'}
-              size={20}
-              color={colors.onSurface}
-            />
-          </TouchableOpacity>
-
-          {/* Bookmarks */}
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}
-            onPress={() => router.push('/bookmarks')}
-          >
-            <MaterialIcons name="bookmark-border" size={20} color={colors.onSurface} />
+            <MaterialIcons name="expand-more" size={18} color={colors.onSurfaceVariant} />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={[styles.streakPillHeader, { backgroundColor: colors.accentContainer }]}
+          onPress={() => router.push('/(tabs)/profile')}
+          activeOpacity={0.8}
+          accessibilityLabel={`${userStats?.streakCount || 1} day streak`}
+        >
+          <MaterialIcons name="local-fire-department" size={18} color={colors.accent} />
+          <Text style={[styles.streakPillHeaderText, { color: colors.onAccentContainer }]}>{userStats?.streakCount || 1}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => setShowSearchBar(!showSearchBar)} accessibilityLabel="Search">
+          <MaterialIcons name={showSearchBar ? 'close' : 'search'} size={24} color={colors.onSurface} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/bookmarks')} accessibilityLabel="Bookmarks">
+          <MaterialIcons name="bookmark-border" size={24} color={colors.onSurface} />
+        </TouchableOpacity>
       </View>
 
-      {/* Main Content Area */}
       {loading && !userStats && !curriculum ? (
         <DashboardSkeleton />
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />}
         >
-          {isSchoolMode && lastChapter && (
-            <View style={{ marginHorizontal: -16 }}>
-              <ContinueLearningCard last={lastChapter} gujarati={isGSEB} onPress={() => router.push('/(tabs)/courses')} />
+          {showSearchBar && (
+            <View style={styles.padded}>
+              <SearchBar
+                value={searchQuery}
+                onChangeText={(text) => setSearchQuery(text)}
+                onClear={() => setSearchQuery('')}
+                placeholder="Search chapters, formulas, practice tests..."
+              />
             </View>
           )}
 
-          {/* 1-Tap Academic Grade & Board Switcher Banner */}
-          <View style={[styles.gradeBannerRow, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-            <View style={styles.gradeBannerLeft}>
-              <View style={[styles.gradeBannerIcon, { backgroundColor: colors.primary }]}>
-                <MaterialIcons name="school" size={14} color="#ffffff" />
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[styles.gradeBannerLabel, { color: colors.onSurfaceVariant }]}>
-                  {isSchoolMode ? 'CURRENT SYLLABUS' : 'CAREER GOAL'}
-                </Text>
-                <Text numberOfLines={1} style={[styles.gradeBannerText, { color: colors.onSurface }]}>
-                  {currentGradeLabel} {isSchoolMode ? `• ${user?.board || 'CBSE'} (${user?.medium || 'English'})` : '• Campus Placements'}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={[styles.changeGradeBtn, { backgroundColor: colors.primary }]}
-              onPress={() => setShowGradeModal(true)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.changeGradeBtnText}>Switch ▾</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Search Bar Input (When expanded) */}
-          {showSearchBar && (
-            <SearchBar
-              value={searchQuery}
-              onChangeText={(text) => setSearchQuery(text)}
-              onClear={() => setSearchQuery('')}
-              placeholder="Search chapters, formulas, practice tests..."
+          {isSchoolMode && curriculum ? (
+            lastChapter ? (
+              <TodayCard
+                context={`Continue · ${lastChapter.subjectName} · Chapter ${lastChapter.chapterNumber}`}
+                title={(isGSEB && lastChapter.titleGujarati) || lastChapter.title}
+                subtitle={lastChapter.action === 'video' ? 'Pick up the video where you stopped.' : lastChapter.action === 'pdf' ? 'Open the chapter PDF again.' : 'Back to your chapter notes.'}
+                primary={{
+                  label: lastChapter.action === 'video' ? 'Resume video' : lastChapter.action === 'pdf' ? 'Open PDF' : 'Open notes',
+                  icon: lastChapter.action === 'video' ? 'play-arrow' : 'menu-book',
+                  onPress: () => router.push({ pathname: '/(tabs)/courses', params: { subject: lastChapter.subjectId, resume: String(Date.now()) } }),
+                }}
+                secondary={{ label: 'Quiz', icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(lastChapter.title)}`) }}
+              />
+            ) : suggestedChapter && firstSubject ? (
+              <TodayCard
+                context={`Start here · ${(isGSEB && firstSubject.nameGujarati?.replace(/\s*\(.*\)/, '')) || firstSubject.name} · Chapter ${suggestedChapter.chapterNumber}`}
+                title={(isGSEB && suggestedChapter.titleGujarati) || suggestedChapter.title}
+                subtitle="Watch the lesson, read the chapter, then try a quick quiz."
+                primary={{ label: 'Open chapter', icon: 'play-arrow', onPress: () => router.push({ pathname: '/(tabs)/courses', params: { subject: firstSubject.id } }) }}
+                secondary={{ label: 'Quiz', icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(suggestedChapter.title)}`) }}
+              />
+            ) : null
+          ) : (
+            <TodayCard
+              context={`Placement prep · ${selectedCompany}`}
+              title={selectedCompany === 'All Companies' ? 'Aptitude & technical mock test' : `${selectedCompany} mock test`}
+              subtitle="15 minutes, timed like a real screening round."
+              primary={{ label: 'Start mock test', icon: 'play-arrow', onPress: () => setShowExamModal(true) }}
+              secondary={{ label: 'Interview', icon: 'record-voice-over', onPress: () => router.push('/interview-simulator') }}
             />
           )}
 
-          {/* ======================================================== */}
-          {/* SMART HERO MISSION CARD (ROLE-AWARE)                     */}
-          {/* ======================================================== */}
-          {isSchoolMode && curriculum ? (
-            <View style={[styles.schoolHeroCard, { backgroundColor: isDarkMode ? '#1e1b4b' : '#312e81' }, MindSprintShadows.glow]}>
-              <View style={styles.heroTopRow}>
-                <View style={styles.heroBadge}>
-                  <Text style={styles.heroBadgeText}>
-                    {curriculum.badge || (isGSEB ? `CLASS ${userGrade} • GSEB` : `CLASS ${userGrade}`)}
-                  </Text>
-                </View>
-                <View style={styles.heroBadgeLight}>
-                  <Text style={styles.heroBadgeLightText}>
-                    {user?.medium === 'Gujarati' ? 'Gujarati Medium' : `${user?.medium || 'English'} Medium`}
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={styles.schoolHeroTitle}>
-                {isGSEB ? `${activeSubject?.nameGujarati || activeSubject?.name} અભ્યાસક્રમ` : `${activeSubject?.name || 'Academic'} Curriculum`}
-              </Text>
-              <Text style={styles.schoolHeroSub}>
-                {isGSEB
-                  ? `પાઠ્યપુસ્તક પ્રકરણો, સૂત્રો, IMP પ્રશ્નો અને પ્રેક્ટિસ ક્વિઝ સાથે સંપૂર્ણ તૈયારી કરો.`
-                  : `Master all ${activeSubject?.chapters?.length || 0} chapters with verified notes, formulas & quizzes.`}
-              </Text>
-
-              <View style={styles.heroActionRow}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.heroPrimaryBtn}
-                  onPress={() => router.push(`/exam?limit=10&category=${encodeURIComponent(activeSubject?.name || 'Science')}`)}
-                >
-                  <MaterialIcons name="play-arrow" size={20} color="#1e1b4b" />
-                  <Text style={styles.heroPrimaryBtnText}>
-                    Quick 10-Q quiz
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.heroSecondaryBtn}
-                  onPress={() => router.push('/(tabs)/courses')}
-                >
-                  <MaterialIcons name="menu-book" size={17} color="#ffffff" />
-                  <Text style={styles.heroSecondaryBtnText}>
-                    All chapters
-                  </Text>
+          {/* Signature element: the subjects as a shelf of textbooks */}
+          {activeSubjects.length > 0 && (
+            <View style={styles.section}>
+              <View style={[styles.sectionHeaderRow, styles.padded]}>
+                <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
+                  {isSchoolMode ? 'Your textbooks' : 'Your subjects'}
+                </Text>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Text style={[styles.sectionHeaderLink, { color: colors.primary }]}>All courses</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          ) : (
-            <View style={[styles.heroCard, { backgroundColor: isDarkMode ? '#1e1b4b' : '#312e81' }, MindSprintShadows.glow]}>
-              <View style={styles.heroTopRow}>
-                <View style={styles.heroBadge}>
-                  <Text style={styles.heroBadgeText}>CAMPUS PLACEMENT</Text>
-                </View>
-                <View style={styles.heroBadgeLight}>
-                  <Text style={styles.heroBadgeLightText}>{selectedCompany}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.heroTitle}>
-                {selectedCompany === 'All Companies'
-                  ? 'Aptitude & Technical Mock Exam'
-                  : `${selectedCompany} Placement Mock Test`}
-              </Text>
-              <Text style={styles.heroSub}>
-                Timed 15-minute test simulating technical and aptitude screening rounds.
-              </Text>
-
-              <View style={styles.heroActionRow}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.heroPrimaryBtn}
-                  onPress={() => setShowExamModal(true)}
-                >
-                  <MaterialIcons name="tune" size={20} color="#1e1b4b" />
-                  <Text style={styles.heroPrimaryBtnText}>Customize & Start</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.heroSecondaryBtn}
-                  onPress={() => router.push('/interview-simulator')}
-                >
-                  <MaterialIcons name="record-voice-over" size={17} color="#ffffff" />
-                  <Text style={styles.heroSecondaryBtnText}>AI Simulator</Text>
-                </TouchableOpacity>
-              </View>
+              <TextbookShelf
+                subjects={activeSubjects}
+                gujarati={isGSEB}
+                completedIds={completedChapterIds}
+                onOpen={(sub) => router.push({ pathname: '/(tabs)/courses', params: { subject: sub.id } })}
+              />
             </View>
           )}
 
-          {/* ======================================================== */}
-          {/* QUICK POWER TOOLS 2x2 GRID                               */}
-          {/* ======================================================== */}
-          <View style={styles.powerGrid}>
-            <View style={styles.powerGridRow}>
-              {/* 1. 1v1 Speed Duel */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.powerCard,
-                  { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2', borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.3)' : '#fecaca' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/quiz-duel')}
-              >
-                <View style={[styles.powerIconBox, { backgroundColor: '#ef4444' }]}>
-                  <MaterialIcons name="sports-kabaddi" size={20} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.powerCardTitle, { color: colors.onSurface }]}>
-                    1v1 Speed Duel
-                  </Text>
-                  <Text style={[styles.powerCardSub, { color: colors.onSurfaceVariant }]}>
-                    Live peer battle ⚔️
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* 2. AI Mastery Radar */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.powerCard,
-                  { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.12)' : '#ecfdf5', borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.3)' : '#a7f3d0' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/mastery-analytics')}
-              >
-                <View style={[styles.powerIconBox, { backgroundColor: '#10b981' }]}>
-                  <MaterialIcons name="insights" size={20} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.powerCardTitle, { color: colors.onSurface }]}>
-                    Mastery Radar
-                  </Text>
-                  <Text style={[styles.powerCardSub, { color: colors.onSurfaceVariant }]}>
-                    AI Study Radar 📈
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.powerGridRow}>
-              {/* 3. Leaderboards */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.powerCard,
-                  { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.12)' : '#fffbeb', borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.3)' : '#fde68a' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/leaderboard')}
-              >
-                <View style={[styles.powerIconBox, { backgroundColor: '#f59e0b' }]}>
-                  <MaterialIcons name="emoji-events" size={20} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.powerCardTitle, { color: colors.onSurface }]}>
-                    Leaderboard
-                  </Text>
-                  <Text style={[styles.powerCardSub, { color: colors.onSurfaceVariant }]}>
-                    State & Campus 👑
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* 4. Placement Flashcards / Important Questions */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.powerCard,
-                  { backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.12)' : '#f5f3ff', borderColor: isDarkMode ? 'rgba(139, 92, 246, 0.3)' : '#ddd6fe' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => (isSchoolMode ? router.push('/(tabs)/courses') : router.push('/flashcards'))}
-              >
-                <View style={[styles.powerIconBox, { backgroundColor: '#8b5cf6' }]}>
-                  <MaterialIcons name={isSchoolMode ? 'star' : 'question-answer'} size={20} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.powerCardTitle, { color: colors.onSurface }]}>
-                    {isSchoolMode ? 'Imp Questions' : 'Flashcards'}
-                  </Text>
-                  <Text style={[styles.powerCardSub, { color: colors.onSurfaceVariant }]}>
-                    {isSchoolMode ? '1M-4M Marks ⭐' : 'HR & Tech Q&A 💡'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.padded}>
+            <DailyChallengeCard userGrade={userGrade} streakCount={userStats?.streakCount || 1} />
           </View>
 
-          {/* ======================================================== */}
-          {/* SMART STUDY ACCELERATOR SUITE                             */}
-          {/* ======================================================== */}
-          <View style={{ gap: 10, marginVertical: 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-                ⚡ Smart Study Accelerator
-              </Text>
-              <TouchableOpacity onPress={() => setShowShareProgress(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <MaterialIcons name="share" size={14} color="#25D366" />
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#25D366' }}>Share Card</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
-              {/* 1. Error Vault */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.acceleratorCard,
-                  { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2', borderColor: '#ef4444' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/error-vault' as any)}
-              >
-                <View style={[styles.acceleratorIconBox, { backgroundColor: '#ef4444' }]}>
-                  <MaterialIcons name="security" size={18} color="#ffffff" />
-                </View>
-                <View>
-                  <Text style={[styles.acceleratorTitle, { color: colors.onSurface }]}>Error Vault 🛡️</Text>
-                  <Text style={[styles.acceleratorSub, { color: colors.onSurfaceVariant }]}>Fix past mistakes</Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* 2. Scan Doubt AI Camera */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.acceleratorCard,
-                  { backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.15)' : '#f0f9ff', borderColor: '#0284c7' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/doubt-solver' as any)}
-              >
-                <View style={[styles.acceleratorIconBox, { backgroundColor: '#0284c7' }]}>
-                  <MaterialIcons name="photo-camera" size={18} color="#ffffff" />
-                </View>
-                <View>
-                  <Text style={[styles.acceleratorTitle, { color: colors.onSurface }]}>Scan Doubt 📸</Text>
-                  <Text style={[styles.acceleratorSub, { color: colors.onSurfaceVariant }]}>Instant AI solution</Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* 3. Morning Sprint */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.acceleratorCard,
-                  { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#fffbeb', borderColor: '#f59e0b' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => setShowMorningSprint(true)}
-              >
-                <View style={[styles.acceleratorIconBox, { backgroundColor: '#f59e0b' }]}>
-                  <MaterialIcons name="bolt" size={18} color="#ffffff" />
-                </View>
-                <View>
-                  <Text style={[styles.acceleratorTitle, { color: colors.onSurface }]}>2-Min Sprint ⚡</Text>
-                  <Text style={[styles.acceleratorSub, { color: colors.onSurfaceVariant }]}>Spaced recall</Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* 4. Full 80-Mark Board Exam */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.acceleratorCard,
-                  { backgroundColor: isDarkMode ? 'rgba(139, 92, 246, 0.15)' : '#f5f3ff', borderColor: '#8b5cf6' },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/board-exam-simulator' as any)}
-              >
-                <View style={[styles.acceleratorIconBox, { backgroundColor: '#8b5cf6' }]}>
-                  <MaterialIcons name="assignment" size={18} color="#ffffff" />
-                </View>
-                <View>
-                  <Text style={[styles.acceleratorTitle, { color: colors.onSurface }]}>Board Exam 📄</Text>
-                  <Text style={[styles.acceleratorSub, { color: colors.onSurfaceVariant }]}>80M Simulation</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
+          <View style={[styles.section, styles.padded]}>
+            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>Practice</Text>
+            <ToolList items={practiceTools} />
           </View>
 
-          {/* Daily 60-Second Interactive Challenge Card */}
-          <DailyChallengeCard
-            userGrade={userGrade}
-            streakCount={userStats?.streakCount || 1}
-          />
-
-          {/* ======================================================== */}
-          {/* SCHOOL MODE: CLASSES 6 TO 12 (NCERT & GSEB SYLLABUS)      */}
-          {/* ======================================================== */}
-          {isSchoolMode && curriculum ? (
-            <View>
-              {/* Section Header: Subjects */}
-              <View style={styles.sectionHeaderRow}>
-                <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-                  Your subjects
-                </Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Text style={[styles.sectionHeaderLink, { color: colors.primary }]}>
-                    Open Courses →
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Horizontal Scrollable Subject Switcher Chips */}
-              <View style={styles.subjectChipsSection}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.subjectChipsScroll}
+          <View style={[styles.section, styles.padded]}>
+            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>Compete and track</Text>
+            <View style={styles.competeRow}>
+              {competeTools.map((t) => (
+                <TouchableOpacity
+                  key={t.key}
+                  activeOpacity={0.75}
+                  onPress={t.onPress}
+                  accessibilityRole="button"
+                  style={[styles.competeTile, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                 >
-                  {activeSubjects.map((sub) => {
-                    const isSelected = selectedSubjectId === sub.id;
-                    const displayName = isGSEB && sub.nameGujarati ? sub.nameGujarati : sub.name;
-                    const iconName = (sub.id.includes('math')
-                      ? 'calculate'
-                      : sub.id.includes('sci')
-                      ? 'biotech'
-                      : sub.id.includes('soc')
-                      ? 'public'
-                      : sub.id.includes('guj')
-                      ? 'edit-note'
-                      : 'menu-book') as any;
-
-                    return (
-                      <TouchableOpacity
-                        key={sub.id}
-                        activeOpacity={0.75}
-                        style={[
-                          styles.subjectChip,
-                          {
-                            backgroundColor: isSelected
-                              ? sub.color
-                              : isDarkMode
-                              ? colors.surfaceContainerLow
-                              : colors.surfaceContainerLowest,
-                            borderColor: isSelected ? sub.color : colors.outlineVariant,
-                          },
-                        ]}
-                        onPress={() => setSelectedSubjectId(sub.id)}
-                      >
-                        <MaterialIcons
-                          name={iconName}
-                          size={16}
-                          color={isSelected ? '#ffffff' : sub.color}
-                        />
-                        <Text
-                          style={[
-                            styles.subjectChipText,
-                            { color: isSelected ? '#ffffff' : colors.onSurface },
-                          ]}
-                        >
-                          {displayName}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-
-              {/* Chapter-by-Chapter Learning Cards */}
-              <View style={styles.chaptersSection}>
-                <Text style={[styles.subSectionHeading, { color: colors.onSurfaceVariant }]}>
-                  {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} પ્રકરણો` : `${activeSubject?.name} chapters`} ({activeSubject?.chapters?.length || 0})
-                </Text>
-
-                {/* Home shows a short preview; the full list lives in Courses */}
-                {(activeSubject?.chapters || []).slice(0, HOME_CHAPTER_PREVIEW).map((chap) => {
-                  const chapterTitle =
-                    isGSEB && chap.titleGujarati
-                      ? `${chap.chapterNumber}. ${chap.titleGujarati}`
-                      : `${chap.chapterNumber}. ${chap.title}`;
-
-                  return (
-                    <View
-                      key={chap.id}
-                      style={[
-                        styles.chapterCard,
-                        {
-                          backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                          borderColor: colors.outlineVariant,
-                        },
-                        MindSprintShadows.card,
-                      ]}
-                    >
-                      <View style={styles.chapterTopRow}>
-                        <View style={[styles.chapterIconBox, { backgroundColor: `${activeSubject.color}20` }]}>
-                          <MaterialIcons
-                            name={(chap.iconName || 'menu-book') as any}
-                            size={22}
-                            color={activeSubject.color}
-                          />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.chapterTitle, { color: colors.onSurface }]}>
-                            {chapterTitle}
-                          </Text>
-                          <Text style={[styles.chapterSub, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
-                            {(isGSEB && chap.summaryGujarati) || chap.summary}
-                          </Text>
-                        </View>
-                      </View>
-
-                      {/* Chapter Actions */}
-                      <View style={styles.chapterActionRow}>
-                        <TouchableOpacity
-                          style={styles.readNotesBtn}
-                          onPress={() => setSelectedChapterForRead(chap)}
-                        >
-                          <MaterialIcons name="menu-book" size={14} color={colors.primary} />
-                          <Text style={[styles.readNotesBtnText, { color: colors.primary }]}>
-                            Summary
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={[styles.startChapterQuizBtn, { backgroundColor: activeSubject.color }]}
-                          activeOpacity={0.8}
-                          onPress={() => router.push(`/exam?limit=10&category=${encodeURIComponent(chap.title)}`)}
-                        >
-                          <MaterialIcons name="quiz" size={14} color="#ffffff" />
-                          <Text style={styles.startChapterQuizText}>
-                            Quiz ({chap.questionCount || 10} Qs)
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  );
-                })}
-
-                {(activeSubject?.chapters?.length || 0) > HOME_CHAPTER_PREVIEW && (
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    onPress={() => router.push('/(tabs)/courses')}
-                    style={[styles.seeAllChaptersBtn, { borderColor: colors.outlineVariant, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff' }]}
-                  >
-                    <Text style={[styles.seeAllChaptersText, { color: colors.primary }]}>
-                      See all {activeSubject?.chapters?.length} chapters, videos and PDFs
-                    </Text>
-                    <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
-                  </TouchableOpacity>
-                )}
-              </View>
+                  <MaterialIcons name={t.icon} size={24} color={colors.primary} />
+                  <Text style={[styles.competeLabel, { color: colors.onSurface }]} numberOfLines={2}>{t.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          ) : (
-            /* ======================================================== */
-            /* COLLEGE & PLACEMENT RECRUITMENT MODE                     */
-            /* ======================================================== */
-            <View>
+          </View>
+
+          {/* College-only placement tools */}
+          {!isSchoolMode && (
+            <View style={styles.padded}>
+
               {/* Track Switcher */}
               <TrackSwitcher
                 activeTrack={activeTrack}
@@ -765,22 +370,21 @@ export default function DashboardScreen() {
                 style={[
                   styles.diagnosticCard,
                   {
-                    backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#f5f3ff',
-                    borderColor: isDarkMode ? 'rgba(129,140,248,0.3)' : '#ddd6fe',
+                    backgroundColor: colors.surface,
+                    borderColor: colors.outlineVariant,
                   },
-                  MindSprintShadows.card,
                 ]}
               >
                 <View style={styles.diagnosticHeader}>
-                  <View style={[styles.diagnosticIconCircle, { backgroundColor: '#8b5cf6' }]}>
-                    <MaterialIcons name="auto-awesome" size={22} color="#ffffff" />
+                  <View style={[styles.diagnosticIconCircle, { backgroundColor: colors.primaryFixed }]}>
+                    <MaterialIcons name="track-changes" size={22} color={colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.diagnosticTitle, { color: colors.onSurface }]}>
-                      AI Weak-Spot Diagnostic
+                      Find your weak topics
                     </Text>
                     <Text style={[styles.diagnosticSub, { color: colors.onSurfaceVariant }]}>
-                      Auto-generated from your recent test results
+                      Based on your recent test answers
                     </Text>
                   </View>
                 </View>
@@ -792,11 +396,11 @@ export default function DashboardScreen() {
                       key={i}
                       style={[
                         styles.weakTag,
-                        { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#fee2e2' },
+                        { backgroundColor: colors.errorContainer },
                       ]}
                     >
-                      <MaterialIcons name="trending-down" size={12} color="#ef4444" />
-                      <Text style={[styles.weakTagText, { color: '#ef4444' }]} numberOfLines={1}>
+                      <MaterialIcons name="trending-down" size={12} color={colors.error} />
+                      <Text style={[styles.weakTagText, { color: colors.error }]} numberOfLines={1}>
                         {topic}
                       </Text>
                     </View>
@@ -805,12 +409,12 @@ export default function DashboardScreen() {
 
                 <TouchableOpacity
                   activeOpacity={0.85}
-                  style={[styles.launchDiagnosticBtn, { backgroundColor: '#8b5cf6' }, MindSprintShadows.glow]}
+                  style={[styles.launchDiagnosticBtn, { backgroundColor: colors.primary }]}
                   onPress={() => router.push('/exam?isDiagnostic=true&limit=10')}
                 >
                   <MaterialIcons name="bolt" size={18} color="#ffffff" />
                   <Text style={styles.launchDiagnosticText}>
-                    Take 10-Min Diagnostic Test 🎯
+                    Take a 10-minute check
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -821,47 +425,26 @@ export default function DashboardScreen() {
                 onSelectCompany={(company) => setSelectedCompany(company)}
               />
 
-              {/* Placement Interview Flashcards Entry Card */}
-              <TouchableOpacity
-                activeOpacity={0.85}
-                style={[
-                  styles.flashcardsBanner,
-                  { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant },
-                  MindSprintShadows.card,
-                ]}
-                onPress={() => router.push('/flashcards')}
-              >
-                <View style={[styles.flashcardIconCircle, { backgroundColor: 'rgba(99, 102, 241, 0.15)' }]}>
-                  <MaterialIcons name="question-answer" size={24} color="#6366f1" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.flashcardBannerTitle, { color: colors.onSurface }]}>
-                    Placement Interview Flashcards
-                  </Text>
-                  <Text style={[styles.flashcardBannerSub, { color: colors.onSurfaceVariant }]}>
-                    Revise HR & Technical Q&As with interviewer tips
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={24} color={colors.primary} />
-              </TouchableOpacity>
             </View>
           )}
 
-          {/* Grade-Isolated Streak, Stats, and Performance Analytics */}
-          <StreakWidget
-            streakCount={userStats?.streakCount || 1}
-            recentActivity={userStats?.recentActivity || []}
-          />
-          <StatsCard
-            totalTests={userStats?.totalTests || 0}
-            avgScore={userStats?.avgScore || 0}
-            totalQuestions={userStats?.totalQuestionsAnswered || 0}
-          />
-          <PerformanceChart
-            scoresHistory={(userStats?.recentActivity || []).map((r: any) => r.scorePercentage).reverse()}
-            recentActivity={userStats?.recentActivity || []}
-          />
-          <RecentActivityList items={userStats?.recentActivity || []} />
+          {/* Progress */}
+          <View style={[styles.section, styles.padded]}>
+            <StreakWidget
+              streakCount={userStats?.streakCount || 1}
+              recentActivity={userStats?.recentActivity || []}
+            />
+            <StatsCard
+              totalTests={userStats?.totalTests || 0}
+              avgScore={userStats?.avgScore || 0}
+              totalQuestions={userStats?.totalQuestionsAnswered || 0}
+            />
+            <PerformanceChart
+              scoresHistory={(userStats?.recentActivity || []).map((r: any) => r.scorePercentage).reverse()}
+              recentActivity={userStats?.recentActivity || []}
+            />
+            <RecentActivityList items={userStats?.recentActivity || []} />
+          </View>
         </ScrollView>
       )}
 
@@ -906,7 +489,7 @@ export default function DashboardScreen() {
                 {selectedChapterForRead?.summary}
               </Text>
 
-              <View style={[styles.chapterReadTipBox, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#eff6ff' }]}>
+              <View style={[styles.chapterReadTipBox, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.1)' : '#E3EDFC' }]}>
                 <Text style={[styles.chapterReadTipTitle, { color: colors.primary }]}>
                   💡 NCERT / GSEB Exam Advice:
                 </Text>
@@ -1016,6 +599,9 @@ export default function DashboardScreen() {
         visible={showShareProgress}
         onClose={() => setShowShareProgress(false)}
         streakDays={userStats?.streakCount || 1}
+        masteryPercentage={userStats?.avgScore || 0}
+        chaptersCompleted={completedChapterIds.length}
+        questionsSolved={userStats?.totalQuestionsAnswered || 0}
       />
     </SafeAreaView>
   );
@@ -1026,70 +612,91 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
   avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 1.5,
-    borderColor: 'rgba(79, 70, 229, 0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   emojiAvatarBox: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   emojiAvatarText: {
-    fontSize: 20,
-  },
-  headerGreeting: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 22,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 22,
+    lineHeight: 28,
   },
-  headerRight: {
+  gradeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    minHeight: 22,
+  },
+  headerSub: {
+    fontSize: 13,
+    fontWeight: '500',
+    flexShrink: 1,
   },
   streakPillHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    minHeight: 34,
+    borderRadius: 17,
   },
   streakPillHeaderText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#d97706',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
   },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scrollContainer: {
+    paddingTop: 4,
+    paddingBottom: 40,
+    gap: 28,
+  },
+  padded: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+  },
+  section: {
+    gap: 12,
+  },
+  competeRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  competeTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    minHeight: 84,
+  },
+  competeLabel: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 13,
+    lineHeight: 17,
+    textAlign: 'center',
   },
   // Grade & Curriculum Switcher Banner
   gradeBannerRow: {
@@ -1200,7 +807,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   heroBadgeLightText: {
-    color: '#e0e7ff',
+    color: '#E4EAF8',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -1212,7 +819,7 @@ const styles = StyleSheet.create({
   },
   schoolHeroSub: {
     fontSize: 12.5,
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     marginTop: 4,
     marginBottom: 16,
     lineHeight: 18,
@@ -1235,7 +842,7 @@ const styles = StyleSheet.create({
   heroPrimaryBtnText: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: '#1e1b4b',
+    color: '#12245C',
   },
   heroSecondaryBtn: {
     flex: 1,
@@ -1259,17 +866,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 14,
-    marginBottom: 4,
   },
   sectionHeading: {
-    fontSize: 15.5,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
   },
   sectionHeaderLink: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
   },
   subSectionHeading: {
     fontSize: 13,
@@ -1374,7 +979,7 @@ const styles = StyleSheet.create({
   },
   // College Placement Styles
   heroCard: {
-    backgroundColor: '#3525cd',
+    backgroundColor: '#1D3A8A',
     borderRadius: 24,
     padding: 20,
     marginVertical: 12,
@@ -1423,9 +1028,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   diagnosticTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 18,
+    lineHeight: 24,
   },
   diagnosticSub: {
     fontSize: 11,
@@ -1458,9 +1063,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   launchDiagnosticText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
     color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
   },
   flashcardsBanner: {
     flexDirection: 'row',
@@ -1577,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   launchBtn: {
     marginTop: 20,
-    backgroundColor: '#3525cd',
+    backgroundColor: '#1D3A8A',
     borderRadius: 14,
     paddingVertical: 14,
     flexDirection: 'row',

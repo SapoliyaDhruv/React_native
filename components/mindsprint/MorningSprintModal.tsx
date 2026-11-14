@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { SpacedItem, SpacedRepetitionStorage } from '@/services/spacedRepetitionStorage';
@@ -91,15 +91,15 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
           {/* Header */}
           <View style={styles.modalHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-              <View style={[styles.headerIconBox, { backgroundColor: '#f59e0b' }]}>
-                <MaterialIcons name="bolt" size={20} color="#ffffff" />
+              <View style={[styles.headerIconBox, { backgroundColor: colors.accent }]}>
+                <MaterialIcons name="timer" size={20} color={colors.onAccent} />
               </View>
-              <View>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[styles.headerTitle, { color: colors.onSurface }]}>
-                  Daily 2-Min Morning Sprint ⚡
+                  2-minute revision
                 </Text>
                 <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-                  Spaced Repetition • Beat the Forgetting Curve
+                  Recall what you studied before
                 </Text>
               </View>
             </View>
@@ -113,30 +113,30 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
             <View style={styles.centerBox}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={[styles.subText, { color: colors.onSurfaceVariant, marginTop: 10 }]}>
-                Loading your daily recall cards...
+                Loading your revision cards…
               </Text>
             </View>
           ) : completed ? (
             /* COMPLETED SPRINT SCREEN */
             <View style={styles.finishBox}>
-              <View style={[styles.trophyCircle, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
-                <MaterialIcons name="local-fire-department" size={48} color="#f59e0b" />
+              <View style={[styles.trophyCircle, { backgroundColor: 'rgba(18, 128, 92, 0.15)' }]}>
+                <MaterialIcons name="local-fire-department" size={48} color="#F4A30B" />
               </View>
               <Text style={[styles.finishTitle, { color: colors.onSurface }]}>
-                Sprint Completed! 🔥
+                Revision done
               </Text>
               <Text style={[styles.finishSub, { color: colors.onSurfaceVariant }]}>
-                You reviewed {items.length} cards today and recalled {correctCount}/{items.length} correctly. Your streak shield is active!
+                You reviewed {items.length} cards today and recalled {correctCount}/{items.length} correctly. Your streak is safe for today.
               </Text>
               <View style={styles.xpBadge}>
-                <Text style={styles.xpBadgeText}>+50 XP REWARDED</Text>
+                <Text style={styles.xpBadgeText}>+50 XP</Text>
               </View>
 
               <TouchableOpacity
                 style={[styles.doneBtn, { backgroundColor: colors.primary }]}
                 onPress={onClose}
               >
-                <Text style={styles.doneBtnText}>Continue to Study 🚀</Text>
+                <Text style={styles.doneBtnText}>Back to studying</Text>
               </TouchableOpacity>
             </View>
           ) : currentItem ? (
@@ -147,14 +147,14 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                 <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
                   Card {currentIndex + 1} of {items.length} • {currentItem.subject}
                 </Text>
-                <View style={[styles.boxBadge, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#e0e7ff' }]}>
+                <View style={[styles.boxBadge, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : '#E4EAF8' }]}>
                   <Text style={[styles.boxBadgeText, { color: colors.primary }]}>
                     Box {currentItem.box}/5
                   </Text>
                 </View>
               </View>
 
-              <View style={[styles.progressBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
+              <View style={[styles.progressBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}>
                 <View
                   style={[
                     styles.progressBarFill,
@@ -171,14 +171,14 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                 style={[
                   styles.flashCard,
                   {
-                    backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+                    backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB',
                     borderColor: colors.outlineVariant,
                   },
                   MindSprintShadows.card,
                 ]}
               >
                 <Text style={[styles.cardPrompt, { color: colors.primary }]}>
-                  {isRevealed ? 'RECALLED ANSWER / RULE:' : 'ACTIVE RECALL PROMPT:'}
+                  {isRevealed ? 'Answer' : 'Try to recall'}
                 </Text>
 
                 <Text style={[styles.cardContentText, { color: colors.onSurface }]}>
@@ -191,24 +191,24 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                     onPress={() => setIsRevealed(true)}
                   >
                     <MaterialIcons name="touch-app" size={18} color="#ffffff" />
-                    <Text style={styles.revealBtnText}>Tap to Reveal Answer 💡</Text>
+                    <Text style={styles.revealBtnText}>Show answer</Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.actionRow}>
                     <TouchableOpacity
-                      style={[styles.answerChoiceBtn, { backgroundColor: '#ef4444' }]}
+                      style={[styles.answerChoiceBtn, { backgroundColor: colors.error }]}
                       onPress={() => handleAnswer(false)}
                     >
                       <MaterialIcons name="close" size={18} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>Struggling (Box 1)</Text>
+                      <Text style={styles.actionBtnText}>Didn’t know</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.answerChoiceBtn, { backgroundColor: '#10b981' }]}
+                      style={[styles.answerChoiceBtn, { backgroundColor: colors.tertiary }]}
                       onPress={() => handleAnswer(true)}
                     >
                       <MaterialIcons name="check" size={18} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>Got It! (Next Box)</Text>
+                      <Text style={styles.actionBtnText}>Knew it</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -252,14 +252,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 19,
+    lineHeight: 25,
   },
   headerSub: {
     fontSize: 11,
   },
   closeBtn: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centerBox: {
     paddingVertical: 50,
@@ -305,9 +309,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardPrompt: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    fontWeight: '600',
   },
   cardContentText: {
     fontSize: 16,
@@ -361,8 +364,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   finishTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 24,
+    lineHeight: 32,
+    textAlign: 'center',
   },
   finishSub: {
     fontSize: 13,
@@ -371,13 +376,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   xpBadge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(244, 163, 11, 0.15)',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
   },
   xpBadgeText: {
-    color: '#d97706',
+    color: '#8A5A00',
     fontWeight: '800',
     fontSize: 12,
   },

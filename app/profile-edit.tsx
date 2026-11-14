@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
@@ -23,7 +23,8 @@ const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍�
 
 export default function ProfileEditScreen() {
   const router = useRouter();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => makeStyles(colors), [colors]);
   const { user, logout, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || '');
@@ -104,7 +105,7 @@ export default function ProfileEditScreen() {
         graduationYear: targetYear,
       });
 
-      Alert.alert('Profile Updated 🎉', 'Your goals and profile info have been successfully saved.');
+      Alert.alert('Profile saved', 'Your changes are saved.');
       router.back();
     } catch (e) {
       Alert.alert('Saved Locally', 'Your profile details have been saved.');
@@ -140,290 +141,150 @@ export default function ProfileEditScreen() {
     );
   };
 
+  const isEmoji = !!avatarUrl && !avatarUrl.startsWith('http') && !avatarUrl.startsWith('file:') && !avatarUrl.startsWith('data:');
+  const isSchool = !!user?.grade && user.grade !== 'college';
+
+  const field = (
+    label: string,
+    value: string,
+    onChange: ((t: string) => void) | null,
+    placeholder?: string,
+    extra?: Partial<React.ComponentProps<typeof TextInput>>,
+    hint?: string,
+  ) => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput
+        style={[styles.textInput, !onChange && styles.textInputReadonly]}
+        value={value}
+        onChangeText={onChange || undefined}
+        editable={!!onChange}
+        placeholder={placeholder}
+        placeholderTextColor={colors.outline}
+        accessibilityLabel={label}
+        {...extra}
+      />
+      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+    </View>
+  );
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={22} color={colors.primary} />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityLabel="Go back">
+          <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Edit Profile & Goals
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            Target Company & Account Settings
-          </Text>
-        </View>
+        <Text style={styles.headerTitle}>Edit profile</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Profile Card Form */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.outlineVariant,
-            },
-            MindSprintShadows.card,
-          ]}
-        >
-          {/* Avatar Preview & Chooser */}
-          <View style={styles.avatarSection}>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={styles.avatarWrapper}
-              onPress={handlePickFromGallery}
-            >
-              {avatarUrl && !avatarUrl.startsWith('http') && !avatarUrl.startsWith('file:') && !avatarUrl.startsWith('data:') ? (
-                <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
-                  <Text style={styles.emojiAvatarText}>{avatarUrl}</Text>
-                </View>
-              ) : (
-                <Image
-                  source={{ uri: avatarUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3' }}
-                  style={styles.avatar}
-                />
-              )}
-              <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
-                <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {/* Photo */}
+        <View style={styles.avatarSection}>
+          <TouchableOpacity activeOpacity={0.85} style={styles.avatarWrapper} onPress={handlePickFromGallery} accessibilityLabel="Choose a photo">
+            {isEmoji ? (
+              <View style={[styles.avatar, styles.emojiAvatarBox]}>
+                <Text style={styles.emojiAvatarText}>{avatarUrl}</Text>
               </View>
-            </TouchableOpacity>
-
-            <View style={styles.avatarActionBtnsRow}>
-              <TouchableOpacity
-                style={[styles.smallActionBtn, { backgroundColor: colors.primary }]}
-                onPress={handlePickFromGallery}
-              >
-                <MaterialIcons name="photo-library" size={14} color="#ffffff" />
-                <Text style={styles.smallActionBtnText}>Gallery</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.smallActionBtn, { backgroundColor: '#334155' }]}
-                onPress={handleTakePhoto}
-              >
-                <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
-                <Text style={styles.smallActionBtnText}>Camera</Text>
-              </TouchableOpacity>
+            ) : (
+              <Image
+                source={{ uri: avatarUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3' }}
+                style={styles.avatar}
+              />
+            )}
+            <View style={styles.cameraBadge}>
+              <MaterialIcons name="photo-camera" size={14} color={colors.onPrimary} />
             </View>
+          </TouchableOpacity>
 
-            {/* Quick Emoji Avatars */}
-            <View style={styles.emojiRow}>
-              {AVATAR_PRESETS.map((emoji, idx) => (
+          <View style={styles.avatarActionBtnsRow}>
+            <TouchableOpacity style={styles.smallActionBtn} onPress={handlePickFromGallery}>
+              <MaterialIcons name="photo-library" size={18} color={colors.primary} />
+              <Text style={styles.smallActionBtnText}>Choose photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.smallActionBtn} onPress={handleTakePhoto}>
+              <MaterialIcons name="photo-camera" size={18} color={colors.primary} />
+              <Text style={styles.smallActionBtnText}>Take photo</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.emojiRow}>
+            {AVATAR_PRESETS.map((emoji, idx) => {
+              const selected = avatarUrl === emoji;
+              return (
                 <TouchableOpacity
                   key={idx}
-                  style={[
-                    styles.smallEmojiBtn,
-                    {
-                      backgroundColor: avatarUrl === emoji ? 'rgba(99, 102, 241, 0.2)' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                      borderColor: avatarUrl === emoji ? colors.primary : 'transparent',
-                    },
-                  ]}
+                  style={[styles.smallEmojiBtn, selected && styles.smallEmojiSelected]}
                   onPress={() => setAvatarUrl(emoji)}
+                  accessibilityState={{ selected }}
                 >
-                  <Text style={{ fontSize: 20 }}>{emoji}</Text>
+                  <Text style={{ fontSize: 22 }}>{emoji}</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
+              );
+            })}
           </View>
-
-          {/* Full Name */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.onSurface }]}>Full Name</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
-                  borderColor: colors.outlineVariant,
-                  color: colors.onSurface,
-                },
-              ]}
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. Aarav Patel"
-              placeholderTextColor={colors.outline}
-            />
-          </View>
-
-          {/* Email (Readonly) */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.onSurface }]}>Account Email (Registered)</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0',
-                  borderColor: colors.outlineVariant,
-                  color: colors.onSurfaceVariant,
-                },
-              ]}
-              value={user?.email || 'student@mindsprint.edu'}
-              editable={false}
-            />
-          </View>
-
-          {/* Target Company / Goal */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.onSurface }]}>Dream Company / Target Goal</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
-                  borderColor: colors.outlineVariant,
-                  color: colors.onSurface,
-                },
-              ]}
-              value={targetCompany}
-              onChangeText={setTargetCompany}
-              placeholder="e.g. Amazon SDE, TCS Digital, GSEB Board 95%"
-              placeholderTextColor={colors.outline}
-            />
-          </View>
-
-          {/* College / School Institute */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.onSurface }]}>Institute / School Name</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
-                  borderColor: colors.outlineVariant,
-                  color: colors.onSurface,
-                },
-              ]}
-              value={institute}
-              onChangeText={setInstitute}
-              placeholder="e.g. LD College of Engineering / Kendriya Vidyalaya"
-              placeholderTextColor={colors.outline}
-            />
-          </View>
-
-          {/* Target Year */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.onSurface }]}>Target Graduation / Exam Year</Text>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
-                  borderColor: colors.outlineVariant,
-                  color: colors.onSurface,
-                },
-              ]}
-              value={targetYear}
-              onChangeText={setTargetYear}
-              keyboardType="numeric"
-              placeholder="2026"
-              placeholderTextColor={colors.outline}
-            />
-          </View>
-
-          {/* Save Action Button */}
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={[styles.saveBtn, { backgroundColor: colors.primary }, MindSprintShadows.glow]}
-            onPress={handleSaveProfile}
-            disabled={saving}
-          >
-            <MaterialIcons name="save" size={20} color="#ffffff" />
-            <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Save Profile Changes'}</Text>
-          </TouchableOpacity>
         </View>
 
-        {/* Legal, Privacy & Compliance Section */}
-        <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-          App Store Compliance & Legal
-        </Text>
+        {/* About you */}
+        <Text style={styles.sectionHeading}>About you</Text>
+        <View style={styles.card}>
+          {field('Full name', name, setName, 'Your name', { autoComplete: 'name' })}
+          {field('Email', user?.email || 'student@mindsprint.edu', null, undefined, undefined, 'Your sign-in email can’t be changed here.')}
+          {field(isSchool ? 'School' : 'College or institute', institute, setInstitute, isSchool ? 'Your school name' : 'Your college name')}
+          {field('Goal', targetCompany, setTargetCompany, isSchool ? 'e.g. 90% in board exam' : 'e.g. TCS Digital, Amazon SDE')}
+          {field(isSchool ? 'Exam year' : 'Graduation year', targetYear, setTargetYear, '2027', { keyboardType: 'numeric' })}
+        </View>
 
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.outlineVariant,
-            },
-            MindSprintShadows.card,
-          ]}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={[styles.saveBtn, saving && { opacity: 0.7 }]}
+          onPress={handleSaveProfile}
+          disabled={saving}
+          accessibilityRole="button"
         >
-          {/* Privacy Policy */}
-          <TouchableOpacity
-            style={styles.legalRow}
-            onPress={() => setShowPrivacyModal(true)}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <MaterialIcons name="privacy-tip" size={20} color={colors.primary} />
-              <Text style={[styles.legalRowText, { color: colors.onSurface }]}>Privacy Policy</Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
-          </TouchableOpacity>
+          <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save changes'}</Text>
+        </TouchableOpacity>
 
-          {/* Terms of Service */}
+        {/* Account */}
+        <Text style={styles.sectionHeading}>Account and privacy</Text>
+        <View style={[styles.card, { paddingVertical: 0, gap: 0 }]}>
+          <TouchableOpacity style={styles.legalRow} onPress={() => setShowPrivacyModal(true)}>
+            <MaterialIcons name="privacy-tip" size={22} color={colors.primary} />
+            <Text style={styles.legalRowText}>Privacy policy</Text>
+            <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
+          </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.legalRow, { borderTopWidth: 1, borderTopColor: colors.outlineVariant }]}
+            style={[styles.legalRow, styles.rowDivider]}
             onPress={() => Alert.alert('Terms of Service', 'MindSprint is an educational platform. Content is curated under NCERT & open placement guidelines.')}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <MaterialIcons name="description" size={20} color={colors.primary} />
-              <Text style={[styles.legalRowText, { color: colors.onSurface }]}>Terms of Service</Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={20} color={colors.outline} />
+            <MaterialIcons name="description" size={22} color={colors.primary} />
+            <Text style={styles.legalRowText}>Terms of service</Text>
+            <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
           </TouchableOpacity>
-
-          {/* Delete Account (Mandatory Apple Guideline 5.1.1) */}
-          <TouchableOpacity
-            style={[styles.legalRow, { borderTopWidth: 1, borderTopColor: colors.outlineVariant }]}
-            onPress={handleDeleteAccount}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <MaterialIcons name="delete-forever" size={20} color="#ef4444" />
-              <Text style={[styles.legalRowText, { color: '#ef4444' }]}>Delete Account & Data (Apple 5.1.1)</Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={20} color="#ef4444" />
+          <TouchableOpacity style={[styles.legalRow, styles.rowDivider]} onPress={handleDeleteAccount}>
+            <MaterialIcons name="delete-outline" size={22} color={colors.error} />
+            <Text style={[styles.legalRowText, { color: colors.error }]}>Delete account and data</Text>
+            <MaterialIcons name="chevron-right" size={22} color={colors.error} />
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Privacy Policy Modal */}
-      <Modal
-        visible={showPrivacyModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPrivacyModal(false)}
-      >
+      <Modal visible={showPrivacyModal} transparent animationType="slide" onRequestClose={() => setShowPrivacyModal(false)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+          <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.onSurface }]}>
-                MindSprint Privacy Policy
-              </Text>
-              <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
+              <Text style={styles.modalTitle}>Privacy policy</Text>
+              <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.backBtn} accessibilityLabel="Close">
                 <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
             <ScrollView style={{ maxHeight: 350, marginVertical: 10 }} showsVerticalScrollIndicator={false}>
-              <Text style={[styles.privacyText, { color: colors.onSurface }]}>
+              <Text style={styles.privacyText}>
                 1. Data Collection: MindSprint stores your study progress, mock test accuracy, and formula bookmarks securely to provide personalized AI recommendations.{'\n\n'}
                 2. Privacy Standards: We comply with global data regulations (GDPR, Apple App Store Guidelines 5.1.1, Google Play Data Safety). We do NOT sell your data to third parties.{'\n\n'}
-                3. Right to Erasure: You have the permanent right to delete your account and all associated test scores at any time via the "Delete Account" button.
+                3. Right to Erasure: You have the permanent right to delete your account and all associated test scores at any time via the &quot;Delete account&quot; button.
               </Text>
             </ScrollView>
-            <TouchableOpacity
-              style={[styles.closeModalBtn, { backgroundColor: colors.primary }]}
-              onPress={() => setShowPrivacyModal(false)}
-            >
+            <TouchableOpacity style={styles.closeModalBtn} onPress={() => setShowPrivacyModal(false)}>
               <Text style={styles.closeModalBtnText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -433,184 +294,82 @@ export default function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    height: 58,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    gap: 12,
-  },
-  backBtn: {
-    padding: 6,
-    borderRadius: 8,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  headerSub: {
-    fontSize: 12,
-  },
-  scrollContainer: {
-    padding: 16,
-    gap: 16,
-    paddingBottom: 40,
-  },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
-    gap: 14,
-  },
-  inputGroup: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-  },
-  saveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
-    gap: 8,
-    marginTop: 6,
-  },
-  saveBtnText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  sectionHeading: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 6,
-  },
-  legalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  legalRowText: {
-    fontSize: 13.5,
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  privacyText: {
-    fontSize: 13.5,
-    lineHeight: 22,
-  },
-  closeModalBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  closeModalBtnText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 10,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#3525cd',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  emojiAvatarBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emojiAvatarText: {
-    fontSize: 40,
-  },
-  avatarActionBtnsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  smallActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  smallActionBtnText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  emojiRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  smallEmojiBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const makeStyles = (c: typeof MindSprintColors) =>
+  StyleSheet.create({
+    safeArea: { flex: 1 },
+    header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, minHeight: 56, gap: 4 },
+    backBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 22 },
+    headerTitle: { fontFamily: MindSprintFonts.heading, fontSize: 22, lineHeight: 28, color: c.onSurface },
+    scrollContainer: { padding: 16, paddingTop: 4, paddingBottom: 40 },
+    sectionHeading: { fontFamily: MindSprintFonts.heading, fontSize: 18, lineHeight: 24, color: c.onSurface, marginTop: 24, marginBottom: 10 },
+    card: { borderRadius: 16, borderWidth: 1, borderColor: c.outlineVariant, backgroundColor: c.surface, padding: 16, gap: 16 },
+    inputGroup: { gap: 6 },
+    label: { fontSize: 13.5, fontWeight: '600', color: c.onSurface },
+    hint: { fontSize: 12.5, color: c.onSurfaceVariant },
+    textInput: {
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.background,
+      color: c.onSurface,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      minHeight: 48,
+      fontSize: 15.5,
+    },
+    textInputReadonly: { backgroundColor: c.surfaceContainerLow, color: c.onSurfaceVariant },
+    saveBtn: { minHeight: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: c.accent, marginTop: 16 },
+    saveBtnText: { fontFamily: MindSprintFonts.label, fontSize: 17, color: c.onAccent },
+    legalRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 56 },
+    rowDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.outlineVariant },
+    legalRowText: { flex: 1, fontFamily: MindSprintFonts.title, fontSize: 15.5, color: c.onSurface },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
+    modalCard: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '80%', backgroundColor: c.surface },
+    modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    modalTitle: { fontFamily: MindSprintFonts.heading, fontSize: 20, lineHeight: 26, color: c.onSurface },
+    privacyText: { fontSize: 14.5, lineHeight: 23, color: c.onSurface },
+    closeModalBtn: { minHeight: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 10, backgroundColor: c.primary },
+    closeModalBtnText: { fontFamily: MindSprintFonts.label, color: c.onPrimary, fontSize: 15.5 },
+    avatarSection: { alignItems: 'center', gap: 14, marginTop: 4 },
+    avatarWrapper: { position: 'relative' },
+    avatar: { width: 92, height: 92, borderRadius: 46, backgroundColor: c.primaryFixed },
+    cameraBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: c.background,
+      backgroundColor: c.primary,
+    },
+    emojiAvatarBox: { alignItems: 'center', justifyContent: 'center' },
+    emojiAvatarText: { fontSize: 44 },
+    avatarActionBtnsRow: { flexDirection: 'row', gap: 10 },
+    smallActionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 14,
+      minHeight: 42,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+    },
+    smallActionBtnText: { fontFamily: MindSprintFonts.label, fontSize: 14.5, color: c.primary },
+    emojiRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 320 },
+    smallEmojiBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      backgroundColor: c.surfaceContainerLow,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    smallEmojiSelected: { borderColor: c.primary, backgroundColor: c.primaryFixed },
+  });

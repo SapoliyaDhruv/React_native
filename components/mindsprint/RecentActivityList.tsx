@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -31,7 +32,7 @@ export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = 
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.onSurface }]}>Recent Mock Exam Activity</Text>
+      <Text style={[styles.title, { color: colors.onSurface }]}>Recent tests</Text>
       <View
         style={[
           styles.cardContainer,
@@ -45,7 +46,7 @@ export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = 
           <View style={{ padding: 20, alignItems: 'center' }}>
             <MaterialIcons name="assessment" size={32} color={colors.outline} />
             <Text style={{ marginTop: 8, color: colors.onSurfaceVariant, fontSize: 13 }}>
-              No mock tests completed yet. Launch your first custom exam above!
+              No tests yet. Your finished tests will be listed here.
             </Text>
           </View>
         ) : (
@@ -69,7 +70,7 @@ export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = 
                   <MaterialIcons
                     name={isPassed ? 'check-circle' : 'assignment'}
                     size={24}
-                    color={isPassed ? '#10b981' : colors.primary}
+                    color={isPassed ? '#12805C' : colors.primary}
                   />
                 </View>
 
@@ -82,7 +83,7 @@ export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = 
                   </Text>
                 </View>
 
-                <Text style={[styles.scoreText, { color: isPassed ? '#10b981' : '#f59e0b' }]}>
+                <Text style={[styles.scoreText, { color: isPassed ? '#12805C' : '#F4A30B' }]}>
                   {item.scorePercentage}%
                 </Text>
               </TouchableOpacity>
@@ -99,9 +100,9 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
   },
   cardContainer: {
     borderRadius: 24,

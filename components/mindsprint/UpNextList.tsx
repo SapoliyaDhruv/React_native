@@ -35,7 +35,7 @@ export const UpNextList: React.FC<UpNextListProps> = ({
   nextLockedTitle,
   isLectureUnlocked = () => true,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { user } = useAuth();
 
   const isGujarati = user?.grade !== 'college';
@@ -78,9 +78,9 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                 styles.modeTogglePill,
                 {
                   backgroundColor: isSequentialMode
-                    ? isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#fef3c7'
-                    : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                  borderColor: isSequentialMode ? '#f59e0b' : colors.outlineVariant,
+                    ? colors.accentContainer
+                    : colors.surfaceContainerLow,
+                  borderColor: isSequentialMode ? colors.accent : colors.outlineVariant,
                 },
               ]}
               onPress={onToggleSequentialMode}
@@ -88,12 +88,12 @@ export const UpNextList: React.FC<UpNextListProps> = ({
               <MaterialIcons
                 name={isSequentialMode ? 'lock-outline' : 'lock-open'}
                 size={13}
-                color={isSequentialMode ? '#d97706' : colors.onSurfaceVariant}
+                color={isSequentialMode ? colors.onAccentContainer : colors.onSurfaceVariant}
               />
               <Text
                 style={[
                   styles.modeToggleText,
-                  { color: isSequentialMode ? '#d97706' : colors.onSurfaceVariant },
+                  { color: isSequentialMode ? colors.onAccentContainer : colors.onSurfaceVariant },
                 ]}
               >
                 {isSequentialMode
@@ -107,7 +107,7 @@ export const UpNextList: React.FC<UpNextListProps> = ({
           <View
             style={[
               styles.countBadge,
-              { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' },
+              { backgroundColor: colors.primaryFixed },
             ]}
           >
             <Text style={[styles.countText, { color: colors.primary }]}>
@@ -123,8 +123,8 @@ export const UpNextList: React.FC<UpNextListProps> = ({
           style={[
             styles.modeInfoBanner,
             {
-              backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.12)' : '#eff6ff',
-              borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : '#bfdbfe',
+              backgroundColor: colors.secondaryContainer,
+              borderColor: colors.outlineVariant,
             },
           ]}
         >
@@ -155,9 +155,9 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                 styles.itemCard,
                 {
                   backgroundColor: isActive
-                    ? isDarkMode ? 'rgba(129,140,248,0.08)' : 'rgba(30,0,169,0.04)'
-                    : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                  borderColor: isActive ? colors.primary : isDarkMode ? colors.outlineVariant : '#e5e7eb',
+                    ? colors.primaryFixed
+                    : colors.surface,
+                  borderColor: isActive ? colors.primary : colors.outlineVariant,
                   borderWidth: isActive ? 1.5 : 1,
                   opacity: unlocked ? 1 : 0.65,
                 },
@@ -174,17 +174,17 @@ export const UpNextList: React.FC<UpNextListProps> = ({
                   styles.lessonNumCircle,
                   {
                     backgroundColor: !unlocked
-                      ? isDarkMode ? '#334155' : '#cbd5e1'
+                      ? colors.surfaceContainerHigh
                       : isCompleted
-                      ? '#10b981'
+                      ? colors.tertiary
                       : isActive
                       ? colors.primary
-                      : isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9',
+                      : colors.surfaceContainer,
                   },
                 ]}
               >
                 {!unlocked ? (
-                  <MaterialIcons name="lock" size={14} color="#64748b" />
+                  <MaterialIcons name="lock" size={14} color="#5A6680" />
                 ) : isCompleted ? (
                   <MaterialIcons name="check" size={16} color="#ffffff" />
                 ) : isActive ? (
@@ -254,23 +254,23 @@ export const UpNextList: React.FC<UpNextListProps> = ({
           style={[
             styles.nextUnlockNoticeCard,
             {
-              backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : '#fffbeb',
-              borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.25)' : '#fde68a',
+              backgroundColor: colors.accentContainer,
+              borderColor: colors.outlineVariant,
             },
           ]}
         >
           <View style={styles.lockNoticeIconCircle}>
-            <MaterialIcons name="lock" size={18} color="#d97706" />
+            <MaterialIcons name="lock" size={18} color="#8A5A00" />
           </View>
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[styles.nextUnlockTitle, { color: isDarkMode ? '#fde68a' : '#92400e' }]}>
+            <Text style={[styles.nextUnlockTitle, { color: colors.onAccentContainer }]}>
               {nextLockedTitle
                 ? `${isGujarati ? 'આગળનું પ્રકરણ' : 'Next Chapter'}: ${nextLockedTitle}`
                 : isGujarati
                 ? 'હાલનું પ્રકરણ પૂર્ણ કરતાં આગળનું પ્રકરણ અનલૉક થશે'
                 : 'Complete the active lesson to reveal next chapter'}
             </Text>
-            <Text style={[styles.nextUnlockSub, { color: isDarkMode ? '#cbd5e1' : '#b45309' }]}>
+            <Text style={[styles.nextUnlockSub, { color: colors.onAccentContainer }]}>
               {isGujarati
                 ? `🔒 કુલ ${remainingLockedCount} વધુ પ્રકરણો ક્રમશઃ ખૂલશે (બધા જોવા માટે ઉપર 'બધા' ટેપ કરો)`
                 : `🔒 ${remainingLockedCount} more chapters will unlock sequentially (tap 'All' above to view all)`}
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   playingOverlay: {
     ...(StyleSheet.absoluteFill as object),
-    backgroundColor: 'rgba(30, 0, 169, 0.55)',
+    backgroundColor: 'rgba(29,58,138, 0.55)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -423,24 +423,24 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   completedBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(18, 128, 92, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   completedBadgeText: {
-    color: '#10b981',
+    color: '#12805C',
     fontSize: 9,
     fontWeight: '800',
   },
   lockedBadge: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    backgroundColor: 'rgba(200, 55, 45, 0.12)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   lockedBadgeText: {
-    color: '#ef4444',
+    color: '#C8372D',
     fontSize: 9,
     fontWeight: '800',
   },
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(244, 163, 11, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },

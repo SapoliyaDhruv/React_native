@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
@@ -123,8 +123,8 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         style={[
           styles.collapsedCard,
           {
-            backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ecfdf5',
-            borderColor: '#10b981',
+            backgroundColor: isDarkMode ? 'rgba(18, 128, 92, 0.15)' : '#DDF3EA',
+            borderColor: '#12805C',
           },
           MindSprintShadows.card,
         ]}
@@ -133,7 +133,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           <MaterialIcons
             name={isCorrect ? 'check-circle' : 'offline-pin'}
             size={22}
-            color="#10b981"
+            color="#12805C"
           />
           <View style={{ flex: 1 }}>
             <Text style={[styles.collapsedTitle, { color: colors.onSurface }]}>
@@ -147,7 +147,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
 
         <View style={styles.collapsedActions}>
           <TouchableOpacity
-            style={[styles.reviewBtn, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : '#d1fae5' }]}
+            style={[styles.reviewBtn, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : '#DDF3EA' }]}
             onPress={() => setIsCollapsed(false)}
           >
             <Text style={styles.reviewBtnText}>Review ▾</Text>
@@ -170,7 +170,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         styles.card,
         {
           backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-          borderColor: isDarkMode ? 'rgba(245, 158, 11, 0.4)' : '#fef08a',
+          borderColor: colors.outlineVariant,
         },
         MindSprintShadows.card,
       ]}
@@ -179,17 +179,17 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.badgeRow}>
           <View style={styles.qotdBadge}>
-            <MaterialIcons name="bolt" size={13} color="#ffffff" />
-            <Text style={styles.qotdText}>QUESTION OF THE DAY</Text>
+            <MaterialIcons name="bolt" size={14} color="#3A2600" />
+            <Text style={styles.qotdText}>Question of the day</Text>
           </View>
-          <View style={styles.topicPill}>
-            <Text style={styles.topicText} numberOfLines={1}>{questionData.topic}</Text>
+          <View style={[styles.topicPill, { backgroundColor: colors.primaryFixed }]}>
+            <Text style={[styles.topicText, { color: colors.primary }]} numberOfLines={1}>{questionData.topic}</Text>
           </View>
         </View>
 
         <View style={styles.rightHeaderActions}>
           <View style={styles.streakBadge}>
-            <MaterialIcons name="local-fire-department" size={15} color="#f59e0b" />
+            <MaterialIcons name="local-fire-department" size={15} color="#F4A30B" />
             <Text style={styles.streakText}>+1</Text>
           </View>
 
@@ -212,19 +212,19 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           const isSelected = selectedOpt === idx;
           const isCorrect = idx === questionData.correctIndex;
 
-          let bg = isDarkMode ? colors.surfaceContainerLow : '#f8fafc';
-          let border = isDarkMode ? colors.outlineVariant : '#e2e8f0';
+          let bg = isDarkMode ? colors.surfaceContainerLow : '#F5F7FB';
+          let border = isDarkMode ? colors.outlineVariant : '#DCE2EE';
           let textClr = colors.onSurface;
 
           if (isAnswered) {
             if (isCorrect) {
-              bg = isDarkMode ? 'rgba(16, 185, 129, 0.25)' : '#d1fae5';
-              border = '#10b981';
-              textClr = '#065f46';
+              bg = isDarkMode ? 'rgba(18, 128, 92, 0.25)' : '#DDF3EA';
+              border = '#12805C';
+              textClr = '#0B5C42';
             } else if (isSelected && !isCorrect) {
-              bg = isDarkMode ? 'rgba(239, 68, 68, 0.25)' : '#fee2e2';
-              border = '#ef4444';
-              textClr = '#991b1b';
+              bg = isDarkMode ? 'rgba(200, 55, 45, 0.25)' : '#FBE3E0';
+              border = '#C8372D';
+              textClr = '#8E2219';
             }
           }
 
@@ -245,10 +245,10 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
                   styles.optionLetterCircle,
                   {
                     backgroundColor: isAnswered && isCorrect
-                      ? '#10b981'
+                      ? '#12805C'
                       : isAnswered && isSelected && !isCorrect
-                      ? '#ef4444'
-                      : isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0',
+                      ? '#C8372D'
+                      : isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE',
                   },
                 ]}
               >
@@ -265,10 +265,10 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
               <Text style={[styles.optionLabel, { color: textClr }]}>{opt}</Text>
 
               {isAnswered && isCorrect && (
-                <MaterialIcons name="check-circle" size={18} color="#10b981" />
+                <MaterialIcons name="check-circle" size={18} color="#12805C" />
               )}
               {isAnswered && isSelected && !isCorrect && (
-                <MaterialIcons name="cancel" size={18} color="#ef4444" />
+                <MaterialIcons name="cancel" size={18} color="#C8372D" />
               )}
             </TouchableOpacity>
           );
@@ -280,7 +280,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         <View
           style={[
             styles.explanationBox,
-            { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#eff6ff' },
+            { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.1)' : '#E3EDFC' },
           ]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
@@ -323,19 +323,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#F4A30B',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
   },
   qotdText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#ffffff',
-    letterSpacing: 0.4,
+    fontFamily: MindSprintFonts.label,
+    fontSize: 13,
+    color: '#3A2600',
   },
   topicPill: {
-    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+    backgroundColor: 'rgba(29, 58, 138, 0.12)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -344,7 +343,7 @@ const styles = StyleSheet.create({
   topicText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#4f46e5',
+    color: '#1D3A8A',
   },
   rightHeaderActions: {
     flexDirection: 'row',
@@ -355,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(244, 163, 11, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -363,7 +362,7 @@ const styles = StyleSheet.create({
   streakText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#b45309',
+    color: '#8A5A00',
   },
   collapseToggleBtn: {
     paddingHorizontal: 6,
@@ -374,9 +373,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   questionText: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    lineHeight: 21,
+    fontFamily: MindSprintFonts.title,
+    fontSize: 17,
+    lineHeight: 25,
+    marginTop: 12,
+    marginBottom: 12,
   },
   optionsList: {
     gap: 8,
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   reviewBtnText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#065f46',
+    color: '#0B5C42',
   },
   dismissBtn: {
     padding: 4,

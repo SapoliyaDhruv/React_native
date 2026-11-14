@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,14 +13,15 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
+import { subjectTone } from '@/constants/subjectTones';
 import { ApiService, API_BASE_URL } from '@/services/api';
 import {
   AcademicGrade,
@@ -48,7 +49,7 @@ const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH - 48) * 9 / 16);
 
 export default function CoursesScreen() {
   const router = useRouter();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { user } = useAuth();
 
   const userGrade = user?.grade || '7';
@@ -436,6 +437,26 @@ export default function CoursesScreen() {
     else handleOpenNotes(chap);
   };
 
+  // Home links here with ?subject=<id> (textbook shelf) and &resume=<ts> (Resume button).
+  const params = useLocalSearchParams<{ subject?: string; resume?: string }>();
+  // Apply ?subject= once per new value (adjusting state during render, per React docs).
+  const [appliedSubjectParam, setAppliedSubjectParam] = useState<string | undefined>(undefined);
+  if (params.subject !== appliedSubjectParam) {
+    setAppliedSubjectParam(params.subject);
+    if (params.subject && activeSubjects.some((x) => x.id === params.subject)) {
+      setSelectedSubjectId(params.subject);
+      setSearchQuery('');
+    }
+  }
+  const handledResume = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!params.resume || handledResume.current === params.resume || !lastChapter) return;
+    handledResume.current = params.resume;
+    handleContinue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.resume, lastChapter]);
+
+  const subjectCover = activeSubject ? subjectTone(activeSubject.id).cover : colors.primary;
   const completedInSubject = chapters.filter((c) => completedChapterIds.includes(c.id)).length;
   const progressPercent = chapters.length > 0 ? Math.round((completedInSubject / chapters.length) * 100) : 0;
 
@@ -445,27 +466,14 @@ export default function CoursesScreen() {
       edges={['top']}
     >
       {/* Top Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: isDarkMode ? '#1e1b4b' : '#eef2ff',
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <View style={styles.headerLeft}>
-          <View style={[styles.headerIconCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.1)' }]}>
-            <MaterialIcons name="menu-book" size={22} color={colors.primary} />
-          </View>
-          <View style={styles.headerTextCol}>
-            <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.primary }]}>
-              {isSchoolMode ? `Class ${userGrade} Courses` : 'Placement Courses'}
-            </Text>
-            <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-              {isSchoolMode ? `${user?.board || 'CBSE'} Board • ${user?.medium || 'English'} Medium` : 'Campus Recruitment Tracks'}
-            </Text>
-          </View>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+        <View style={styles.headerTextCol}>
+          <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.onSurface }]}>
+            {isSchoolMode ? `Class ${userGrade} courses` : 'Placement courses'}
+          </Text>
+          <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
+            {isSchoolMode ? `${user?.board || 'CBSE'} · ${user?.medium || 'English'} medium` : 'Campus recruitment tracks'}
+          </Text>
         </View>
 
         {isSchoolMode && (
@@ -473,16 +481,16 @@ export default function CoursesScreen() {
             onPress={toggleLanguage}
             accessibilityRole="button"
             accessibilityLabel={useGujarati ? 'Switch names to English' : 'Switch names to Gujarati'}
-            style={[styles.langToggle, { borderColor: colors.outlineVariant, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff' }]}
+            style={[styles.langToggle, { borderColor: colors.outlineVariant, backgroundColor: colors.surface }]}
           >
-            <MaterialIcons name="translate" size={14} color={colors.primary} />
-            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>{useGujarati ? 'ગુજ' : 'EN'}</Text>
+            <MaterialIcons name="translate" size={16} color={colors.primary} />
+            <Text style={[styles.langToggleText, { color: colors.primary }]}>{useGujarati ? 'ગુજ' : 'EN'}</Text>
           </TouchableOpacity>
         )}
 
-        <View style={[styles.headerProgressPill, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7' }]}>
-          <MaterialIcons name="check-circle" size={13} color="#10b981" />
-          <Text style={styles.headerProgressText}>{progressPercent}%</Text>
+        <View style={[styles.headerProgressPill, { backgroundColor: colors.tertiaryContainer }]}>
+          <MaterialIcons name="check-circle" size={15} color={colors.tertiary} />
+          <Text style={[styles.headerProgressText, { color: colors.onTertiaryContainer }]}>{progressPercent}%</Text>
         </View>
       </View>
 
@@ -490,7 +498,7 @@ export default function CoursesScreen() {
         {serverOnline === false && <ServerStatusBanner checking={checkingServer} onRetry={checkServer} />}
 
         {/* One search box for every chapter of every subject (video + PDF in one tap) */}
-        <View style={[styles.searchBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff', borderColor: colors.outlineVariant }]}>
+        <View style={[styles.searchBox, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <MaterialIcons name="search" size={20} color={colors.onSurfaceVariant} />
           <TextInput
             value={searchQuery}
@@ -548,9 +556,9 @@ export default function CoursesScreen() {
                     styles.subjectChip,
                     {
                       backgroundColor: isSelected
-                        ? sub.color
-                        : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                      borderColor: isSelected ? sub.color : colors.outlineVariant,
+                        ? subjectTone(sub.id).cover
+                        : colors.surface,
+                      borderColor: isSelected ? subjectTone(sub.id).cover : colors.outlineVariant,
                     },
                   ]}
                   onPress={() => setSelectedSubjectId(sub.id)}
@@ -558,7 +566,7 @@ export default function CoursesScreen() {
                   <MaterialIcons
                     name={iconName}
                     size={16}
-                    color={isSelected ? '#ffffff' : sub.color}
+                    color={isSelected ? '#ffffff' : subjectTone(sub.id).cover}
                   />
                   <Text
                     style={[
@@ -568,7 +576,7 @@ export default function CoursesScreen() {
                   >
                     {displayName}
                   </Text>
-                  <View style={[styles.chipCountBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : isDarkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0' }]}>
+                  <View style={[styles.chipCountBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : colors.surfaceContainer }]}>
                     <Text style={[styles.chipCountText, { color: isSelected ? '#ffffff' : colors.onSurfaceVariant }]}>
                       {sub.chapters?.length || 0}
                     </Text>
@@ -599,7 +607,7 @@ export default function CoursesScreen() {
                   {
                     backgroundColor: isSelected
                       ? colors.primary
-                      : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
+                      : colors.surface,
                     borderColor: isSelected ? colors.primary : colors.outlineVariant,
                   },
                 ]}
@@ -622,24 +630,24 @@ export default function CoursesScreen() {
         <View
           style={[
             styles.subjectHeroCard,
-            { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: colors.outlineVariant },
+            { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
             MindSprintShadows.card,
           ]}
         >
           <View style={styles.subjectHeroTop}>
-            <View style={[styles.subjectHeroIcon, { backgroundColor: `${activeSubject?.color || '#3b82f6'}20` }]}>
-              <MaterialIcons name="school" size={24} color={activeSubject?.color || '#3b82f6'} />
+            <View style={[styles.subjectHeroIcon, { backgroundColor: subjectCover }]}>
+              <MaterialIcons name={(activeSubject ? subjectTone(activeSubject.id).icon : 'menu-book') as any} size={24} color="#ffffff" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.subjectHeroTitle, { color: colors.onSurface }]}>
                 {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} (${activeSubject.name})` : activeSubject?.name}
               </Text>
               <Text style={[styles.subjectHeroSub, { color: colors.onSurfaceVariant }]}>
-                {chapters.length} chapters • {completedInSubject} done
+                {chapters.length} chapters · {completedInSubject} done
               </Text>
             </View>
-            <View style={[styles.subjectProgressBadge, { backgroundColor: `${activeSubject?.color || '#3b82f6'}15` }]}>
-              <Text style={[styles.subjectProgressText, { color: activeSubject?.color || '#3b82f6' }]}>
+            <View style={[styles.subjectProgressBadge, { backgroundColor: colors.surfaceContainerLow }]}>
+              <Text style={[styles.subjectProgressText, { color: colors.onSurface }]}>
                 {progressPercent}%
               </Text>
             </View>
@@ -649,7 +657,7 @@ export default function CoursesScreen() {
           {activeSubject?.officialTextbookPdf && (
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[styles.officialTextbookPdfBtn, { backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.18)' : '#eff6ff', borderColor: colors.primary }]}
+              style={[styles.officialTextbookPdfBtn, { backgroundColor: colors.primaryFixed, borderColor: colors.primaryFixed }]}
               onPress={() => handleOpenPdf(activeSubject.officialTextbookPdf)}
             >
               <MaterialIcons name="picture-as-pdf" size={18} color={colors.primary} />
@@ -668,8 +676,8 @@ export default function CoursesScreen() {
           )}
 
           {/* Progress Bar */}
-          <View style={[styles.progressBarTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
-            <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: activeSubject?.color || '#3b82f6' }]} />
+          <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceContainer }]}>
+            <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: colors.accent }]} />
           </View>
         </View>
 
@@ -690,13 +698,13 @@ export default function CoursesScreen() {
                   key={chap.id}
                   style={[
                     styles.bookViewCard,
-                    { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: colors.outlineVariant },
+                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
                     MindSprintShadows.card,
                   ]}
                 >
                   <View style={styles.bookCardHeader}>
-                    <View style={[styles.bookNumBadge, { backgroundColor: `${activeSubject?.color || '#3b82f6'}20` }]}>
-                      <Text style={[styles.bookNumText, { color: activeSubject?.color || '#3b82f6' }]}>{idx + 1}</Text>
+                    <View style={[styles.bookNumBadge, { backgroundColor: `${subjectCover}20` }]}>
+                      <Text style={[styles.bookNumText, { color: subjectCover }]}>{idx + 1}</Text>
                     </View>
                     <Text style={[styles.bookChapterTitle, { color: colors.onSurface }]}>
                       {chapterTitle}
@@ -710,7 +718,7 @@ export default function CoursesScreen() {
                     {/* Actions Row (Read Notes, Open Chapter PDF) */}
                     <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                       <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#eef2ff' }]}
+                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.primaryFixed }]}
                         onPress={() => handleOpenNotes(chap)}
                       >
                         <MaterialIcons name="menu-book" size={16} color={colors.primary} />
@@ -721,11 +729,11 @@ export default function CoursesScreen() {
 
                       {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                         <TouchableOpacity
-                          style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
+                          style={[styles.pdfQuickBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                           onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                         >
-                          <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
-                          <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF</Text>
+                          <MaterialIcons name="picture-as-pdf" size={16} color="#C8372D" />
+                          <Text style={[styles.pdfQuickBtnText, { color: colors.primary, fontWeight: '700' }]}>PDF</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -736,14 +744,14 @@ export default function CoursesScreen() {
                         onPress={() => (savedChapterIds.includes(chap.id) ? handleOpenSaved(chap) : handleSaveOffline(chap))}
                         accessibilityRole="button"
                         accessibilityLabel={savedChapterIds.includes(chap.id) ? 'Open saved offline copy' : 'Save this chapter for offline reading'}
-                        style={[styles.offlineBtn, { borderColor: savedChapterIds.includes(chap.id) ? '#10b981' : colors.outlineVariant, opacity: savingChapterId === chap.id ? 0.6 : 1 }]}
+                        style={[styles.offlineBtn, { borderColor: savedChapterIds.includes(chap.id) ? colors.tertiary : colors.outlineVariant, opacity: savingChapterId === chap.id ? 0.6 : 1 }]}
                       >
                         <MaterialIcons
                           name={savedChapterIds.includes(chap.id) ? 'offline-pin' : 'download-for-offline'}
                           size={18}
-                          color={savedChapterIds.includes(chap.id) ? '#10b981' : colors.onSurfaceVariant}
+                          color={savedChapterIds.includes(chap.id) ? colors.tertiary : colors.onSurfaceVariant}
                         />
-                        <Text style={{ color: savedChapterIds.includes(chap.id) ? '#10b981' : colors.onSurfaceVariant, fontWeight: '700', fontSize: 13 }}>
+                        <Text style={{ color: savedChapterIds.includes(chap.id) ? colors.tertiary : colors.onSurfaceVariant, fontWeight: '700', fontSize: 13 }}>
                           {savingChapterId === chap.id ? 'Saving…' : savedChapterIds.includes(chap.id) ? 'Saved offline • Open' : 'Save for offline'}
                         </Text>
                       </TouchableOpacity>
@@ -757,7 +765,7 @@ export default function CoursesScreen() {
         {/* VIEW 2: VIDEOS 🎬 (Multi-Teacher Video Choices View) */}
         {activeFilterTab === 'videos' && (
           <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: '#ef4444' }]}>
+            <Text style={[styles.viewSectionTitle, { color: colors.onSurface }]}>
               Chapter videos
             </Text>
             {chapters.map((chap) => {
@@ -769,12 +777,12 @@ export default function CoursesScreen() {
                   key={chap.id}
                   style={[
                     styles.videoViewCard,
-                    { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: '#ef4444' },
+                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
                     MindSprintShadows.card,
                   ]}
                 >
                   <View style={styles.videoCardTop}>
-                    <MaterialIcons name="play-circle-filled" size={24} color="#ef4444" />
+                    <MaterialIcons name="play-circle-filled" size={24} color="#C8372D" />
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.videoCardTitle, { color: colors.onSurface }]}>
                         {chapterTitle}
@@ -791,8 +799,8 @@ export default function CoursesScreen() {
                   {/* Available video tags */}
                   <View style={styles.videoTagsRow}>
                     {(chap.videos || []).map((v) => (
-                      <View key={v.id} style={[styles.videoTagPill, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2' }]}>
-                        <Text style={[styles.videoTagPillText, { color: '#ef4444' }]}>
+                      <View key={v.id} style={[styles.videoTagPill, { backgroundColor: colors.primaryFixed }]}>
+                        <Text style={[styles.videoTagPillText, { color: colors.primary }]}>
                           🎥 {v.teacher} ({v.tag})
                         </Text>
                       </View>
@@ -812,11 +820,11 @@ export default function CoursesScreen() {
 
                     {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                       <TouchableOpacity
-                        style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444', paddingHorizontal: 12 }]}
+                        style={[styles.pdfQuickBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, paddingHorizontal: 12 }]}
                         onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                       >
-                        <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
-                        <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF</Text>
+                        <MaterialIcons name="picture-as-pdf" size={16} color="#C8372D" />
+                        <Text style={[styles.pdfQuickBtnText, { color: colors.primary, fontWeight: '700' }]}>PDF</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -839,7 +847,7 @@ export default function CoursesScreen() {
                   key={chap.id}
                   style={[
                     styles.practiceViewCard,
-                    { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: colors.outlineVariant },
+                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
                     MindSprintShadows.card,
                   ]}
                 >
@@ -853,7 +861,7 @@ export default function CoursesScreen() {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.startQuizPillBtn, { backgroundColor: activeSubject?.color || '#3b82f6' }]}
+                    style={[styles.startQuizPillBtn, { backgroundColor: subjectCover }]}
                     onPress={() => {
                       setSelectedChapterForQuiz(chap);
                       setShowConfigModal(true);
@@ -871,7 +879,7 @@ export default function CoursesScreen() {
         {/* VIEW 4: FORMULAS & NOTES 📝 */}
         {activeFilterTab === 'formulas' && (
           <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: '#8b5cf6' }]}>
+            <Text style={[styles.viewSectionTitle, { color: colors.onSurface }]}>
               📝 All Chapter Formulas & Important Rules:
             </Text>
             {chapters.map((chap) => {
@@ -883,17 +891,17 @@ export default function CoursesScreen() {
                   key={chap.id}
                   style={[
                     styles.formulasViewCard,
-                    { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: '#8b5cf6' },
+                    { backgroundColor: colors.surface, borderColor: colors.secondary },
                     MindSprintShadows.card,
                   ]}
                 >
-                  <Text style={[styles.formulaChapterHeading, { color: '#8b5cf6' }]}>
+                  <Text style={[styles.formulaChapterHeading, { color: colors.secondary }]}>
                     📌 {chapterTitle}
                   </Text>
                   {formulas.length > 0 ? (
                     formulas.map((f, fIdx) => (
                       <View key={fIdx} style={styles.formulaItemRow}>
-                        <MaterialIcons name="check" size={14} color="#8b5cf6" />
+                        <MaterialIcons name="check" size={14} color="#2F6FD6" />
                         <Text style={[styles.formulaText, { color: colors.onSurface }]}>{f}</Text>
                       </View>
                     ))
@@ -920,13 +928,13 @@ export default function CoursesScreen() {
               activeOpacity={0.85}
               style={[
                 styles.boardSimulatorHeroCard,
-                { backgroundColor: '#1e1b4b' },
+                { backgroundColor: colors.heroSurface },
                 MindSprintShadows.card,
               ]}
               onPress={() => router.push('/board-exam-simulator' as any)}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={[styles.boardSimIconBox, { backgroundColor: '#8b5cf6' }]}>
+                <View style={[styles.boardSimIconBox, { backgroundColor: colors.secondary }]}>
                   <MaterialIcons name="assignment" size={24} color="#ffffff" />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -944,7 +952,7 @@ export default function CoursesScreen() {
               </View>
             </TouchableOpacity>
             {samplePapers.length === 0 ? (
-              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff' }]}>
+              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: colors.surface }]}>
                 <MaterialIcons name="description" size={40} color={colors.onSurfaceVariant} />
                 <Text style={{ marginTop: 8, color: colors.onSurfaceVariant }}>
                   No sample papers currently available for this grade.
@@ -956,7 +964,7 @@ export default function CoursesScreen() {
                   key={paper.id}
                   style={[
                     styles.bookViewCard,
-                    { backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff', borderColor: colors.primary },
+                    { backgroundColor: colors.surface, borderColor: colors.primary },
                     MindSprintShadows.card,
                   ]}
                 >
@@ -983,7 +991,7 @@ export default function CoursesScreen() {
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                     {paper.officialPdfUrl && (
                       <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#eff6ff' }]}
+                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.secondaryContainer }]}
                         onPress={() => handleOpenPdf(paper.officialPdfUrl)}
                       >
                         <MaterialIcons name="picture-as-pdf" size={16} color={colors.primary} />
@@ -995,11 +1003,11 @@ export default function CoursesScreen() {
 
                     {paper.solutionPdfUrl && (
                       <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f0fdf4' }]}
+                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.tertiaryContainer }]}
                         onPress={() => handleOpenPdf(paper.solutionPdfUrl)}
                       >
-                        <MaterialIcons name="done-all" size={16} color="#16a34a" />
-                        <Text style={[styles.readFullNotesBtnText, { color: '#16a34a' }]}>
+                        <MaterialIcons name="done-all" size={16} color="#12805C" />
+                        <Text style={[styles.readFullNotesBtnText, { color: colors.tertiary }]}>
                           Solutions 💡
                         </Text>
                       </TouchableOpacity>
@@ -1025,7 +1033,7 @@ export default function CoursesScreen() {
         {activeFilterTab === 'imp' && (
           <View style={styles.chaptersList}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <Text style={[styles.viewSectionTitle, { color: '#f59e0b', marginBottom: 0 }]}>
+              <Text style={[styles.viewSectionTitle, { color: colors.onSurface, marginBottom: 0 }]}>
                 ⭐ Frequently Asked Board Questions (1M-4M):
               </Text>
             </View>
@@ -1049,11 +1057,11 @@ export default function CoursesScreen() {
                       paddingVertical: 6,
                       borderRadius: 16,
                       borderWidth: 1,
-                      backgroundColor: isSelected ? '#f59e0b' : isDarkMode ? colors.surfaceContainerLow : '#fef3c7',
-                      borderColor: isSelected ? '#f59e0b' : '#fde68a',
+                      backgroundColor: isSelected ? colors.accent : colors.accentContainer,
+                      borderColor: isSelected ? colors.accent : colors.outlineVariant,
                     }}
                   >
-                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: isSelected ? '#ffffff' : isDarkMode ? '#fde68a' : '#b45309' }}>
+                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: isSelected ? '#ffffff' : colors.onAccentContainer }}>
                       {m.label}
                     </Text>
                   </TouchableOpacity>
@@ -1062,7 +1070,7 @@ export default function CoursesScreen() {
             </View>
 
             {importantQuestions.length === 0 ? (
-              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff' }]}>
+              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: colors.surface }]}>
                 <MaterialIcons name="star-outline" size={40} color={colors.onSurfaceVariant} />
                 <Text style={{ marginTop: 8, color: colors.onSurfaceVariant, textAlign: 'center' }}>
                   {isGSEB
@@ -1084,8 +1092,8 @@ export default function CoursesScreen() {
                     style={[
                       styles.impQuestionCard,
                       {
-                        backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                        borderColor: isExpanded ? '#f59e0b' : colors.outlineVariant,
+                        backgroundColor: colors.surface,
+                        borderColor: isExpanded ? colors.accent : colors.outlineVariant,
                       },
                       MindSprintShadows.card,
                     ]}
@@ -1093,7 +1101,7 @@ export default function CoursesScreen() {
                     {/* Top Meta Header: Marks badge, Chapter, Year frequency */}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <View style={[styles.marksBadge, { backgroundColor: q.marks === 1 ? '#3b82f6' : q.marks === 2 ? '#10b981' : q.marks === 3 ? '#8b5cf6' : '#ef4444' }]}>
+                        <View style={[styles.marksBadge, { backgroundColor: q.marks === 1 ? colors.secondary : q.marks === 2 ? colors.tertiary : q.marks === 3 ? colors.secondary : '#C8372D' }]}>
                           <Text style={styles.marksBadgeText}>
                             {q.marks} {q.marks === 1 ? 'MARK' : 'MARKS'}
                           </Text>
@@ -1104,8 +1112,8 @@ export default function CoursesScreen() {
                       </View>
 
                       {q.frequentlyAskedYears && q.frequentlyAskedYears.length > 0 && (
-                        <View style={[styles.frequencyPill, { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.15)' : '#fef3c7' }]}>
-                          <MaterialIcons name="whatshot" size={13} color="#f59e0b" />
+                        <View style={[styles.frequencyPill, { backgroundColor: colors.accentContainer }]}>
+                          <MaterialIcons name="whatshot" size={13} color="#F4A30B" />
                           <Text style={styles.frequencyPillText}>
                             {q.frequentlyAskedYears.slice(0, 2).join(' • ')}
                           </Text>
@@ -1125,9 +1133,9 @@ export default function CoursesScreen() {
                         styles.toggleAnswerBtn,
                         {
                           backgroundColor: isExpanded
-                            ? (isDarkMode ? colors.surfaceContainerHigh : '#fef3c7')
-                            : (isDarkMode ? colors.surfaceContainerLow : '#f8fafc'),
-                          borderColor: isExpanded ? '#f59e0b' : colors.outlineVariant,
+                            ? (colors.accentContainer)
+                            : (colors.surfaceContainerLow),
+                          borderColor: isExpanded ? colors.accent : colors.outlineVariant,
                         },
                       ]}
                       onPress={() => toggleExpandQuestion(q.id)}
@@ -1136,12 +1144,12 @@ export default function CoursesScreen() {
                         <MaterialIcons
                           name={isExpanded ? 'visibility-off' : 'verified'}
                           size={16}
-                          color={isExpanded ? '#f59e0b' : colors.primary}
+                          color={isExpanded ? colors.accent : colors.primary}
                         />
                         <Text
                           style={[
                             styles.toggleAnswerBtnText,
-                            { color: isExpanded ? '#d97706' : colors.primary },
+                            { color: isExpanded ? colors.onAccentContainer : colors.primary },
                           ]}
                         >
                           {isExpanded
@@ -1152,18 +1160,18 @@ export default function CoursesScreen() {
                       <MaterialIcons
                         name={isExpanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                         size={20}
-                        color={isExpanded ? '#f59e0b' : colors.onSurfaceVariant}
+                        color={isExpanded ? colors.accent : colors.onSurfaceVariant}
                       />
                     </TouchableOpacity>
 
                     {/* Expanded Content: Model Answer, Step-wise Marking, Examiner Tips */}
                     {isExpanded && (
-                      <View style={[styles.expandedAnswerBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#fafafa', borderColor: colors.outlineVariant }]}>
+                      <View style={[styles.expandedAnswerBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                         {/* Model Answer */}
                         <View style={{ marginBottom: 12 }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                            <MaterialIcons name="check-circle" size={16} color="#10b981" />
-                            <Text style={[styles.ansSectionHeader, { color: '#10b981' }]}>
+                            <MaterialIcons name="check-circle" size={16} color="#12805C" />
+                            <Text style={[styles.ansSectionHeader, { color: colors.tertiary }]}>
                               Ideal Board Model Answer:
                             </Text>
                           </View>
@@ -1198,13 +1206,13 @@ export default function CoursesScreen() {
 
                         {/* Examiner Tip */}
                         {exTips && (
-                          <View style={[styles.examinerTipCard, { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.12)' : '#fffbeb', borderColor: '#fde68a' }]}>
-                            <MaterialIcons name="lightbulb" size={16} color="#f59e0b" style={{ marginTop: 2 }} />
+                          <View style={[styles.examinerTipCard, { backgroundColor: colors.accentContainer, borderColor: colors.outlineVariant }]}>
+                            <MaterialIcons name="lightbulb" size={16} color="#F4A30B" style={{ marginTop: 2 }} />
                             <View style={{ flex: 1 }}>
-                              <Text style={[styles.examinerTipTitle, { color: '#b45309' }]}>
+                              <Text style={[styles.examinerTipTitle, { color: colors.onAccentContainer }]}>
                                 Board Examiner Tip:
                               </Text>
-                              <Text style={[styles.examinerTipBody, { color: isDarkMode ? '#fef3c7' : '#92400e' }]}>
+                              <Text style={[styles.examinerTipBody, { color: colors.onAccentContainer }]}>
                                 {exTips}
                               </Text>
                             </View>
@@ -1233,8 +1241,8 @@ export default function CoursesScreen() {
                   style={[
                     styles.chapterCard,
                     {
-                      backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                      borderColor: isCompleted ? '#10b981' : colors.outlineVariant,
+                      backgroundColor: colors.surface,
+                      borderColor: isCompleted ? colors.tertiary : colors.outlineVariant,
                     },
                     MindSprintShadows.card,
                   ]}
@@ -1247,8 +1255,8 @@ export default function CoursesScreen() {
                         styles.completeCheckCircle,
                         {
                           backgroundColor: isCompleted
-                            ? '#10b981'
-                            : isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9',
+                            ? colors.tertiary
+                            : colors.surfaceContainer,
                         },
                       ]}
                     >
@@ -1286,8 +1294,8 @@ export default function CoursesScreen() {
 
                   {/* Key Formulas Preview Pill (if available) */}
                   {formulaCount > 0 && (
-                    <View style={[styles.formulaPillBox, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#f5f3ff' }]}>
-                      <MaterialIcons name="functions" size={14} color="#8b5cf6" />
+                    <View style={[styles.formulaPillBox, { backgroundColor: colors.primaryFixed }]}>
+                      <MaterialIcons name="functions" size={14} color="#2F6FD6" />
                       <Text style={[styles.formulaPillText, { color: colors.onSurface }]} numberOfLines={1}>
                         {`Formulas (${formulaCount}): `}
                         {((isGSEB && chap.keyFormulasGujarati?.[0]) || chap.keyFormulas?.[0])}
@@ -1295,59 +1303,53 @@ export default function CoursesScreen() {
                     </View>
                   )}
 
-                  {/* Action Pillars Row: Notes, Video, Official PDF (GSSTB / Shalamitra), Quiz */}
+                  {/* Chapter actions: Watch is the main action; PDF, notes and quiz are secondary */}
                   <View style={styles.actionPillarsRow}>
-                    {/* Pillar 1: Textbook Concept Reader */}
                     <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[styles.pillarBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', borderColor: colors.outlineVariant }]}
-                      onPress={() => handleOpenNotes(chap)}
-                    >
-                      <MaterialIcons name="auto-stories" size={15} color={colors.primary} />
-                      <Text style={[styles.pillarBtnText, { color: colors.primary }]}>
-                        Read Notes
-                      </Text>
-                    </TouchableOpacity>
-
-                    {/* Pillar 2: Multi-Teacher Video Lessons Modal */}
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[styles.pillarBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2', borderColor: '#ef4444' }]}
+                      activeOpacity={0.85}
+                      accessibilityRole="button"
+                      style={[styles.pillarBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                       onPress={() => handleOpenVideoModal(chap)}
                     >
-                      <MaterialIcons name="play-circle-filled" size={15} color="#ef4444" />
-                      <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
+                      <MaterialIcons name="play-arrow" size={18} color={colors.onPrimary} />
+                      <Text style={[styles.pillarBtnText, { color: colors.onPrimary }]}>
                         {chap.videos?.[0]?.duration ? `Watch · ${chap.videos[0].duration}` : 'Find video'}
                       </Text>
                     </TouchableOpacity>
 
-                    {/* Pillar 3: Official Chapter PDF (GSSTB / શાળા મિત્ર) */}
                     {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                       <TouchableOpacity
                         activeOpacity={0.8}
-                        style={[styles.pillarBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
+                        accessibilityRole="button"
+                        style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                         onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                       >
-                        <MaterialIcons name="picture-as-pdf" size={15} color="#ef4444" />
-                        <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
-                          Chapter PDF
-                        </Text>
+                        <MaterialIcons name="picture-as-pdf" size={17} color={colors.primary} />
+                        <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Open PDF</Text>
                       </TouchableOpacity>
                     )}
 
-                    {/* Pillar 4: Practice Chapter Quiz */}
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      style={[styles.pillarBtn, { backgroundColor: activeSubject?.color || '#3b82f6', borderColor: activeSubject?.color || '#3b82f6' }]}
+                      accessibilityRole="button"
+                      style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
+                      onPress={() => handleOpenNotes(chap)}
+                    >
+                      <MaterialIcons name="auto-stories" size={17} color={colors.primary} />
+                      <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Read notes</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      accessibilityRole="button"
+                      style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
                       onPress={() => {
                         setSelectedChapterForQuiz(chap);
                         setShowConfigModal(true);
                       }}
                     >
-                      <MaterialIcons name="quiz" size={15} color="#ffffff" />
-                      <Text style={[styles.pillarBtnText, { color: '#ffffff' }]}>
-                        Quiz
-                      </Text>
+                      <MaterialIcons name="quiz" size={17} color={colors.primary} />
+                      <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Take quiz</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1427,7 +1429,7 @@ export default function CoursesScreen() {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.openYtDirectBtn, { backgroundColor: '#ef4444', paddingHorizontal: 12, paddingVertical: 8 }]}
+                    style={[styles.openYtDirectBtn, { backgroundColor: '#C8372D', paddingHorizontal: 12, paddingVertical: 8 }]}
                     onPress={() =>
                       handleLaunchExternalVideo(
                         activeVideoOption.youtubeVideoId,
@@ -1459,7 +1461,7 @@ export default function CoursesScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 6,
                     borderRadius: 8,
-                    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#eff6ff',
+                    backgroundColor: colors.secondaryContainer,
                   }}
                   onPress={() => {
                     const chNum = selectedChapterForVideo?.chapterNumber ? `પ્રકરણ ${selectedChapterForVideo.chapterNumber} ` : '';
@@ -1482,26 +1484,26 @@ export default function CoursesScreen() {
                 style={[
                   styles.videoOptionCard,
                   {
-                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.12)' : '#fef2f2',
-                    borderColor: '#ef4444',
+                    backgroundColor: colors.errorContainer,
+                    borderColor: '#C8372D',
                     borderWidth: 1,
                     marginVertical: 4,
                   },
                 ]}
                 onPress={() => handleOpenPdf(selectedChapterForVideo?.textbookPdfUrl || activeSubject?.officialTextbookPdf, selectedChapterForVideo ?? undefined)}
               >
-                <View style={[styles.videoOptionIcon, { backgroundColor: '#ef4444' }]}>
+                <View style={[styles.videoOptionIcon, { backgroundColor: '#C8372D' }]}>
                   <MaterialIcons name="picture-as-pdf" size={18} color="#ffffff" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.videoOptionTitle, { color: '#ef4444', fontWeight: '700' }]}>
+                  <Text style={[styles.videoOptionTitle, { color: '#C8372D', fontWeight: '700' }]}>
                     {isGSEB ? '📖 આ પ્રકરણનું અધિકૃત પાઠ્યપુસ્તક PDF વાંચો' : '📖 Read Official Chapter Textbook PDF'}
                   </Text>
                   <Text style={[styles.videoTeacherName, { color: colors.onSurfaceVariant }]}>
                     {isGSEB ? 'NCERT / GSEB ડિજિટલ પુસ્તક • ઓરિજિનલ સિલેબસ' : 'NCERT / GSEB Official Material & Diagrams'}
                   </Text>
                 </View>
-                <MaterialIcons name="open-in-new" size={18} color="#ef4444" />
+                <MaterialIcons name="open-in-new" size={18} color="#C8372D" />
               </TouchableOpacity>
             )}
 
@@ -1523,15 +1525,15 @@ export default function CoursesScreen() {
                       styles.videoOptionCard,
                       {
                         backgroundColor: isSelected
-                          ? isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff'
-                          : isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+                          ? colors.primaryFixed
+                          : colors.surfaceContainerLow,
                         borderColor: isSelected ? colors.primary : colors.outlineVariant,
                         borderWidth: isSelected ? 1.5 : 1,
                       },
                     ]}
                     onPress={() => setActiveVideoOption(vid)}
                   >
-                    <View style={[styles.videoOptionIcon, { backgroundColor: isSelected ? colors.primary : isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
+                    <View style={[styles.videoOptionIcon, { backgroundColor: isSelected ? colors.primary : colors.surfaceContainer }]}>
                       <MaterialIcons name={isSelected ? 'play-arrow' : 'video-library'} size={18} color={isSelected ? '#ffffff' : colors.onSurfaceVariant} />
                     </View>
 
@@ -1601,13 +1603,13 @@ export default function CoursesScreen() {
 
               {/* Key Formulas Vault */}
               {((isGSEB ? selectedChapterForRead?.keyFormulasGujarati : selectedChapterForRead?.keyFormulas) || selectedChapterForRead?.keyFormulas || []).length > 0 && (
-                <View style={[styles.formulasVaultCard, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#f5f3ff', borderColor: '#8b5cf6' }]}>
-                  <Text style={[styles.formulasVaultTitle, { color: '#8b5cf6' }]}>
+                <View style={[styles.formulasVaultCard, { backgroundColor: colors.primaryFixed, borderColor: colors.secondary }]}>
+                  <Text style={[styles.formulasVaultTitle, { color: colors.secondary }]}>
                     ⚡ Key Formulas & Rules:
                   </Text>
                   {((isGSEB ? selectedChapterForRead?.keyFormulasGujarati : selectedChapterForRead?.keyFormulas) || selectedChapterForRead?.keyFormulas || []).map((formula, fIdx) => (
                     <View key={fIdx} style={styles.formulaItemRow}>
-                      <MaterialIcons name="label-important" size={14} color="#8b5cf6" />
+                      <MaterialIcons name="label-important" size={14} color="#2F6FD6" />
                       <Text style={[styles.formulaItemText, { color: colors.onSurface }]}>{formula}</Text>
                     </View>
                   ))}
@@ -1616,7 +1618,7 @@ export default function CoursesScreen() {
 
               {/* Textbook Swadhyay Solutions */}
               {(selectedChapterForRead?.exerciseSolutions || []).length > 0 && (
-                <View style={[styles.swadhyayCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', borderColor: colors.outlineVariant }]}>
+                <View style={[styles.swadhyayCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                   <Text style={[styles.swadhyayHeading, { color: colors.primary }]}>
                     📝 Textbook Exercise Solutions:
                   </Text>
@@ -1635,7 +1637,7 @@ export default function CoursesScreen() {
 
               {/* Concepts List */}
               {(selectedChapterForRead?.concepts || []).map((concept, cIdx) => (
-                <View key={cIdx} style={[styles.conceptCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', borderColor: colors.outlineVariant }]}>
+                <View key={cIdx} style={[styles.conceptCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                   <Text style={[styles.conceptHeading, { color: colors.primary }]}>
                     {isGSEB && concept.headingGujarati ? concept.headingGujarati : concept.heading}
                   </Text>
@@ -1646,10 +1648,10 @@ export default function CoursesScreen() {
               ))}
 
               {/* Tap-to-Translate Micro-Glossary Section */}
-              <View style={[styles.glossaryPillsCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f0fdf4', borderColor: '#10b981' }]}>
+              <View style={[styles.glossaryPillsCard, { backgroundColor: colors.tertiaryContainer, borderColor: colors.tertiary }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <MaterialIcons name="translate" size={16} color="#10b981" />
-                  <Text style={[styles.glossaryPillsTitle, { color: '#10b981' }]}>
+                  <MaterialIcons name="translate" size={16} color="#12805C" />
+                  <Text style={[styles.glossaryPillsTitle, { color: colors.tertiary }]}>
                     Interactive Micro-Glossary (Tap for English/Gujarati terms):
                   </Text>
                 </View>
@@ -1657,10 +1659,10 @@ export default function CoursesScreen() {
                   {['photosynthesis', 'chlorophyll', 'circuit', 'resistance', 'primenumber', 'gravity'].map((termKey) => (
                     <TouchableOpacity
                       key={termKey}
-                      style={[styles.termChip, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7' }]}
+                      style={[styles.termChip, { backgroundColor: colors.tertiaryContainer }]}
                       onPress={() => setActiveGlossaryTerm(termKey)}
                     >
-                      <Text style={[styles.termChipText, { color: '#047857' }]}>
+                      <Text style={[styles.termChipText, { color: colors.onTertiaryContainer }]}>
                         🔍 {termKey}
                       </Text>
                     </TouchableOpacity>
@@ -1668,9 +1670,9 @@ export default function CoursesScreen() {
                 </View>
               </View>
 
-              <View style={[styles.notesReadDoneBox, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#ecfdf5' }]}>
-                <MaterialIcons name="check-circle" size={18} color="#10b981" />
-                <Text style={[styles.notesReadDoneText, { color: '#10b981' }]}>
+              <View style={[styles.notesReadDoneBox, { backgroundColor: colors.tertiaryContainer }]}>
+                <MaterialIcons name="check-circle" size={18} color="#12805C" />
+                <Text style={[styles.notesReadDoneText, { color: colors.tertiary }]}>
                   You have completed reading this chapter’s concept notes!
                 </Text>
               </View>
@@ -1679,7 +1681,7 @@ export default function CoursesScreen() {
             {/* Modal Actions (Close Notes OR Practice Quiz) */}
             <View style={styles.readModalActionsRow}>
               <TouchableOpacity
-                style={[styles.closeReadNotesBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9', borderColor: colors.outlineVariant }]}
+                style={[styles.closeReadNotesBtn, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}
                 onPress={() => setSelectedChapterForRead(null)}
               >
                 <Text style={[styles.closeReadNotesBtnText, { color: colors.onSurface }]}>
@@ -1798,11 +1800,12 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
+    gap: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -1818,14 +1821,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 22,
+    lineHeight: 28,
   },
   headerSub: {
-    fontSize: 11,
-    marginTop: 1,
+    fontSize: 13,
     fontWeight: '500',
+  },
+  langToggleText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   headerTextCol: {
     flex: 1,
@@ -1836,11 +1842,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    minHeight: 32,
-    marginLeft: 8,
-    marginRight: 6,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    minHeight: 36,
   },
   searchBox: {
     flexDirection: 'row',
@@ -1849,7 +1853,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
-    marginHorizontal: 16,
     marginBottom: 12,
     minHeight: 46,
   },
@@ -1868,14 +1871,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    minHeight: 36,
+    borderRadius: 18,
   },
   headerProgressText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#10b981',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   scrollContainer: {
     padding: 16,
@@ -1893,14 +1895,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    minHeight: 40,
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   subjectChipText: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14.5,
   },
   chipCountBadge: {
     paddingHorizontal: 6,
@@ -1918,20 +1920,20 @@ const styles = StyleSheet.create({
   },
   pillarTabChip: {
     paddingHorizontal: 14,
-    minHeight: 34,
+    minHeight: 36,
     justifyContent: 'center',
-    borderRadius: 17,
+    borderRadius: 18,
     borderWidth: 1,
   },
   pillarTabText: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   subjectHeroCard: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 14,
-    gap: 10,
+    gap: 12,
   },
   subjectHeroTop: {
     flexDirection: 'row',
@@ -1946,12 +1948,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subjectHeroTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 19,
+    lineHeight: 25,
   },
   subjectHeroSub: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 13,
+    marginTop: 1,
   },
   subjectProgressBadge: {
     paddingHorizontal: 10,
@@ -1971,8 +1974,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   officialTextbookPdfTitle: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.title,
+    fontSize: 15,
+    lineHeight: 20,
   },
   officialTextbookPdfSub: {
     fontSize: 11,
@@ -1988,9 +1992,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   viewSectionTitle: {
-    fontSize: 14.5,
-    fontWeight: '800',
-    marginBottom: 4,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 19,
+    lineHeight: 25,
+    marginBottom: 2,
   },
   chaptersList: {
     gap: 12,
@@ -2049,14 +2054,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pdfQuickBtnText: {
-    color: '#ef4444',
+    color: '#C8372D',
     fontSize: 12,
     fontWeight: '800',
   },
   // Video View Styles
   videoViewCard: {
     borderRadius: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     padding: 14,
     gap: 10,
   },
@@ -2091,7 +2096,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ef4444',
+    backgroundColor: '#C8372D',
     paddingVertical: 9,
     borderRadius: 10,
     gap: 6,
@@ -2164,7 +2169,7 @@ const styles = StyleSheet.create({
   },
   // Chapter Card Styles (Default View)
   chapterCard: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 14,
     gap: 12,
@@ -2187,13 +2192,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   chapterTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.title,
+    fontSize: 17,
+    lineHeight: 23,
   },
   chapterSummary: {
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 3,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 2,
   },
   bookmarkBtn: {
     padding: 2,
@@ -2233,8 +2239,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pillarBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   videoPlayerActionBar: {
     flexDirection: 'row',
@@ -2255,7 +2261,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#C8372D',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -2508,7 +2514,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   frequencyPillText: {
-    color: '#d97706',
+    color: '#8A5A00',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -2619,7 +2625,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   boardSimSub: {
-    color: '#c7d2fe',
+    color: '#C9D5F5',
     fontSize: 11,
     marginTop: 2,
     lineHeight: 15,

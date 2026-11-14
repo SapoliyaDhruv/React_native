@@ -11,7 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { VideoPlayerView } from '@/components/mindsprint/VideoPlayerView';
@@ -50,7 +50,7 @@ const SENIOR_GSEB_FILTERS = [
 ];
 
 export default function VideoScreen() {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { user } = useAuth();
 
   const userGrade = user?.grade || 'college';
@@ -222,34 +222,22 @@ export default function VideoScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
       edges={['top']}
     >
-      {/* Premium Header */}
-      <View
-        style={[styles.header, { backgroundColor: isDarkMode ? '#1e1b4b' : '#eef2ff' }]}
-      >
-        <View style={styles.headerLeft}>
-          <View style={[styles.headerIconCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.1)' }]}>
-            <MaterialIcons name="play-circle-filled" size={24} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.primary }]}>
-              {!isSchoolMode
-                ? 'Placement Masterclasses'
-                : isGSEB
-                ? `ધોરણ ${userGrade} GSEB ગુજરાત બોર્ડ`
-                : `Class ${userGrade} Masterclasses`}
-            </Text>
-            <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-              {isSequentialMode
-                ? `${displayedLectures.length} of ${lectures.length} lessons unlocked • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`
-                : `${lectures.length} lessons • ${isSchoolMode ? `${user?.board || 'GSEB'} Board (ગુજરાતી માધ્યમ)` : 'Campus Placement Track'}`}
-            </Text>
-          </View>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.onSurface }]}>
+            {isSchoolMode ? `Class ${userGrade} lectures` : 'Placement lectures'}
+          </Text>
+          <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
+            {isSequentialMode
+              ? `${displayedLectures.length} of ${lectures.length} lessons unlocked`
+              : `${lectures.length} lessons`}
+            {isSchoolMode ? ` · ${user?.board || 'GSEB'}` : ' · Campus placements'}
+          </Text>
         </View>
-
-        {/* Quick Progress Indicator */}
-        <View style={[styles.headerProgressPill, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7' }]}>
-          <MaterialIcons name="check-circle" size={14} color="#10b981" />
-          <Text style={styles.headerProgressText}>{progressPercentage}% DONE</Text>
+        <View style={[styles.headerProgressPill, { backgroundColor: colors.tertiaryContainer }]}>
+          <MaterialIcons name="check-circle" size={15} color={colors.tertiary} />
+          <Text style={[styles.headerProgressText, { color: colors.onTertiaryContainer }]}>{progressPercentage}%</Text>
         </View>
       </View>
 
@@ -292,27 +280,26 @@ export default function VideoScreen() {
                   style={[
                     styles.completeActionBtn,
                     {
-                      backgroundColor: isActiveCompleted ? '#10b981' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                      borderColor: isActiveCompleted ? '#10b981' : colors.outlineVariant,
+                      backgroundColor: isActiveCompleted ? colors.tertiary : colors.surfaceContainerLow,
+                      borderColor: isActiveCompleted ? colors.tertiary : colors.outlineVariant,
                     },
-                    isActiveCompleted && MindSprintShadows.glow,
-                  ]}
+                                      ]}
                   onPress={() => toggleComplete(activeLecture.id)}
                 >
                   <MaterialIcons
                     name={isActiveCompleted ? 'check-circle' : 'radio-button-unchecked'}
                     size={20}
-                    color={isActiveCompleted ? '#ffffff' : colors.primary}
+                    color={isActiveCompleted ? colors.onTertiary : colors.primary}
                   />
                   <Text
                     style={[
                       styles.completeActionText,
-                      { color: isActiveCompleted ? '#ffffff' : colors.onSurface },
+                      { color: isActiveCompleted ? colors.onTertiary : colors.onSurface },
                     ]}
                   >
                     {isActiveCompleted
-                      ? isGSEB ? 'પ્રકરણ પૂર્ણ થયું ✓ (Tap to Undo)' : 'Lesson Completed ✓ (Tap to Undo)'
-                      : isGSEB ? 'આ પ્રકરણ પૂર્ણ તરીકે ચિહ્નિત કરો (Mark as Completed)' : 'Mark Lesson as Completed'}
+                      ? isGSEB ? 'પ્રકરણ પૂર્ણ · Undo' : 'Lesson done · Undo'
+                      : isGSEB ? 'પૂર્ણ તરીકે ચિહ્નિત કરો' : 'Mark lesson as done'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -324,7 +311,7 @@ export default function VideoScreen() {
             style={[
               styles.progressCard,
               {
-                backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
+                backgroundColor: colors.surface,
                 borderColor: colors.outlineVariant,
               },
               MindSprintShadows.card,
@@ -334,17 +321,17 @@ export default function VideoScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MaterialIcons name="school" size={20} color={colors.primary} />
                 <Text style={[styles.progressTitle, { color: colors.onSurface }]}>
-                  {isGSEB ? 'અભ્યાસક્રમ પ્રગતિ (Course Progress)' : 'Course Completion Progress'}
+                  {isGSEB ? 'અભ્યાસક્રમ પ્રગતિ' : 'Course progress'}
                 </Text>
               </View>
               <Text style={[styles.progressCountText, { color: colors.primary }]}>
-                {completedCount} of {lectures.length} ({progressPercentage}%)
+                {completedCount} of {lectures.length}
               </Text>
             </View>
 
             {/* Progress Bar Line */}
-            <View style={[styles.progressBarTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}>
-              <View style={[styles.progressBarFill, { width: `${progressPercentage}%`, backgroundColor: colors.primary }]} />
+            <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceContainer }]}>
+              <View style={[styles.progressBarFill, { width: `${progressPercentage}%`, backgroundColor: colors.accent }]} />
             </View>
           </View>
 
@@ -366,7 +353,7 @@ export default function VideoScreen() {
                       {
                         backgroundColor: isSelected
                           ? colors.primary
-                          : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
+                          : colors.surface,
                         borderColor: isSelected ? colors.primary : colors.outlineVariant,
                       },
                     ]}
@@ -418,10 +405,12 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 10,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -439,27 +428,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 16.5,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 22,
+    lineHeight: 28,
   },
   headerSub: {
-    fontSize: 11.5,
+    fontSize: 13,
     fontWeight: '500',
-    marginTop: 1,
   },
   headerProgressPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    minHeight: 36,
+    borderRadius: 18,
   },
   headerProgressText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#10b981',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
   scrollContent: {
     paddingBottom: 32,
@@ -478,8 +465,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   completeActionText: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
+    flexShrink: 1,
   },
   progressCard: {
     marginHorizontal: 16,
@@ -495,8 +483,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   progressTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.title,
+    fontSize: 16,
   },
   progressCountText: {
     fontSize: 12,
@@ -528,7 +516,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   filterChipText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontFamily: MindSprintFonts.label,
+    fontSize: 14,
   },
 });

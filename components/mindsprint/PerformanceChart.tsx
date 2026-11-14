@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '../../constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -93,18 +93,18 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
         <View
           style={[
             styles.trendPill,
-            { backgroundColor: isPositiveTrend ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)' },
+            { backgroundColor: isPositiveTrend ? 'rgba(18, 128, 92, 0.15)' : 'rgba(200, 55, 45, 0.15)' },
           ]}
         >
           <MaterialIcons
             name={isPositiveTrend ? 'trending-up' : 'trending-down'}
             size={16}
-            color={isPositiveTrend ? '#10b981' : '#ef4444'}
+            color={isPositiveTrend ? '#12805C' : '#C8372D'}
           />
           <Text
             style={[
               styles.trendPillText,
-              { color: isPositiveTrend ? '#065f46' : '#991b1b' },
+              { color: isPositiveTrend ? '#0B5C42' : '#8E2219' },
             ]}
           >
             {isPositiveTrend ? `+${diff}%` : `${diff}%`}
@@ -124,7 +124,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
         ]}
       >
         {/* Toggle Tabs */}
-        <View style={[styles.tabBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9' }]}>
+        <View style={[styles.tabBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#EEF2F8' }]}>
           <TouchableOpacity
             style={[
               styles.tabBtn,
@@ -207,14 +207,14 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
                 let badgeBg = colors.primary;
 
                 if (score >= 75) {
-                  barColor = '#10b981';
-                  badgeBg = '#10b981';
+                  barColor = '#12805C';
+                  badgeBg = '#12805C';
                 } else if (score < 50) {
-                  barColor = '#ef4444';
-                  badgeBg = '#ef4444';
+                  barColor = '#C8372D';
+                  badgeBg = '#C8372D';
                 } else {
-                  barColor = '#f59e0b';
-                  badgeBg = '#f59e0b';
+                  barColor = '#F4A30B';
+                  badgeBg = '#F4A30B';
                 }
 
                 return (
@@ -225,7 +225,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
                     </View>
 
                     {/* Bar Pillar */}
-                    <View style={[styles.barTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#f1f5f9' }]}>
+                    <View style={[styles.barTrack, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#EEF2F8' }]}>
                       <View
                         style={[
                           styles.barFill,
@@ -262,21 +262,21 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
           /* ======================================================== */
           <View style={styles.metricsContainer}>
             <View style={styles.metricsRow}>
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.12)' : '#ecfdf5', borderColor: '#10b981' }]}>
-                <MaterialIcons name="military-tech" size={24} color="#10b981" />
-                <Text style={[styles.metricValue, { color: '#065f46' }]}>{maxScore}%</Text>
+              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(18, 128, 92, 0.12)' : '#DDF3EA', borderColor: '#12805C' }]}>
+                <MaterialIcons name="military-tech" size={24} color="#12805C" />
+                <Text style={[styles.metricValue, { color: '#0B5C42' }]}>{maxScore}%</Text>
                 <Text style={styles.metricLabel}>Personal Best</Text>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.12)' : '#eef2ff', borderColor: colors.primary }]}>
+              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(29, 58, 138, 0.12)' : '#E4EAF8', borderColor: colors.primary }]}>
                 <MaterialIcons name="analytics" size={24} color={colors.primary} />
                 <Text style={[styles.metricValue, { color: colors.primary }]}>{avgScore}%</Text>
                 <Text style={styles.metricLabel}>Average Accuracy</Text>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.12)' : '#fef3c7', borderColor: '#f59e0b' }]}>
-                <MaterialIcons name="bolt" size={24} color="#f59e0b" />
-                <Text style={[styles.metricValue, { color: '#b45309' }]}>{lastScore}%</Text>
+              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(244, 163, 11, 0.12)' : '#FFF1D2', borderColor: '#F4A30B' }]}>
+                <MaterialIcons name="bolt" size={24} color="#F4A30B" />
+                <Text style={[styles.metricValue, { color: '#8A5A00' }]}>{lastScore}%</Text>
                 <Text style={styles.metricLabel}>Latest Attempt</Text>
               </View>
             </View>
@@ -334,8 +334,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
   },
   subtitle: {
     fontSize: 12,
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
   metricLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#64748b',
+    color: '#5A6680',
     textAlign: 'center',
   },
   takeTestShortcutBtn: {

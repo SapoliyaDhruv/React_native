@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
+import { ToolList, ToolItem } from '@/components/mindsprint/home/ToolList';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
@@ -26,14 +27,6 @@ const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍�
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
 
-type MenuOption = {
-  id: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
-  title: string;
-  subtitle?: string;
-  route?: string;
-};
-
 export default function ProfileScreen() {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode, colors } = useTheme();
@@ -41,6 +34,7 @@ export default function ProfileScreen() {
   const [userStats, setUserStats] = useState<any>(null);
   const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
   const [showAvatarModal, setShowAvatarModal] = useState<boolean>(false);
+  const styles = React.useMemo(() => makeStyles(colors), [colors]);
 
   const handlePickFromGallery = async () => {
     try {
@@ -122,401 +116,214 @@ export default function ProfileScreen() {
 
   const userGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode;
 
   const currentGradeObj = GRADE_OPTIONS.find((g) => g.grade === userGrade) || GRADE_OPTIONS[7];
 
-  const dynamicMenuItems: MenuOption[] = [
-    {
-      id: 'edit_profile',
-      icon: 'manage-accounts',
-      title: isSchoolMode ? 'પ્રોફાઇલ અને શૈક્ષણિક લક્ષ્ય' : 'Edit Profile & Target Goals',
-      subtitle: isSchoolMode ? 'ધોરણ અને લક્ષ્યાંક સેટિંગ્સ' : 'Target company, institute & account settings',
-      route: '/profile-edit',
-    },
-    {
-      id: 'mastery',
-      icon: 'insights',
-      title: isSchoolMode ? 'Subject Mastery Radar & Progress' : 'Subject Mastery Radar & AI Prescription',
-      subtitle: isSchoolMode ? 'Topic-by-topic syllabus accuracy and recovery plan' : 'Topic-by-topic accuracy and recovery plan',
-      route: '/mastery-analytics',
-    },
-    {
-      id: 'duel',
-      icon: 'sports-kabaddi',
-      title: '1v1 Speed Quiz Duel ⚔️',
-      subtitle: 'Real-time 5-question rapid duel with classmates',
-      route: '/quiz-duel',
-    },
-    {
-      id: 'interview',
-      icon: 'record-voice-over',
-      title: isSchoolMode ? 'AI Oral Exam & Viva Simulator 🎙️' : 'AI Mock Interview Simulator',
-      subtitle: isSchoolMode ? 'Practice lab viva & concept defense with voice coach' : 'Practice placement & viva questions with AI',
-      route: '/interview-simulator',
-    },
-    {
-      id: 'leaderboard',
-      icon: 'emoji-events',
-      title: isSchoolMode ? 'Class & School Leaderboard 🏆' : 'Campus & School Leaderboard',
-      subtitle: 'View peer rankings & state standings',
-      route: '/leaderboard',
-    },
-    {
-      id: 'error_vault',
-      icon: 'security',
-      title: 'AI Error Vault & Mistake Notebook 🛡️',
-      subtitle: 'Fix questions answered incorrectly in quizzes & duels',
-      route: '/error-vault',
-    },
-    {
-      id: 'doubt_solver',
-      icon: 'photo-camera',
-      title: 'Snap & Solve AI Doubt Scanner 📸',
-      subtitle: 'Instant textbook equation & question matching',
-      route: '/doubt-solver',
-    },
-    {
-      id: 'board_sim',
-      icon: 'assignment',
-      title: '80-Mark Board Exam Simulator 📄',
-      subtitle: 'Official 3-hour exam simulation with step-wise rubric',
-      route: '/board-exam-simulator',
-    },
-    {
-      id: 'bookmarks',
-      icon: 'bookmark-border',
-      title: 'Offline Revision Vault & Bookmarks',
-      subtitle: 'Study saved chapters & questions with zero internet',
-      route: '/bookmarks',
-    },
-    {
-      id: 'formulas',
-      icon: 'menu-book',
-      title: isSchoolMode ? `Class ${userGrade} Formula Sheets` : 'Formula & Revision Cheat Sheets',
-      subtitle: isSchoolMode ? 'Maths formulas & Science revision notes' : 'Quant formulas, DSA & Science notes',
-      route: '/cheatsheets',
-    },
-    {
-      id: 'flashcards',
-      icon: 'question-answer',
-      title: isSchoolMode ? `Class ${userGrade} Concept Flashcards 📇` : 'Placement Flashcard Decks',
-      subtitle: isSchoolMode ? 'Chapter formulas & exercise solutions revision' : 'Rapid HR & Tech Q&A revision',
-      route: '/flashcards',
-    },
+  const go = (route: string) => () => router.push(route as any);
+
+  const learnItems: ToolItem[] = [
+    { key: 'bookmarks', icon: 'bookmark-border', title: 'Saved chapters and questions', subtitle: 'Everything you bookmarked', onPress: go('/bookmarks') },
+    { key: 'formulas', icon: 'functions', title: isSchoolMode ? `Class ${userGrade} formula sheets` : 'Formula and revision sheets', subtitle: isSchoolMode ? 'Maths formulas and science notes' : 'Quant formulas, DSA and core notes', onPress: go('/cheatsheets') },
+    { key: 'flashcards', icon: 'style', title: 'Flashcards', subtitle: isSchoolMode ? 'Quick revision by chapter' : 'HR and technical Q&A', onPress: go('/flashcards') },
+    { key: 'mastery', icon: 'insights', title: 'My strengths', subtitle: 'Accuracy by topic and what to revise', onPress: go('/mastery-analytics') },
   ];
 
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-      edges={['top']}
-    >
-      {/* Top Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.outlineVariant,
-          },
-        ]}
-      >
-        <Text style={[styles.headerTitle, { color: colors.primary }]}>Profile & Settings</Text>
-      </View>
+  const practiseItems: ToolItem[] = [
+    ...(isSchoolMode
+      ? [{ key: 'board', icon: 'assignment', title: 'Board exam paper', subtitle: 'Full 80-mark timed paper with marking', onPress: go('/board-exam-simulator') } as ToolItem]
+      : []),
+    { key: 'interview', icon: 'record-voice-over', title: isSchoolMode ? 'Viva practice' : 'Interview practice', subtitle: isSchoolMode ? 'Answer oral exam questions aloud' : 'Answer HR and technical questions', onPress: go('/interview-simulator') },
+    { key: 'vault', icon: 'replay', title: 'Fix my mistakes', subtitle: 'Retry questions you got wrong', onPress: go('/error-vault') },
+    { key: 'doubt', icon: 'photo-camera', title: 'Scan a doubt', subtitle: 'Photo of a question → step-by-step help', onPress: go('/doubt-solver') },
+    { key: 'duel', icon: 'sports-kabaddi', title: '1v1 quiz duel', subtitle: '5 quick questions against a classmate', onPress: go('/quiz-duel') },
+    { key: 'leaderboard', icon: 'emoji-events', title: 'Rankings', subtitle: isSchoolMode ? 'Class, school and Gujarat rankings' : 'Campus rankings', onPress: go('/leaderboard') },
+  ];
 
+  const BADGES = [
+    { id: 'first_step', icon: 'emoji-events', title: 'First step', sub: 'Finish your first test' },
+    { id: 'bullseye', icon: 'gps-fixed', title: 'Bullseye', sub: 'Score 100% in a test' },
+    { id: 'quant_master', icon: 'calculate', title: 'Maths master', sub: 'Finish 3 maths tests' },
+    { id: 'dsa_ninja', icon: 'account-tree', title: 'Logic ninja', sub: 'Finish 5 logic drills' },
+    { id: 'streak_flame', icon: 'local-fire-department', title: 'Week streak', sub: 'Study 7 days in a row' },
+  ];
+  const unlocked: string[] = userStats?.unlockedBadges || ['first_step'];
+
+  const isEmojiAvatar = !!user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:');
+
+  return (
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* User Card */}
-        <View
-          style={[
-            styles.profileCard,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.surfaceContainer,
-            },
-            MindSprintShadows.card,
-          ]}
-        >
+        <Text style={styles.screenTitle}>Profile</Text>
+
+        {/* Who you are */}
+        <View style={styles.identityRow}>
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => setShowAvatarModal(true)}
             style={styles.avatarWrapper}
+            accessibilityRole="button"
+            accessibilityLabel="Change profile picture"
           >
-            {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
-              <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#e0e7ff' }]}>
-                <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
+            {isEmojiAvatar ? (
+              <View style={[styles.avatar, styles.emojiAvatarBox]}>
+                <Text style={styles.emojiAvatarText}>{user!.avatarUrl}</Text>
               </View>
             ) : (
               <Image source={{ uri: user?.avatarUrl || AVATAR_URL }} style={styles.avatar} />
             )}
-            <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
-              <MaterialIcons name="photo-camera" size={14} color="#ffffff" />
+            <View style={styles.cameraBadge}>
+              <MaterialIcons name="photo-camera" size={13} color={colors.onPrimary} />
             </View>
           </TouchableOpacity>
-          <Text style={[styles.userName, { color: colors.onSurface }]}>
-            {user?.name || 'Guest Student'}
-          </Text>
-          <Text style={[styles.userEmail, { color: colors.onSurfaceVariant }]}>
-            {user?.email || 'guest@mindsprint.app'}
-          </Text>
-
-          <View style={styles.badgeRow}>
-            <View style={styles.badge}>
-              <MaterialIcons
-                name={user?.isGuest ? 'person-outline' : 'workspace-premium'}
-                size={14}
-                color={colors.onTertiaryFixed}
-              />
-              <Text style={styles.badgeText}>
-                {user?.isGuest ? 'Guest Access' : 'Verified Student'}
-              </Text>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.userName} numberOfLines={1}>{user?.name || 'Guest student'}</Text>
+            <Text style={styles.userEmail} numberOfLines={1}>{user?.email || 'guest@mindsprint.app'}</Text>
+            <View style={styles.statusChip}>
+              <MaterialIcons name={user?.isGuest ? 'person-outline' : 'verified'} size={14} color={colors.onTertiaryContainer} />
+              <Text style={styles.statusChipText}>{user?.isGuest ? 'Guest' : 'Signed in'}</Text>
             </View>
-
-            <TouchableOpacity
-              style={[styles.editProfileBtn, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#eef2ff' }]}
-              onPress={() => router.push('/profile-edit')}
-            >
-              <MaterialIcons name="edit" size={14} color={colors.primary} />
-              <Text style={[styles.editProfileBtnText, { color: colors.primary }]}>Edit Profile</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Academic Stage & Curriculum Selector Card */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[
-            styles.curriculumCard,
-            {
-              backgroundColor: isDarkMode ? 'rgba(129,140,248,0.1)' : '#eff6ff',
-              borderColor: isDarkMode ? 'rgba(129,140,248,0.3)' : '#bfdbfe',
-            },
-            MindSprintShadows.card,
-          ]}
-          onPress={() => setShowGradeModal(true)}
-        >
-          <View style={styles.curriculumLeft}>
-            <View style={[styles.curriculumIconCircle, { backgroundColor: colors.primary }]}>
-              <MaterialIcons name="school" size={24} color="#ffffff" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.currTagRow}>
-                <Text style={[styles.currTag, { color: colors.primary }]}>ACTIVE ACADEMIC STAGE</Text>
-              </View>
-              <Text style={[styles.currTitle, { color: colors.onSurface }]}>
-                {currentGradeObj.label}
-              </Text>
-              <Text style={[styles.currSubtitle, { color: colors.onSurfaceVariant }]}>
-                {user?.grade === 'college'
-                  ? 'Campus Recruitment (TCS, Amazon, DSA)'
-                  : `${user?.board || 'CBSE'} Board • ${user?.medium || 'English'} Medium`}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.changePill, { backgroundColor: colors.primary }]}>
-            <Text style={styles.changePillText}>Change ▾</Text>
-          </View>
+        <TouchableOpacity style={styles.editProfileBtn} onPress={() => router.push('/profile-edit')} accessibilityRole="button">
+          <MaterialIcons name="edit" size={18} color={colors.primary} />
+          <Text style={styles.editProfileBtnText}>Edit profile</Text>
         </TouchableOpacity>
 
-        {/* Achievements Showcase */}
-        <View style={styles.achievementsSection}>
-          <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-            Unlocked Badges & Achievements
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll}>
-            {[
-              { id: 'first_step', icon: 'emoji-events', title: 'First Step', sub: 'Completed 1st Exam', color: '#f59e0b' },
-              { id: 'bullseye', icon: 'gps-fixed', title: 'Bullseye 🎯', sub: '100% Exam Score', color: '#10b981' },
-              { id: 'quant_master', icon: 'calculate', title: 'Math Master', sub: '3+ Math/Quant Tests', color: '#3b82f6' },
-              { id: 'dsa_ninja', icon: 'account-tree', title: 'Logic Ninja 🥷', sub: '5+ Logic Drills', color: '#8b5cf6' },
-              { id: 'streak_flame', icon: 'local-fire-department', title: 'Streak Flame', sub: '7 Day Streak', color: '#ef4444' },
-            ].map((b) => {
-              const isUnlocked = (userStats?.unlockedBadges || ['first_step']).includes(b.id);
-              return (
-                <View
-                  key={b.id}
-                  style={[
-                    styles.achievementBadgeCard,
-                    {
-                      backgroundColor: colors.surfaceContainerLowest,
-                      borderColor: isUnlocked ? b.color : colors.outlineVariant,
-                      opacity: isUnlocked ? 1 : 0.4,
-                    },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <View style={[styles.badgeIconCircle, { backgroundColor: `${b.color}20` }]}>
-                    <MaterialIcons name={b.icon as any} size={24} color={isUnlocked ? b.color : colors.outline} />
-                  </View>
-                  <Text style={[styles.achievementTitle, { color: colors.onSurface }]}>{b.title}</Text>
-                  <Text style={[styles.achievementSub, { color: colors.onSurfaceVariant }]}>{b.sub}</Text>
-                </View>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* Dark Mode Switch Row Card */}
-        <View
-          style={[
-            styles.darkModeCard,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.outlineVariant,
-            },
-          ]}
-        >
-          <View style={styles.darkModeLeft}>
-            <View style={styles.menuIconBox}>
-              <MaterialIcons
-                name={isDarkMode ? 'dark-mode' : 'light-mode'}
-                size={22}
-                color={colors.primary}
-              />
+        {/* Quick numbers */}
+        <View style={styles.statsCard}>
+          {[
+            { label: 'Tests taken', value: String(userStats?.totalTests || 0) },
+            { label: 'Day streak', value: String(userStats?.streakCount || 1) },
+            { label: 'Average', value: `${userStats?.avgScore || 0}%` },
+          ].map((st, i) => (
+            <View key={st.label} style={[styles.statCell, i > 0 && styles.statDivider]}>
+              <Text style={styles.statValue}>{st.value}</Text>
+              <Text style={styles.statLabel}>{st.label}</Text>
             </View>
-            <View>
-              <Text style={[styles.menuTitle, { color: colors.onSurface }]}>Dark Mode</Text>
-              <Text style={[styles.menuSubtitle, { color: colors.onSurfaceVariant }]}>
-                {isDarkMode ? 'Dark theme enabled' : 'Light theme enabled'}
-              </Text>
-            </View>
-          </View>
-
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleDarkMode}
-            trackColor={{ false: '#c7c4d8', true: colors.primary }}
-            thumbColor="#ffffff"
-          />
-        </View>
-
-        {/* Menu Items */}
-        <View
-          style={[
-            styles.menuContainer,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.outlineVariant,
-            },
-          ]}
-        >
-          {dynamicMenuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              activeOpacity={0.7}
-              onPress={() => {
-                if (item.route) {
-                  router.push(item.route as any);
-                }
-              }}
-              style={[
-                styles.menuItem,
-                index < dynamicMenuItems.length - 1 && {
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.outlineVariant,
-                },
-              ]}
-            >
-              <View style={styles.menuIconBox}>
-                <MaterialIcons name={item.icon} size={22} color={colors.primary} />
-              </View>
-              <View style={styles.menuTextContent}>
-                <Text style={[styles.menuTitle, { color: colors.onSurface }]}>
-                  {item.title}
-                </Text>
-                {item.subtitle && (
-                  <Text style={[styles.menuSubtitle, { color: colors.onSurfaceVariant }]}>
-                    {item.subtitle}
-                  </Text>
-                )}
-              </View>
-              <MaterialIcons
-                name="chevron-right"
-                size={22}
-                color={colors.outline}
-              />
-            </TouchableOpacity>
           ))}
         </View>
 
-        {/* Switch Account / Sign Out Action */}
+        {/* What you're studying */}
+        <Text style={styles.sectionHeading}>Studying</Text>
         <TouchableOpacity
-          style={[
-            styles.signOutBtn,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.primary,
-            },
-          ]}
-          onPress={logout}
+          activeOpacity={0.8}
+          style={styles.curriculumCard}
+          onPress={() => setShowGradeModal(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`Change class. Current: ${currentGradeObj.label}`}
         >
-          <MaterialIcons name="logout" size={20} color={colors.primary} />
-          <Text style={[styles.signOutBtnText, { color: colors.primary }]}>
-            {user?.isGuest ? 'Exit Guest Mode & Log In' : 'Log Out of MindSprint'}
-          </Text>
+          <View style={styles.curriculumIconCircle}>
+            <MaterialIcons name={isSchoolMode ? 'school' : 'work-outline'} size={22} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={styles.currTitle} numberOfLines={1}>{currentGradeObj.label}</Text>
+            <Text style={styles.currSubtitle} numberOfLines={1}>
+              {user?.grade === 'college'
+                ? 'Campus placements'
+                : `${user?.board || 'GSEB'} board · ${user?.medium || 'Gujarati'} medium`}
+            </Text>
+          </View>
+          <Text style={styles.changeText}>Change</Text>
+        </TouchableOpacity>
+
+        {/* Badges */}
+        <Text style={styles.sectionHeading}>Badges</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesScroll} style={styles.badgesStrip}>
+          {BADGES.map((b) => {
+            const isUnlocked = unlocked.includes(b.id);
+            return (
+              <View
+                key={b.id}
+                style={[styles.achievementBadgeCard, isUnlocked && styles.achievementUnlocked]}
+                accessibilityLabel={`${b.title}: ${isUnlocked ? 'earned' : 'not earned yet'}. ${b.sub}`}
+              >
+                <View style={[styles.badgeIconCircle, { backgroundColor: isUnlocked ? colors.accentContainer : colors.surfaceContainerLow }]}>
+                  <MaterialIcons name={(isUnlocked ? b.icon : 'lock-outline') as any} size={22} color={isUnlocked ? colors.accent : colors.outline} />
+                </View>
+                <Text style={[styles.achievementTitle, !isUnlocked && { color: colors.onSurfaceVariant }]} numberOfLines={1}>{b.title}</Text>
+                <Text style={styles.achievementSub} numberOfLines={2}>{b.sub}</Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+
+        {/* Settings */}
+        <Text style={styles.sectionHeading}>Settings</Text>
+        <View style={styles.settingsCard}>
+          <View style={styles.settingRow}>
+            <View style={styles.menuIconBox}>
+              <MaterialIcons name={isDarkMode ? 'dark-mode' : 'light-mode'} size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.menuTitle}>Dark mode</Text>
+              <Text style={styles.menuSubtitle}>Easier on the eyes at night</Text>
+            </View>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleDarkMode}
+              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+              thumbColor="#ffffff"
+              {...({ activeThumbColor: '#ffffff' } as object)}
+              accessibilityLabel="Dark mode"
+            />
+          </View>
+        </View>
+
+        <Text style={styles.sectionHeading}>Learn</Text>
+        <ToolList items={learnItems} />
+
+        <Text style={styles.sectionHeading}>Practise</Text>
+        <ToolList items={practiseItems} />
+
+        <TouchableOpacity style={styles.signOutBtn} onPress={logout} accessibilityRole="button">
+          <MaterialIcons name="logout" size={20} color={colors.error} />
+          <Text style={styles.signOutBtnText}>{user?.isGuest ? 'Leave guest mode and sign in' : 'Sign out'}</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Avatar Picker Modal */}
-      <Modal
-        visible={showAvatarModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowAvatarModal(false)}
-      >
+      {/* Avatar picker */}
+      <Modal visible={showAvatarModal} transparent animationType="fade" onRequestClose={() => setShowAvatarModal(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.modalContent, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }, MindSprintShadows.card]}>
+          <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.onSurface }]}>Choose Profile Avatar 📸</Text>
-              <TouchableOpacity onPress={() => setShowAvatarModal(false)} style={styles.closeBtn}>
-                <MaterialIcons name="close" size={20} color={colors.outline} />
+              <Text style={styles.modalTitle}>Profile picture</Text>
+              <TouchableOpacity onPress={() => setShowAvatarModal(false)} style={styles.closeBtn} accessibilityLabel="Close">
+                <MaterialIcons name="close" size={22} color={colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
-            {/* Photo / Camera Actions */}
             <View style={styles.photoActionsRow}>
-              <TouchableOpacity
-                style={[styles.photoActionBtn, { backgroundColor: colors.primary }]}
-                onPress={handlePickFromGallery}
-              >
-                <MaterialIcons name="photo-library" size={18} color="#ffffff" />
-                <Text style={styles.photoActionBtnText}>From Gallery</Text>
+              <TouchableOpacity style={[styles.photoActionBtn, { backgroundColor: colors.primary }]} onPress={handlePickFromGallery}>
+                <MaterialIcons name="photo-library" size={18} color={colors.onPrimary} />
+                <Text style={[styles.photoActionBtnText, { color: colors.onPrimary }]}>Choose photo</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.photoActionBtn, { backgroundColor: '#334155' }]}
-                onPress={handleTakePhoto}
-              >
-                <MaterialIcons name="photo-camera" size={18} color="#ffffff" />
-                <Text style={styles.photoActionBtnText}>Take Photo</Text>
+              <TouchableOpacity style={[styles.photoActionBtn, styles.photoActionOutline]} onPress={handleTakePhoto}>
+                <MaterialIcons name="photo-camera" size={18} color={colors.primary} />
+                <Text style={[styles.photoActionBtnText, { color: colors.primary }]}>Take photo</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.modalSubheading, { color: colors.onSurfaceVariant }]}>
-              Or pick an academic student avatar:
-            </Text>
-
+            <Text style={styles.modalSubheading}>Or pick an avatar</Text>
             <View style={styles.emojiGrid}>
-              {AVATAR_PRESETS.map((emoji, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={[
-                    styles.emojiBtn,
-                    {
-                      backgroundColor: user?.avatarUrl === emoji ? 'rgba(99, 102, 241, 0.2)' : isDarkMode ? colors.surfaceContainerLow : '#f1f5f9',
-                      borderColor: user?.avatarUrl === emoji ? colors.primary : 'transparent',
-                    },
-                  ]}
-                  onPress={() => handleSelectEmojiAvatar(emoji)}
-                >
-                  <Text style={styles.emojiGridText}>{emoji}</Text>
-                </TouchableOpacity>
-              ))}
+              {AVATAR_PRESETS.map((emoji, idx) => {
+                const selected = user?.avatarUrl === emoji;
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[styles.emojiBtn, selected && styles.emojiBtnSelected]}
+                    onPress={() => handleSelectEmojiAvatar(emoji)}
+                    accessibilityState={{ selected }}
+                  >
+                    <Text style={styles.emojiGridText}>{emoji}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Grade Selector Modal */}
       <AcademicGradeModal
         visible={showGradeModal}
         currentGrade={user?.grade || 'college'}
@@ -529,309 +336,147 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  scrollContainer: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  profileCard: {
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-  editProfileBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
-  },
-  editProfileBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  curriculumCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 20,
-    borderWidth: 1.5,
-    padding: 16,
-    marginBottom: 16,
-  },
-  curriculumLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  curriculumIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  currTagRow: {
-    marginBottom: 2,
-  },
-  currTag: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  currTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  currSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  changePill: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  changePillText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  achievementsSection: {
-    marginBottom: 16,
-  },
-  sectionHeading: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  badgesScroll: {
-    gap: 12,
-    paddingRight: 16,
-  },
-  achievementBadgeCard: {
-    width: 120,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  achievementTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  achievementSub: {
-    fontSize: 10,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  avatarWrapper: {
-    position: 'relative',
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#3525cd',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  emojiAvatarBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emojiAvatarText: {
-    fontSize: 40,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 380,
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: 20,
-    gap: 14,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  closeBtn: {
-    padding: 4,
-  },
-  photoActionsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  photoActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  photoActionBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  modalSubheading: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  emojiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'center',
-  },
-  emojiBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emojiGridText: {
-    fontSize: 26,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  userEmail: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#70fbbe',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#002114',
-  },
-  darkModeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
-  },
-  darkModeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuContainer: {
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  menuIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: 'rgba(53, 37, 205, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  menuTextContent: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  menuSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  signOutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    marginTop: 20,
-    gap: 8,
-  },
-  signOutBtnText: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
+const makeStyles = (c: typeof MindSprintColors) =>
+  StyleSheet.create({
+    safeArea: { flex: 1 },
+    scrollContainer: { padding: 16, paddingBottom: 40 },
+    screenTitle: { fontFamily: MindSprintFonts.heading, fontSize: 26, lineHeight: 34, color: c.onSurface, marginBottom: 14 },
+    identityRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    avatarWrapper: { position: 'relative' },
+    avatar: { width: 76, height: 76, borderRadius: 38, backgroundColor: c.primaryFixed },
+    emojiAvatarBox: { alignItems: 'center', justifyContent: 'center' },
+    emojiAvatarText: { fontSize: 38 },
+    cameraBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: c.background,
+      backgroundColor: c.primary,
+    },
+    userName: { fontFamily: MindSprintFonts.heading, fontSize: 22, lineHeight: 28, color: c.onSurface },
+    userEmail: { fontSize: 14, color: c.onSurfaceVariant },
+    statusChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      gap: 4,
+      marginTop: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      borderRadius: 999,
+      backgroundColor: c.tertiaryContainer,
+    },
+    statusChipText: { fontSize: 12.5, fontWeight: '600', color: c.onTertiaryContainer },
+    editProfileBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      minHeight: 44,
+      marginTop: 16,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+    },
+    editProfileBtnText: { fontFamily: MindSprintFonts.label, fontSize: 15, color: c.primary },
+    statsCard: {
+      flexDirection: 'row',
+      marginTop: 14,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+      paddingVertical: 12,
+    },
+    statCell: { flex: 1, alignItems: 'center' },
+    statDivider: { borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: c.outlineVariant },
+    statValue: { fontFamily: MindSprintFonts.display, fontSize: 24, lineHeight: 30, color: c.onSurface },
+    statLabel: { fontSize: 12.5, color: c.onSurfaceVariant },
+    sectionHeading: { fontFamily: MindSprintFonts.heading, fontSize: 18, lineHeight: 24, color: c.onSurface, marginTop: 26, marginBottom: 10 },
+    curriculumCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+      padding: 14,
+      minHeight: 68,
+    },
+    curriculumIconCircle: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: c.primaryFixed },
+    currTitle: { fontFamily: MindSprintFonts.title, fontSize: 16, lineHeight: 22, color: c.onSurface },
+    currSubtitle: { fontSize: 13, color: c.onSurfaceVariant, marginTop: 1 },
+    changeText: { fontFamily: MindSprintFonts.label, fontSize: 15, color: c.primary, paddingLeft: 4 },
+    badgesStrip: { marginHorizontal: -16 },
+    badgesScroll: { gap: 10, paddingHorizontal: 16 },
+    achievementBadgeCard: {
+      width: 116,
+      padding: 12,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+    },
+    achievementUnlocked: { borderColor: c.accent },
+    badgeIconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    achievementTitle: { fontFamily: MindSprintFonts.title, fontSize: 14.5, lineHeight: 20, color: c.onSurface },
+    achievementSub: { fontSize: 12, lineHeight: 16, color: c.onSurfaceVariant, marginTop: 2 },
+    settingsCard: { borderRadius: 16, borderWidth: 1, borderColor: c.outlineVariant, backgroundColor: c.surface },
+    settingRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 64, paddingHorizontal: 14, paddingVertical: 10 },
+    menuIconBox: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: c.primaryFixed },
+    menuTitle: { fontFamily: MindSprintFonts.title, fontSize: 15.5, lineHeight: 21, color: c.onSurface },
+    menuSubtitle: { fontSize: 12.5, color: c.onSurfaceVariant, marginTop: 1 },
+    signOutBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      minHeight: 50,
+      marginTop: 28,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+    },
+    signOutBtnText: { fontFamily: MindSprintFonts.label, fontSize: 15.5, color: c.error },
+    modalBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.55)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+    modalContent: {
+      width: '100%',
+      maxWidth: 380,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      backgroundColor: c.surface,
+      padding: 20,
+      gap: 14,
+    },
+    modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    modalTitle: { fontFamily: MindSprintFonts.heading, fontSize: 20, lineHeight: 26, color: c.onSurface },
+    closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -10 },
+    photoActionsRow: { flexDirection: 'row', gap: 10 },
+    photoActionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 46, borderRadius: 12 },
+    photoActionOutline: { borderWidth: 1, borderColor: c.outlineVariant, backgroundColor: c.surface },
+    photoActionBtnText: { fontFamily: MindSprintFonts.label, fontSize: 14.5 },
+    modalSubheading: { fontSize: 13.5, fontWeight: '600', color: c.onSurfaceVariant, marginTop: 4 },
+    emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
+    emojiBtn: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      backgroundColor: c.surfaceContainerLow,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emojiBtnSelected: { borderColor: c.primary, backgroundColor: c.primaryFixed },
+    emojiGridText: { fontSize: 26 },
+  });

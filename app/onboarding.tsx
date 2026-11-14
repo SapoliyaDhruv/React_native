@@ -11,73 +11,52 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintColors, MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 
 interface OnboardingSlide {
   id: string;
-  badge: string;
   title: string;
-  highlight: string;
   description: string;
-  quote?: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
-  accentColor: string;
-  bgGradientColor: string;
+  points: string[];
 }
 
 const SLIDES: OnboardingSlide[] = [
   {
     id: '1',
-    badge: 'CLASS 6 TO 12 & COLLEGE',
-    title: 'Your Complete Academic &',
-    highlight: 'Career Companion',
-    description:
-      'Curated syllabus for GSEB & CBSE (English & Gujarati Medium) from Class 6 to 12, plus comprehensive College Placement prep.',
-    iconName: 'school',
-    accentColor: '#4f46e5',
-    bgGradientColor: '#eef2ff',
+    title: 'Every chapter in one place',
+    description: 'Class 7 to 12 (GSEB, Gujarati medium) and college placement prep.',
+    iconName: 'play-lesson',
+    points: ['A full video lesson for each chapter', 'The official textbook PDF', 'Short notes and formulas'],
   },
   {
     id: '2',
-    badge: 'COMPREHENSIVE RESOURCES',
-    title: 'Textbooks, Sample Papers &',
-    highlight: 'Important Questions',
-    description:
-      'Master every concept with chapter notes, 1 to 4 marker questions, official board papers, and video masterclasses.',
-    iconName: 'menu-book',
-    accentColor: '#0ea5e9',
-    bgGradientColor: '#f0f9ff',
+    title: 'Practise the way the board tests',
+    description: 'Questions written in the same style as your exam paper.',
+    iconName: 'assignment',
+    points: ['1 to 4 mark important questions', 'Full 80-mark board papers', 'A quick quiz after every chapter'],
   },
   {
     id: '3',
-    badge: 'INTERACTIVE MOMENTUM',
-    title: '1v1 Live Duels & Daily',
-    highlight: 'Study Streaks',
-    description:
-      'Challenge classmates in real-time speed battles, take 60-second daily challenges, and rise on the Gujarat & India leaderboard.',
-    iconName: 'sports-kabaddi',
-    accentColor: '#f59e0b',
-    bgGradientColor: '#fffbeb',
+    title: 'Study a little every day',
+    description: 'Small daily goals keep you moving before exams.',
+    iconName: 'local-fire-department',
+    points: ['A new question every day', '1v1 quiz duels with classmates', 'Gujarat-wide rankings'],
   },
   {
     id: '4',
-    badge: 'AI-POWERED ACCELERATOR',
-    title: 'Personalized AI Diagnostics &',
-    highlight: 'Mock Exams',
-    quote: '"Be the better version of yourself"',
-    description:
-      'Detect and eliminate weak areas with instant AI feedback. Step into school exams and corporate interviews with 100% confidence.',
-    iconName: 'auto-awesome',
-    accentColor: '#10b981',
-    bgGradientColor: '#ecfdf5',
+    title: 'Know what to revise next',
+    description: 'Your tests show which topics need more work.',
+    iconName: 'insights',
+    points: ['Weak topics found from your answers', 'Retry questions you got wrong', 'Progress saved as you go'],
   },
 ];
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { completeOnboarding } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -116,30 +95,24 @@ export default function OnboardingScreen() {
   }).current;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.heroSurface }]}>
+      <StatusBar barStyle="light-content" />
 
-      {/* Top Bar with Skip */}
       <View style={styles.topBar}>
         <View style={styles.brandRow}>
-          <View style={[styles.brandIcon, { backgroundColor: colors.primary }]}>
-            <MaterialIcons name="school" size={18} color="#ffffff" />
+          <View style={[styles.brandIcon, { backgroundColor: colors.accent }]}>
+            <MaterialIcons name="auto-stories" size={18} color={colors.onAccent} />
           </View>
-          <Text style={[styles.brandName, { color: colors.primary }]}>MindSprint</Text>
+          <Text style={[styles.brandName, { color: colors.onHeroSurface }]}>MindSprint</Text>
         </View>
 
         {currentIndex < SLIDES.length - 1 && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.skipBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f1f5f9' }]}
-            onPress={handleFinishOnboarding}
-          >
-            <Text style={[styles.skipText, { color: colors.onSurfaceVariant }]}>Skip</Text>
+          <TouchableOpacity activeOpacity={0.7} style={styles.skipBtn} onPress={handleFinishOnboarding} accessibilityRole="button">
+            <Text style={[styles.skipText, { color: colors.onHeroSurfaceVariant }]}>Skip</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Carousel */}
       <FlatList
         ref={flatListRef}
         data={SLIDES}
@@ -167,65 +140,37 @@ export default function OnboardingScreen() {
         }}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderItem={({ item }) => (
+        renderItem={({ item }: { item: OnboardingSlide }) => (
           <View style={[styles.slide, { width: screenWidth }]}>
-            {/* Visual Card */}
-            <View
-              style={[
-                styles.iconContainer,
-                {
-                  width: Math.min(screenWidth - 48, 480),
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLow : item.bgGradientColor,
-                  borderColor: isDarkMode ? colors.outlineVariant : item.accentColor + '40',
-                },
-                MindSprintShadows.card,
-              ]}
-            >
-              <View style={[styles.iconCircle, { backgroundColor: item.accentColor }]}>
-                <MaterialIcons name={item.iconName} size={48} color="#ffffff" />
+            <View style={styles.slideInner}>
+              <View style={[styles.iconTile, { backgroundColor: colors.accent }]}>
+                <MaterialIcons name={item.iconName} size={40} color={colors.onAccent} />
               </View>
+              <Text style={[styles.title, { color: colors.onHeroSurface }]}>{item.title}</Text>
+              <Text style={[styles.description, { color: colors.onHeroSurfaceVariant }]}>{item.description}</Text>
 
-              {item.quote && (
-                <View style={[styles.quoteBadge, { backgroundColor: isDarkMode ? '#064e3b' : '#d1fae5' }]}>
-                  <MaterialIcons name="format-quote" size={16} color="#10b981" />
-                  <Text style={styles.quoteText}>{item.quote}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Content Info */}
-            <View style={styles.textContent}>
-              <View style={[styles.badgePill, { backgroundColor: item.accentColor + '20' }]}>
-                <Text style={[styles.badgeText, { color: item.accentColor }]}>{item.badge}</Text>
+              <View style={styles.pointsCard}>
+                {item.points.map((pt, i) => (
+                  <View key={pt} style={[styles.pointRow, i > 0 && styles.pointDivider]}>
+                    <MaterialIcons name="check-circle" size={20} color={colors.accent} />
+                    <Text style={[styles.pointText, { color: colors.onHeroSurface }]}>{pt}</Text>
+                  </View>
+                ))}
               </View>
-
-              <Text style={[styles.title, { color: colors.onSurface }]}>
-                {item.title}{' '}
-                <Text style={{ color: item.accentColor }}>{item.highlight}</Text>
-              </Text>
-
-              <Text style={[styles.description, { color: colors.onSurfaceVariant }]}>
-                {item.description}
-              </Text>
             </View>
           </View>
         )}
       />
 
-      {/* Bottom Controls */}
       <View style={styles.bottomBar}>
-        {/* Pagination Dots */}
-        <View style={styles.paginationRow}>
+        <View style={styles.paginationRow} accessibilityLabel={`Step ${currentIndex + 1} of ${SLIDES.length}`}>
           {SLIDES.map((_, idx) => (
             <View
               key={idx}
               style={[
                 styles.dot,
                 {
-                  backgroundColor:
-                    idx === currentIndex
-                      ? colors.primary
-                      : isDarkMode ? colors.outlineVariant : '#cbd5e1',
+                  backgroundColor: idx === currentIndex ? colors.accent : 'rgba(255,255,255,0.25)',
                   width: idx === currentIndex ? 24 : 8,
                 },
               ]}
@@ -233,20 +178,16 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {/* Action Button */}
         <TouchableOpacity
           activeOpacity={0.85}
-          style={[styles.nextButton, { backgroundColor: colors.primary }, MindSprintShadows.glow]}
+          style={[styles.nextButton, { backgroundColor: colors.accent }]}
           onPress={handleNext}
+          accessibilityRole="button"
         >
-          <Text style={styles.nextButtonText}>
-            {currentIndex === SLIDES.length - 1 ? 'Start Learning 🚀' : 'Continue'}
+          <Text style={[styles.nextButtonText, { color: colors.onAccent }]}>
+            {currentIndex === SLIDES.length - 1 ? 'Get started' : 'Next'}
           </Text>
-          <MaterialIcons
-            name={currentIndex === SLIDES.length - 1 ? 'check' : 'arrow-forward'}
-            size={20}
-            color="#ffffff"
-          />
+          <MaterialIcons name="arrow-forward" size={20} color={colors.onAccent} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -254,140 +195,46 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 12,
+    minHeight: 60,
   },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  brandIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandName: {
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-  },
-  skipBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  skipText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  slide: {
-    paddingHorizontal: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    height: 240,
-    borderRadius: 28,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 28,
-    position: 'relative',
-  },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  quoteBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginTop: 14,
-  },
-  quoteText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#10b981',
-    fontStyle: 'italic',
-  },
-  textContent: {
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  badgePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 32,
-    letterSpacing: -0.4,
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: 'center',
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brandIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  brandName: { fontFamily: MindSprintFonts.heading, fontSize: 20, lineHeight: 26 },
+  skipBtn: { minHeight: 44, minWidth: 56, alignItems: 'center', justifyContent: 'center' },
+  skipText: { fontFamily: MindSprintFonts.label, fontSize: 15.5 },
+  slide: { paddingHorizontal: 24, paddingTop: 28 },
+  slideInner: { width: '100%', maxWidth: 480, alignSelf: 'center' },
+  iconTile: { width: 76, height: 76, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  title: { fontFamily: MindSprintFonts.display, fontSize: 32, lineHeight: 40 },
+  description: { fontSize: 16, lineHeight: 24, marginTop: 8 },
+  pointsCard: {
+    marginTop: 26,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 16,
-    fontWeight: '400',
   },
-  bottomBar: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    paddingTop: 12,
-    gap: 20,
-  },
-  paginationRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dot: {
-    height: 8,
-    borderRadius: 4,
-  },
+  pointRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54 },
+  pointDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.18)' },
+  pointText: { fontSize: 15.5, flex: 1 },
+  bottomBar: { paddingHorizontal: 24, paddingBottom: 24, paddingTop: 12, gap: 20 },
+  paginationRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  dot: { height: 8, borderRadius: 4 },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 18,
+    minHeight: 54,
+    borderRadius: 16,
     gap: 8,
   },
-  nextButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  nextButtonText: { fontFamily: MindSprintFonts.label, fontSize: 17 },
 });

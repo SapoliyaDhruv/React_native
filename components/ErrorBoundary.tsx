@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <View style={styles.iconCircle}>
-            <MaterialIcons name="error-outline" size={40} color="#ef4444" />
+            <MaterialIcons name="error-outline" size={40} color="#C8372D" />
           </View>
           <Text style={styles.title}>Something Went Wrong</Text>
           <Text style={styles.subtitle}>
@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#16203A',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    backgroundColor: 'rgba(200, 55, 45, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -88,22 +88,22 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: '#9AA6C0',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 16,
   },
   errorBox: {
     width: '100%',
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    borderColor: 'rgba(239, 68, 68, 0.25)',
+    backgroundColor: 'rgba(200, 55, 45, 0.08)',
+    borderColor: 'rgba(200, 55, 45, 0.25)',
     borderWidth: 1,
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: '#fca5a5',
+    color: '#F5C6C0',
     fontSize: 11,
     fontFamily: 'monospace',
   },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#2F6FD6',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 14,

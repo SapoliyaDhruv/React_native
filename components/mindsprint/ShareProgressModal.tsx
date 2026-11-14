@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 
@@ -25,12 +25,14 @@ interface ShareProgressModalProps {
 export const ShareProgressModal: React.FC<ShareProgressModalProps> = ({
   visible,
   onClose,
-  masteryPercentage = 84,
-  streakDays = 5,
-  chaptersCompleted = 8,
-  questionsSolved = 142,
+  // Defaults are zero so the card never shows made-up numbers.
+  masteryPercentage = 0,
+  streakDays = 0,
+  chaptersCompleted = 0,
+  questionsSolved = 0,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => makeStyles(colors), [colors]);
   const { user } = useAuth();
 
   const studentName = user?.name || 'Student';
@@ -40,7 +42,7 @@ export const ShareProgressModal: React.FC<ShareProgressModalProps> = ({
 
   const shareText = `🎓 *MindSprint Study Progress Report* 🎓
 👤 Student: *${studentName}*
-📚 Standard: *Class ${grade} (${board} • ${medium} Medium)*
+📚 ${grade === 'college' ? '*College placements*' : `Standard: *Class ${grade} (${board} • ${medium} Medium)*`}
 🔥 Daily Study Streak: *${streakDays} Days*
 📖 Chapters Mastered: *${chaptersCompleted}*
 ✍️ Questions Solved: *${questionsSolved}*
@@ -64,72 +66,44 @@ _Consistent daily revision brings top board exam ranks! Keep it up!_ 🚀`;
 
   if (!visible) return null;
 
+  const stageLine = grade === 'college' ? 'College · Campus placements' : `Class ${grade} · ${board} · ${medium} medium`;
+  const metrics = [
+    { label: 'Day streak', value: String(streakDays) },
+    { label: 'Chapters done', value: String(chaptersCompleted) },
+    { label: 'Questions solved', value: String(questionsSolved) },
+    { label: 'Average score', value: `${masteryPercentage}%` },
+  ];
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest }, MindSprintShadows.glow]}>
-          {/* Header */}
+        <View style={styles.card}>
           <View style={styles.headerRow}>
-            <View style={styles.badge}>
-              <MaterialIcons name="workspace-premium" size={16} color="#10b981" />
-              <Text style={styles.badgeText}>OFFICIAL PROGRESS CARD</Text>
-            </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <MaterialIcons name="close" size={22} color={colors.onSurfaceVariant} />
+            <Text style={styles.title}>Share your progress</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Close">
+              <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
+          <Text style={styles.subtitle}>Send this card to your parents or teacher.</Text>
 
-          {/* Student Profile Overview */}
-          <View style={styles.profileSection}>
-            <View style={[styles.avatarBox, { backgroundColor: colors.primary }]}>
-              <Text style={styles.avatarEmoji}>🎓</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.studentName, { color: colors.onSurface }]}>{studentName}</Text>
-              <Text style={[styles.studentMeta, { color: colors.onSurfaceVariant }]}>
-                Class {grade} • {board} Board ({medium} Medium)
-              </Text>
-            </View>
-          </View>
-
-          {/* Metric Badges Grid */}
-          <View style={styles.metricsGrid}>
-            <View style={[styles.metricCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-              <Text style={[styles.metricValue, { color: '#10b981' }]}>{masteryPercentage}%</Text>
-              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>Mastery Index</Text>
-            </View>
-
-            <View style={[styles.metricCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-              <Text style={[styles.metricValue, { color: '#f59e0b' }]}>🔥 {streakDays}</Text>
-              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>Days Streak</Text>
-            </View>
-
-            <View style={[styles.metricCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-              <Text style={[styles.metricValue, { color: colors.primary }]}>{chaptersCompleted}</Text>
-              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>Chapters Done</Text>
-            </View>
-
-            <View style={[styles.metricCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc' }]}>
-              <Text style={[styles.metricValue, { color: '#8b5cf6' }]}>{questionsSolved}</Text>
-              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>Qs Practiced</Text>
+          {/* The card that gets shared */}
+          <View style={styles.reportCard}>
+            <Text style={styles.reportBrand}>MindSprint progress</Text>
+            <Text style={styles.studentName} numberOfLines={1}>{studentName}</Text>
+            <Text style={styles.studentMeta} numberOfLines={1}>{stageLine}</Text>
+            <View style={styles.metricsGrid}>
+              {metrics.map((m) => (
+                <View key={m.label} style={styles.metricCard}>
+                  <Text style={styles.metricValue}>{m.value}</Text>
+                  <Text style={styles.metricLabel}>{m.label}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
-          {/* Motivational Quote */}
-          <View style={[styles.quoteBox, { backgroundColor: 'rgba(53, 37, 205, 0.08)' }]}>
-            <MaterialIcons name="format-quote" size={20} color={colors.primary} />
-            <Text style={[styles.quoteText, { color: colors.primary }]}>
-              "Daily consistency beats last-minute cramming. Exceptional academic progress!"
-            </Text>
-          </View>
-
-          {/* WhatsApp Action Button */}
-          <TouchableOpacity
-            style={[styles.shareBtn, { backgroundColor: '#25D366' }]}
-            onPress={handleShareWhatsApp}
-          >
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShareWhatsApp} accessibilityRole="button">
             <MaterialIcons name="share" size={20} color="#ffffff" />
-            <Text style={styles.shareBtnText}>Share Progress on WhatsApp 💬</Text>
+            <Text style={styles.shareBtnText}>Share on WhatsApp</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -137,112 +111,22 @@ _Consistent daily revision brings top board exam ranks! Keep it up!_ 🚀`;
   );
 };
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 440,
-    borderRadius: 24,
-    padding: 22,
-    gap: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  badgeText: {
-    color: '#10b981',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  closeBtn: {
-    padding: 4,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  avatarBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarEmoji: {
-    fontSize: 22,
-  },
-  studentName: {
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  studentMeta: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  metricCard: {
-    flex: 1,
-    minWidth: '45%',
-    padding: 12,
-    borderRadius: 14,
-    alignItems: 'center',
-    gap: 2,
-  },
-  metricValue: {
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  metricLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  quoteBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    borderRadius: 12,
-  },
-  quoteText: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    fontWeight: '600',
-    flex: 1,
-    lineHeight: 16,
-  },
-  shareBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 16,
-  },
-  shareBtnText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-});
+const makeStyles = (c: typeof MindSprintColors) =>
+  StyleSheet.create({
+    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+    card: { width: '100%', maxWidth: 400, borderRadius: 22, padding: 20, backgroundColor: c.surface, borderWidth: 1, borderColor: c.outlineVariant },
+    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    title: { fontFamily: MindSprintFonts.heading, fontSize: 20, lineHeight: 26, color: c.onSurface },
+    subtitle: { fontSize: 14, color: c.onSurfaceVariant, marginBottom: 14 },
+    closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -10 },
+    reportCard: { borderRadius: 18, padding: 18, backgroundColor: c.heroSurface },
+    reportBrand: { fontSize: 13, fontWeight: '600', color: c.accent },
+    studentName: { fontFamily: MindSprintFonts.display, fontSize: 24, lineHeight: 32, color: c.onHeroSurface, marginTop: 4 },
+    studentMeta: { fontSize: 13.5, color: c.onHeroSurfaceVariant },
+    metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16 },
+    metricCard: { flexBasis: '47%', flexGrow: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.08)' },
+    metricValue: { fontFamily: MindSprintFonts.heading, fontSize: 22, lineHeight: 28, color: c.onHeroSurface },
+    metricLabel: { fontSize: 12.5, color: c.onHeroSurfaceVariant },
+    shareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, borderRadius: 14, marginTop: 16, backgroundColor: '#1F9E50' },
+    shareBtnText: { fontFamily: MindSprintFonts.label, fontSize: 16.5, color: '#ffffff' },
+  });

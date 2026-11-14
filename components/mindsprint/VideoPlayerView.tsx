@@ -20,6 +20,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { VideoLecture, VideoComment } from '@/constants/videoData';
 import { ApiService, API_BASE_URL } from '@/services/api';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 
 interface VideoPlayerViewProps {
   lecture: VideoLecture;
@@ -317,7 +318,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         style={[
           styles.speedBar,
           {
-            backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc',
+            backgroundColor: colors.surfaceContainerLow,
             borderBottomColor: colors.outlineVariant,
           },
         ]}
@@ -364,7 +365,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
               {displayTitle}
             </Text>
             <View style={styles.metaRow}>
-              <View style={[styles.categoryChip, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.15)' : '#eef2ff' }]}>
+              <View style={[styles.categoryChip, { backgroundColor: colors.primaryFixed }]}>
                 <Text style={[styles.categoryText, { color: colors.primary }]}>
                   {displayCategory}
                 </Text>
@@ -386,7 +387,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           <View style={styles.actionColumn}>
             <TouchableOpacity
               onPress={() => handleLaunchVideo(0)}
-              style={[styles.actionBtn, { backgroundColor: '#ef4444', borderColor: '#ef4444' }]}
+              style={[styles.actionBtn, { backgroundColor: '#C8372D', borderColor: '#C8372D' }]}
               accessibilityLabel="Open on YouTube"
             >
               <MaterialIcons name="smart-display" size={18} color="#ffffff" />
@@ -397,8 +398,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 styles.actionBtn,
                 {
                   backgroundColor: isBookmarked
-                    ? isDarkMode ? 'rgba(129,140,248,0.2)' : '#eef2ff'
-                    : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
+                    ? colors.primaryFixed
+                    : colors.surface,
                   borderColor: isBookmarked ? colors.primary : colors.outlineVariant,
                 },
               ]}
@@ -413,7 +414,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         </View>
 
         {/* Tab Bar */}
-        <View style={[styles.tabBar, { borderBottomColor: isDarkMode ? colors.outlineVariant : '#e5e7eb' }]}>
+        <View style={[styles.tabBar, { borderBottomColor: colors.outlineVariant }]}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -439,7 +440,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   {tab.label}
                 </Text>
                 {tab.count !== undefined && (
-                  <View style={[styles.tabCountBadge, { backgroundColor: isActive ? colors.primary : isDarkMode ? colors.surfaceContainerHigh : '#e5e7eb' }]}>
+                  <View style={[styles.tabCountBadge, { backgroundColor: isActive ? colors.primary : colors.surfaceContainer }]}>
                     <Text style={[styles.tabCountText, { color: isActive ? '#ffffff' : colors.onSurfaceVariant }]}>
                       {tab.count}
                     </Text>
@@ -462,8 +463,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
               <TouchableOpacity
                 activeOpacity={0.8}
                 style={[styles.youtubeCard, {
-                  backgroundColor: isDarkMode ? 'rgba(129,140,248,0.08)' : 'rgba(30,0,169,0.04)',
-                  borderColor: isDarkMode ? 'rgba(129,140,248,0.2)' : 'rgba(30,0,169,0.12)',
+                  backgroundColor: colors.primaryFixed,
+                  borderColor: colors.primaryFixed,
                 }]}
                 onPress={() => handleLaunchVideo(0)}
               >
@@ -486,24 +487,24 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={[styles.youtubeCard, {
-                    backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.08)' : '#fef2f2',
-                    borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.25)' : '#fecaca',
+                    backgroundColor: colors.surface,
+                    borderColor: colors.outlineVariant,
                     marginTop: 10,
                   }]}
                   onPress={() => handleOpenPdf(lecture.referencePdfUrl)}
                 >
-                  <View style={[styles.ytIconCircle, { backgroundColor: '#ef4444' }]}>
+                  <View style={[styles.ytIconCircle, { backgroundColor: colors.primary }]}>
                     <MaterialIcons name="picture-as-pdf" size={20} color="#ffffff" />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.ytCardTitle, { color: '#ef4444' }]}>
+                    <Text style={[styles.ytCardTitle, { color: colors.primary }]}>
                       {isGujarati ? 'ઓફિશિયલ પાઠ્યપુસ્તક / નોટ્સ PDF' : 'Official NCERT / GSEB Textbook PDF'}
                     </Text>
                     <Text style={[styles.ytCardSub, { color: colors.onSurfaceVariant }]}>
                       {isGujarati ? 'પ્રકરણ આધારિત ડિજિટલ પુસ્તક • ઑફલાઇન સપોર્ટ' : 'Read official textbook chapter material & diagrams'}
                     </Text>
                   </View>
-                  <MaterialIcons name="open-in-new" size={16} color="#ef4444" />
+                  <MaterialIcons name="open-in-new" size={16} color={colors.primary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -521,13 +522,13 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                       key={idx}
                       activeOpacity={0.7}
                       style={[styles.timestampCard, {
-                        backgroundColor: isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                        borderColor: isDarkMode ? colors.outlineVariant : '#e5e7eb',
+                        backgroundColor: colors.surface,
+                        borderColor: colors.outlineVariant,
                       }]}
                       onPress={() => handleJumpToTimestamp(note.time)}
                     >
                       <View style={styles.timestampTop}>
-                        <View style={[styles.timePill, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#eef2ff' }]}>
+                        <View style={[styles.timePill, { backgroundColor: colors.primaryFixed }]}>
                           <MaterialIcons name="access-time" size={10} color={colors.primary} />
                           <Text style={[styles.timePillText, { color: colors.primary }]}>
                             {note.time}
@@ -550,8 +551,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                     📝 Your Notes
                   </Text>
                   {savedNotes.map((sn, idx) => (
-                    <View key={idx} style={[styles.personalNoteCard, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#fefce8', borderColor: isDarkMode ? colors.outlineVariant : '#fef08a' }]}>
-                      <MaterialIcons name="note" size={14} color={isDarkMode ? colors.primary : '#ca8a04'} />
+                    <View key={idx} style={[styles.personalNoteCard, { backgroundColor: colors.accentContainer, borderColor: colors.outlineVariant }]}>
+                      <MaterialIcons name="note" size={14} color={colors.onAccentContainer} />
                       <Text style={[styles.personalNoteText, { color: colors.onSurface, flex: 1 }]}>{sn}</Text>
                       <TouchableOpacity onPress={() => handleDeleteNote(idx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                         <MaterialIcons name="delete-outline" size={16} color={colors.outline} />
@@ -563,8 +564,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
               {/* Add Note Input */}
               <View style={[styles.addNoteRow, {
-                backgroundColor: isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                borderColor: isDarkMode ? colors.outlineVariant : '#e5e7eb',
+                backgroundColor: colors.surface,
+                borderColor: colors.outlineVariant,
               }]}>
                 <TextInput
                   style={[styles.noteInput, { color: colors.onSurface }]}
@@ -575,7 +576,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   onSubmitEditing={handleSaveNote}
                 />
                 <TouchableOpacity
-                  style={[styles.addNoteBtn, { backgroundColor: userNote.trim() ? colors.primary : isDarkMode ? colors.surfaceContainerHigh : '#e5e7eb' }]}
+                  style={[styles.addNoteBtn, { backgroundColor: userNote.trim() ? colors.primary : colors.surfaceContainer }]}
                   onPress={handleSaveNote}
                   disabled={!userNote.trim()}
                 >
@@ -588,8 +589,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
             <View style={styles.discussionContent}>
               {/* Post New Comment Input */}
               <View style={[styles.addCommentCard, {
-                backgroundColor: isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                borderColor: isDarkMode ? colors.outlineVariant : '#e5e7eb',
+                backgroundColor: colors.surface,
+                borderColor: colors.outlineVariant,
               }]}>
                 <TextInput
                   style={[styles.commentInput, { color: colors.onSurface }]}
@@ -604,7 +605,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                     {`Posting as ${user?.name || 'Student'}`}
                   </Text>
                   <TouchableOpacity
-                    style={[styles.postBtn, { backgroundColor: newCommentText.trim() ? colors.primary : isDarkMode ? colors.surfaceContainerHigh : '#e2e8f0' }]}
+                    style={[styles.postBtn, { backgroundColor: newCommentText.trim() ? colors.primary : colors.surfaceContainer }]}
                     onPress={handlePostComment}
                     disabled={!newCommentText.trim() || submittingComment}
                   >
@@ -635,12 +636,12 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   <View
                     key={cmt.id}
                     style={[styles.discussionCard, {
-                      backgroundColor: isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest,
-                      borderColor: isDarkMode ? colors.outlineVariant : '#e5e7eb',
+                      backgroundColor: colors.surface,
+                      borderColor: colors.outlineVariant,
                     }]}
                   >
                     <View style={styles.commentTopRow}>
-                      <View style={[styles.avatarCircle, { backgroundColor: isDarkMode ? 'rgba(129,140,248,0.2)' : '#eef2ff' }]}>
+                      <View style={[styles.avatarCircle, { backgroundColor: colors.primaryFixed }]}>
                         <Text style={[styles.avatarText, { color: colors.primary }]}>{initials}</Text>
                       </View>
                       <View style={{ flex: 1 }}>
@@ -699,10 +700,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   videoTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
-    letterSpacing: -0.2,
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 19,
+    lineHeight: 26,
   },
   metaRow: {
     flexDirection: 'row',

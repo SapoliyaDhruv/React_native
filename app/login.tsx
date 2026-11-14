@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintColors, MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
+import { useTheme } from '@/context/ThemeContext';
 import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -25,6 +26,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => makeStyles(colors), [colors]);
 
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [name, setName] = useState('');
@@ -147,458 +150,279 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header Branding */}
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {/* Brand area */}
         <View style={styles.brandBox}>
-          <View style={[styles.iconCircle, MindSprintShadows.glow]}>
-            <MaterialIcons name="school" size={44} color="#ffffff" />
+          <View style={styles.brandMark}>
+            <MaterialIcons name="auto-stories" size={30} color={colors.onAccent} />
           </View>
           <Text style={styles.appName}>MindSprint</Text>
           <Text style={styles.appTagline}>
             {isLoginMode
-              ? 'Sign in to access placement tests & skill tracks'
-              : 'Create your account to start learning'}
+              ? 'Videos, textbooks and tests for every chapter, in one place.'
+              : 'Create an account to save your progress on any phone.'}
           </Text>
-          <View style={styles.quoteBadge}>
-            <MaterialIcons name="auto-awesome" size={14} color={MindSprintColors.primary} />
-            <Text style={styles.quoteText}>"Be the better version of yourself"</Text>
-          </View>
         </View>
 
-        {/* Form Box */}
-        <View style={[styles.formCard, MindSprintShadows.card]}>
-          {/* Mode Switcher Tabs */}
-          <View style={styles.tabRow}>
+        <View style={styles.formArea}>
+          {/* Sign in / Create account switch */}
+          <View style={styles.tabRow} accessibilityRole="tablist">
             <TouchableOpacity
               onPress={() => setIsLoginMode(true)}
               style={[styles.tabBtn, isLoginMode && styles.tabBtnActive]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isLoginMode }}
             >
-              <Text style={[styles.tabText, isLoginMode && styles.tabTextActive]}>
-                Sign In
-              </Text>
+              <Text style={[styles.tabText, isLoginMode && styles.tabTextActive]}>Sign in</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => setIsLoginMode(false)}
               style={[styles.tabBtn, !isLoginMode && styles.tabBtnActive]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: !isLoginMode }}
             >
-              <Text style={[styles.tabText, !isLoginMode && styles.tabTextActive]}>
-                Register
-              </Text>
+              <Text style={[styles.tabText, !isLoginMode && styles.tabTextActive]}>Create account</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Full Name Input (Register mode only) */}
           {!isLoginMode && (
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full Name</Text>
+              <Text style={styles.inputLabel}>Full name</Text>
               <View style={styles.inputWrapper}>
-                <MaterialIcons name="person" size={20} color={MindSprintColors.outline} />
+                <MaterialIcons name="person-outline" size={20} color={colors.outline} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Sapoliya Dhruv"
-                  placeholderTextColor={MindSprintColors.outline}
+                  placeholder="Your name"
+                  placeholderTextColor={colors.outline}
                   value={name}
                   onChangeText={setName}
+                  accessibilityLabel="Full name"
+                  autoComplete="name"
                 />
               </View>
             </View>
           )}
 
-          {/* Email Input */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Email Address</Text>
+            <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputWrapper}>
-              <MaterialIcons name="email" size={20} color={MindSprintColors.outline} />
+              <MaterialIcons name="mail-outline" size={20} color={colors.outline} />
               <TextInput
                 style={styles.input}
-                placeholder="sapoliyadhruv74@gmail.com"
-                placeholderTextColor={MindSprintColors.outline}
+                placeholder="name@example.com"
+                placeholderTextColor={colors.outline}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="email"
                 value={email}
                 onChangeText={setEmail}
+                accessibilityLabel="Email"
               />
             </View>
           </View>
 
-          {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Password</Text>
             <View style={styles.inputWrapper}>
-              <MaterialIcons name="lock" size={20} color={MindSprintColors.outline} />
+              <MaterialIcons name="lock-outline" size={20} color={colors.outline} />
               <TextInput
                 style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={MindSprintColors.outline}
+                placeholder="At least 6 characters"
+                placeholderTextColor={colors.outline}
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
+                accessibilityLabel="Password"
               />
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setShowPassword((prev) => !prev)}
                 style={styles.eyeBtn}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
               >
-                <MaterialIcons
-                  name={showPassword ? 'visibility' : 'visibility-off'}
-                  size={20}
-                  color={MindSprintColors.outline}
-                />
+                <MaterialIcons name={showPassword ? 'visibility' : 'visibility-off'} size={20} color={colors.outline} />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Academic Track Picker on Registration */}
           {!isLoginMode && (
-            <View style={styles.academicSection}>
-              <Text style={styles.inputLabel}>Learning Track</Text>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>I am studying in</Text>
               <View style={styles.stageToggleRow}>
-                <TouchableOpacity
-                  style={[styles.stageChip, selectedGrade === 'college' && styles.stageChipActive]}
-                  onPress={() => setSelectedGrade('college')}
-                >
-                  <Text style={[styles.stageChipText, selectedGrade === 'college' && styles.stageChipTextActive]}>
-                    🎓 College Placements
-                  </Text>
-                </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.stageChip, selectedGrade !== 'college' && styles.stageChipActive]}
                   onPress={() => setSelectedGrade('10')}
+                  accessibilityState={{ selected: selectedGrade !== 'college' }}
                 >
-                  <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>
-                    🏫 School (Class 7 - 12)
-                  </Text>
+                  <MaterialIcons name="school" size={20} color={selectedGrade !== 'college' ? colors.primary : colors.onSurfaceVariant} />
+                  <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>School</Text>
+                  <Text style={styles.stageChipSub}>Class 7 to 12</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.stageChip, selectedGrade === 'college' && styles.stageChipActive]}
+                  onPress={() => setSelectedGrade('college')}
+                  accessibilityState={{ selected: selectedGrade === 'college' }}
+                >
+                  <MaterialIcons name="work-outline" size={20} color={selectedGrade === 'college' ? colors.primary : colors.onSurfaceVariant} />
+                  <Text style={[styles.stageChipText, selectedGrade === 'college' && styles.stageChipTextActive]}>College</Text>
+                  <Text style={styles.stageChipSub}>Placement prep</Text>
                 </TouchableOpacity>
               </View>
 
               {selectedGrade !== 'college' && (
-                <View style={{ marginTop: 8 }}>
-                  <Text style={[styles.inputLabel, { fontSize: 11, marginBottom: 4 }]}>Select Class (ગુજરાતી માધ્યમ):</Text>
+                <View style={{ marginTop: 14 }}>
+                  <Text style={styles.inputLabel}>Class (GSEB, Gujarati medium)</Text>
                   <View style={styles.gradePillRow}>
                     {(['7', '8', '9', '10', '11', '12'] as AcademicGrade[]).map((g) => (
                       <TouchableOpacity
                         key={g}
                         style={[styles.gradePill, selectedGrade === g && styles.gradePillActive]}
                         onPress={() => setSelectedGrade(g)}
+                        accessibilityLabel={`Class ${g}`}
+                        accessibilityState={{ selected: selectedGrade === g }}
                       >
-                        <Text style={[styles.gradePillText, selectedGrade === g && styles.gradePillTextActive]}>
-                          ધોરણ {g}
-                        </Text>
+                        <Text style={[styles.gradePillText, selectedGrade === g && styles.gradePillTextActive]}>ધોરણ {g}</Text>
                       </TouchableOpacity>
                     ))}
-                  </View>
-
-                  <View style={styles.gsebTrackBadge}>
-                    <Text style={styles.gsebTrackText}>🦁 GSEB ગુજરાત બોર્ડ • શુદ્ધ ગુજરાતી માધ્યમ</Text>
                   </View>
                 </View>
               )}
             </View>
           )}
 
-          {/* Submit Button */}
-          <TouchableOpacity
-            style={[styles.submitBtn, MindSprintShadows.glow]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
+          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading} accessibilityRole="button">
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={colors.onAccent} />
             ) : (
-              <Text style={styles.submitBtnText}>
-                {isLoginMode ? 'Sign In' : 'Create Account'}
-              </Text>
+              <Text style={styles.submitBtnText}>{isLoginMode ? 'Sign in' : 'Create account'}</Text>
             )}
           </TouchableOpacity>
 
-          {/* Divider Line */}
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
+            <Text style={styles.dividerText}>or</Text>
             <View style={styles.dividerLine} />
           </View>
 
-          {/* Continue with Google Button */}
-          <TouchableOpacity
-            style={styles.googleBtn}
-            onPress={handleGoogleSignIn}
-          >
+          <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleSignIn} accessibilityRole="button">
             <View style={styles.googleIconCircle}>
               <Text style={styles.googleGText}>G</Text>
             </View>
             <Text style={styles.googleBtnText}>Continue with Google</Text>
           </TouchableOpacity>
 
-          {/* Guest Login Direct Access */}
-          <TouchableOpacity
-            style={styles.guestBtn}
-            onPress={handleGuestLogin}
-          >
-            <Text style={styles.guestBtnText}>Continue as Guest Student →</Text>
+          <TouchableOpacity style={styles.guestBtn} onPress={handleGuestLogin} accessibilityRole="button">
+            <Text style={styles.guestBtnText}>Continue as guest</Text>
           </TouchableOpacity>
+          <Text style={styles.guestNote}>Guests can try everything; progress stays on this phone only.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: MindSprintColors.background,
-  },
-  scrollContent: {
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100%',
-  },
-  brandBox: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: MindSprintColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: MindSprintColors.primary,
-  },
-  appTagline: {
-    fontSize: 14,
-    color: MindSprintColors.onSurfaceVariant,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  quoteBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(53, 37, 205, 0.08)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginTop: 10,
-  },
-  quoteText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: MindSprintColors.primary,
-    fontStyle: 'italic',
-  },
-  formCard: {
-    width: '100%',
-    backgroundColor: MindSprintColors.surfaceContainerLowest,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: MindSprintColors.outlineVariant,
-    padding: 20,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: MindSprintColors.surfaceContainerLow,
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 20,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  tabBtnActive: {
-    backgroundColor: MindSprintColors.surfaceContainerLowest,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: MindSprintColors.onSurfaceVariant,
-  },
-  tabTextActive: {
-    color: MindSprintColors.primary,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MindSprintColors.onSurface,
-    marginBottom: 6,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MindSprintColors.surfaceContainerLow,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: MindSprintColors.outlineVariant,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: MindSprintColors.onSurface,
-    padding: 0,
-  },
-  eyeBtn: {
-    padding: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitBtn: {
-    backgroundColor: MindSprintColors.primary,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  submitBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: MindSprintColors.outlineVariant,
-  },
-  dividerText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MindSprintColors.outline,
-    paddingHorizontal: 10,
-  },
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: MindSprintColors.surfaceContainerLowest,
-    borderWidth: 1,
-    borderColor: MindSprintColors.outlineVariant,
-    paddingVertical: 12,
-    borderRadius: 14,
-    gap: 10,
-  },
-  googleIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#ea4335',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleGText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  googleBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: MindSprintColors.onSurface,
-  },
-  guestBtn: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
-  },
-  guestBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MindSprintColors.primary,
-  },
-  academicSection: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: MindSprintColors.surfaceContainerLowest,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: MindSprintColors.outlineVariant,
-  },
-  stageToggleRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  stageChip: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: MindSprintColors.surfaceContainer,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  stageChipActive: {
-    backgroundColor: '#eef2ff',
-    borderColor: MindSprintColors.primary,
-  },
-  stageChipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MindSprintColors.onSurfaceVariant,
-  },
-  stageChipTextActive: {
-    color: MindSprintColors.primary,
-    fontWeight: '700',
-  },
-  gradePillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 8,
-  },
-  gradePill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: MindSprintColors.surfaceContainer,
-  },
-  gradePillActive: {
-    backgroundColor: MindSprintColors.primary,
-  },
-  gradePillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: MindSprintColors.onSurfaceVariant,
-  },
-  gradePillTextActive: {
-    color: '#ffffff',
-    fontWeight: '700',
-  },
-  gsebTrackBadge: {
-    backgroundColor: '#ecfdf5',
-    borderWidth: 1,
-    borderColor: '#10b981',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    marginTop: 4,
-  },
-  gsebTrackText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#065f46',
-    textAlign: 'center',
-  },
-});
+const makeStyles = (c: typeof MindSprintColors) =>
+  StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: c.heroSurface },
+    scrollContent: { flexGrow: 1, backgroundColor: c.background },
+    brandBox: {
+      backgroundColor: c.heroSurface,
+      paddingHorizontal: 24,
+      paddingTop: 28,
+      paddingBottom: 36,
+      borderBottomLeftRadius: 28,
+      borderBottomRightRadius: 28,
+    },
+    brandMark: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: c.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 16,
+    },
+    appName: { fontFamily: MindSprintFonts.display, fontSize: 34, lineHeight: 42, color: c.onHeroSurface },
+    appTagline: { fontSize: 15, lineHeight: 22, color: c.onHeroSurfaceVariant, marginTop: 4, maxWidth: 320 },
+    formArea: { padding: 20, paddingTop: 24, width: '100%', maxWidth: 480, alignSelf: 'center' },
+    tabRow: { flexDirection: 'row', backgroundColor: c.surfaceContainerLow, borderRadius: 14, padding: 4, marginBottom: 22 },
+    tabBtn: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 11 },
+    tabBtnActive: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.outlineVariant },
+    tabText: { fontFamily: MindSprintFonts.label, fontSize: 15, color: c.onSurfaceVariant },
+    tabTextActive: { color: c.primary },
+    inputContainer: { marginBottom: 16 },
+    inputLabel: { fontSize: 13.5, fontWeight: '600', color: c.onSurface, marginBottom: 6 },
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      paddingHorizontal: 12,
+      minHeight: 50,
+      gap: 10,
+    },
+    input: { flex: 1, fontSize: 15.5, color: c.onSurface, paddingVertical: 12 },
+    eyeBtn: { padding: 4, justifyContent: 'center', alignItems: 'center' },
+    submitBtn: {
+      backgroundColor: c.accent,
+      minHeight: 52,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 6,
+    },
+    submitBtnText: { fontFamily: MindSprintFonts.label, fontSize: 17, color: c.onAccent },
+    dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 18 },
+    dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: c.outlineVariant },
+    dividerText: { fontSize: 13, color: c.onSurfaceVariant, paddingHorizontal: 12 },
+    googleBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+      minHeight: 50,
+      borderRadius: 14,
+      gap: 10,
+    },
+    googleIconCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#ea4335', alignItems: 'center', justifyContent: 'center' },
+    googleGText: { color: '#ffffff', fontSize: 14, fontWeight: '900' },
+    googleBtnText: { fontFamily: MindSprintFonts.label, fontSize: 15.5, color: c.onSurface },
+    guestBtn: { alignItems: 'center', justifyContent: 'center', minHeight: 48, marginTop: 8 },
+    guestBtnText: { fontFamily: MindSprintFonts.label, fontSize: 15.5, color: c.primary },
+    guestNote: { fontSize: 12.5, color: c.onSurfaceVariant, textAlign: 'center' },
+    stageToggleRow: { flexDirection: 'row', gap: 10 },
+    stageChip: {
+      flex: 1,
+      padding: 12,
+      borderRadius: 14,
+      backgroundColor: c.surface,
+      borderWidth: 1.5,
+      borderColor: c.outlineVariant,
+      gap: 2,
+    },
+    stageChipActive: { backgroundColor: c.primaryFixed, borderColor: c.primary },
+    stageChipText: { fontFamily: MindSprintFonts.label, fontSize: 15.5, color: c.onSurface, marginTop: 4 },
+    stageChipTextActive: { color: c.primary },
+    stageChipSub: { fontSize: 12.5, color: c.onSurfaceVariant },
+    gradePillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    gradePill: {
+      minWidth: 72,
+      minHeight: 42,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.outlineVariant,
+    },
+    gradePillActive: { backgroundColor: c.primary, borderColor: c.primary },
+    gradePillText: { fontSize: 14, fontWeight: '600', color: c.onSurface },
+    gradePillTextActive: { color: c.onPrimary },
+  });

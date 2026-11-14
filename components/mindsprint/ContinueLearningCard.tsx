@@ -17,7 +17,7 @@ const ACTION_LABEL: Record<LastChapter['action'], string> = {
 };
 
 export const ContinueLearningCard: React.FC<Props> = ({ last, gujarati, onPress }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const title = gujarati && last.titleGujarati ? last.titleGujarati : last.title;
   return (
     <TouchableOpacity
@@ -25,7 +25,7 @@ export const ContinueLearningCard: React.FC<Props> = ({ last, gujarati, onPress 
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Continue with chapter ${last.chapterNumber}, ${title}`}
-      style={[styles.card, { backgroundColor: isDarkMode ? 'rgba(99,102,241,0.18)' : '#eef2ff', borderColor: colors.primary }]}
+      style={[styles.card, { backgroundColor: colors.primaryFixed, borderColor: colors.primary }]}
     >
       <View style={[styles.icon, { backgroundColor: colors.primary }]}>
         <MaterialIcons name={last.action === 'video' ? 'play-arrow' : 'menu-book'} size={22} color="#ffffff" />

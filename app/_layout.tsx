@@ -6,9 +6,22 @@ import 'react-native-reanimated';
 import { MindSprintThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import {
+  useFonts,
+  BalooBhai2_600SemiBold,
+  BalooBhai2_700Bold,
+  BalooBhai2_800ExtraBold,
+} from '@expo-google-fonts/baloo-bhai-2';
 
 function InitialLayout() {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
+  // Heading font (Gujarati + Latin). If it fails to load we still render with system fonts.
+  const [fontsLoaded, fontError] = useFonts({
+    BalooBhai2_600SemiBold,
+    BalooBhai2_700Bold,
+    BalooBhai2_800ExtraBold,
+  });
+  const fontsReady = fontsLoaded || !!fontError;
   const segments = useSegments();
   const router = useRouter();
 
@@ -34,12 +47,12 @@ function InitialLayout() {
     }
   }, [user, isLoading, hasCompletedOnboarding, segments]);
 
-  if (isLoading) {
+  if (isLoading || !fontsReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', gap: 16 }}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={{ color: '#94a3b8', fontSize: 13, fontWeight: '600', letterSpacing: 0.2 }}>
-          "Be the better version of yourself"
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#12245C', gap: 16 }}>
+        <ActivityIndicator size="large" color="#F4A30B" />
+        <Text style={{ color: '#B9C6EA', fontSize: 14, fontWeight: '600' }}>
+          MindSprint
         </Text>
       </View>
     );

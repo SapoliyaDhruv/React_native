@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '../../constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
 
 interface StatsCardProps {
@@ -30,7 +30,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ totalTests = 0, avgScore =
           <View style={[styles.iconBox, { backgroundColor: colors.secondaryContainer }]}>
             <MaterialIcons name="quiz" size={18} color={colors.onSecondaryContainer} />
           </View>
-          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>Mock Tests</Text>
+          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>Tests taken</Text>
         </View>
         <View style={styles.valueRow}>
           <Text style={[styles.valueText, { color: colors.onSurface }]}>{totalTests}</Text>
@@ -99,8 +99,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   valueText: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontFamily: MindSprintFonts.display,
+    fontSize: 28,
+    lineHeight: 34,
   },
   subText: {
     fontSize: 12,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '../../constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
 
 export type DayItem = {
@@ -104,13 +104,13 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <Text style={[styles.title, { color: colors.onSurface }]}>Your Daily Streak</Text>
+        <Text style={[styles.title, { color: colors.onSurface }]}>Your streak</Text>
         <View style={styles.flamePill}>
           <Animated.View style={{ transform: [{ scale: flamePulse }] }}>
-            <MaterialIcons name="local-fire-department" size={20} color="#f59e0b" />
+            <MaterialIcons name="local-fire-department" size={20} color="#F4A30B" />
           </Animated.View>
           <Text style={styles.flameText}>
-            {streakCount > 1 ? `${streakCount} Day Streak 🔥` : '1 Day Streak 🔥'}
+            {streakCount > 1 ? `${streakCount} day streak` : '1 day streak'}
           </Text>
         </View>
       </View>
@@ -186,14 +186,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 20,
+    lineHeight: 26,
   },
   flamePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(244, 163, 11, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   flameText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#b45309',
+    color: '#8A5A00',
   },
   scrollContent: {
     gap: 12,

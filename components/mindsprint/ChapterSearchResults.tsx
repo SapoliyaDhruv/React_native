@@ -32,8 +32,8 @@ export function searchChapters(subjects: AcademicSubject[], query: string): Chap
 }
 
 export const ChapterSearchResults: React.FC<Props> = ({ query, hits, gujarati, onWatch, onPdf, onOpenSubject, onClear }) => {
-  const { colors, isDarkMode } = useTheme();
-  const cardBg = isDarkMode ? colors.surfaceContainerLowest : '#ffffff';
+  const { colors } = useTheme();
+  const cardBg = colors.surface;
 
   if (hits.length === 0) {
     return (
@@ -74,13 +74,13 @@ export const ChapterSearchResults: React.FC<Props> = ({ query, hits, gujarati, o
               ) : null}
             </TouchableOpacity>
             <View style={styles.actions}>
-              <TouchableOpacity onPress={() => onWatch(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: '#ef4444' }]}>
+              <TouchableOpacity onPress={() => onWatch(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: colors.primary }]}>
                 <MaterialIcons name="smart-display" size={18} color="#ffffff" />
                 <Text style={styles.btnText}>Watch</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => onPdf(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: isDarkMode ? 'rgba(239,68,68,0.15)' : '#fee2e2', borderWidth: 1, borderColor: '#ef4444' }]}>
-                <MaterialIcons name="picture-as-pdf" size={18} color="#ef4444" />
-                <Text style={[styles.btnText, { color: '#ef4444' }]}>PDF</Text>
+              <TouchableOpacity onPress={() => onPdf(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.outlineVariant }]}>
+                <MaterialIcons name="picture-as-pdf" size={18} color="#C8372D" />
+                <Text style={[styles.btnText, { color: colors.primary }]}>Open PDF</Text>
               </TouchableOpacity>
             </View>
           </View>

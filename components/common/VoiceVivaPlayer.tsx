@@ -79,11 +79,11 @@ export const VoiceVivaPlayer: React.FC<VoiceVivaPlayerProps> = ({
         styles.container,
         {
           backgroundColor: isPlaying
-            ? 'rgba(16, 185, 129, 0.15)'
+            ? 'rgba(18, 128, 92, 0.15)'
             : isDarkMode
             ? colors.surfaceContainerHigh
-            : '#f1f5f9',
-          borderColor: isPlaying ? '#10b981' : colors.outlineVariant,
+            : '#EEF2F8',
+          borderColor: isPlaying ? '#12805C' : colors.outlineVariant,
         },
       ]}
       onPress={handleToggleSpeak}
@@ -91,12 +91,12 @@ export const VoiceVivaPlayer: React.FC<VoiceVivaPlayerProps> = ({
       <MaterialIcons
         name={isPlaying ? 'volume-up' : 'volume-down'}
         size={size === 'small' ? 16 : 18}
-        color={isPlaying ? '#10b981' : colors.primary}
+        color={isPlaying ? '#12805C' : colors.primary}
       />
       <Text
         style={[
           styles.labelText,
-          { color: isPlaying ? '#065f46' : colors.primary },
+          { color: isPlaying ? '#0B5C42' : colors.primary },
         ]}
       >
         {isPlaying ? 'Speaking... 🗣️' : label}
