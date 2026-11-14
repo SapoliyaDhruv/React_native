@@ -33,7 +33,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'GSEB BOARD 2025',
     officialPdfUrl: '/api/sample-papers/render/paper-g10-gseb-math-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g10-gseb-math-2025?type=solution',
-    externalSourceUrl: 'https://gujarat-education.gov.in/textbook/sample_paper_std10_maths.pdf',
+    externalSourceUrl: 'https://www.gseb.org/',
     instructions: [
       'The question paper comprises 4 Sections: A, B, C, and D.',
       'Section A contains 16 objective questions (1 mark each).',
@@ -66,7 +66,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'GSEB BOARD 2025',
     officialPdfUrl: '/api/sample-papers/render/paper-g10-gseb-sci-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g10-gseb-sci-2025?type=solution',
-    externalSourceUrl: 'https://gujarat-education.gov.in/textbook/sample_paper_std10_sci.pdf',
+    externalSourceUrl: 'https://www.gseb.org/',
     instructions: [
       'All questions are compulsory. Internal choice is provided in several sections.',
       'Draw neat and labelled diagrams wherever required.',
@@ -92,7 +92,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'CBSE OFFICIAL 2025',
     officialPdfUrl: '/api/sample-papers/render/paper-g10-cbse-math-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g10-cbse-math-2025?type=solution',
-    externalSourceUrl: 'https://cbseacademic.nic.in/web_material/SQP/ClassX_2024_25/Maths-Standard-SQP.pdf',
+    externalSourceUrl: 'https://cbseacademic.nic.in/sqp_classx_2025-26.html',
     instructions: [
       'This question paper contains 5 Sections: A, B, C, D and E.',
       'Section A comprises 20 MCQs carrying 1 mark each.',
@@ -124,7 +124,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'GUJCET & 12th BOARD',
     officialPdfUrl: '/api/sample-papers/render/paper-g12-gseb-phy-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g12-gseb-phy-2025?type=solution',
-    externalSourceUrl: 'https://gujarat-education.gov.in/textbook/sample_std12_phy.pdf',
+    externalSourceUrl: 'https://www.gseb.org/',
     instructions: [
       'Contains 50 multiple choice questions with 1 mark each.',
       'Covers Electrostatics, Optics, Current Electricity, and Modern Physics.',
@@ -177,7 +177,6 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'CLASS 6 ANNUAL',
     officialPdfUrl: '/api/sample-papers/render/paper-g6-annual-math?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g6-annual-math?type=solution',
-    externalSourceUrl: 'https://ncert.nic.in/textbook/sample/class6_math.pdf',
     instructions: [
       'Questions cover Numbers, Fractions, Decimals, Perimeter, and Algebra.',
       'All 25 questions are multiple choice or one-word answers.',
@@ -201,7 +200,6 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'CLASS 7 TERM-2',
     officialPdfUrl: '/api/sample-papers/render/paper-g7-annual-sci?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g7-annual-sci?type=solution',
-    externalSourceUrl: 'https://ncert.nic.in/textbook/sample/class7_sci.pdf',
     instructions: [
       'Covers Plant Nutrition, Acids & Bases, Heat, and Respiration.',
     ],
@@ -224,7 +222,6 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'SECONDARY PREP',
     officialPdfUrl: '/api/sample-papers/render/paper-g8-math-prep?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g8-math-prep?type=solution',
-    externalSourceUrl: 'https://ncert.nic.in/textbook/sample/class8_math.pdf',
     instructions: [
       'Rational Numbers, Square Roots, Linear Equations and Mensuration.',
     ],
@@ -247,7 +244,6 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'BOARD FOUNDATION',
     officialPdfUrl: '/api/sample-papers/render/paper-g9-math-sci-prep?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-g9-math-sci-prep?type=solution',
-    externalSourceUrl: 'https://ncert.nic.in/textbook/sample/class9_math.pdf',
     instructions: [
       'Heron Formula, Number Systems, Polynomials, and Laws of Motion.',
     ],
@@ -274,7 +270,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'TCS NQT 2025 PATTERN',
     officialPdfUrl: '/api/sample-papers/render/paper-tcs-nqt-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-tcs-nqt-2025?type=solution',
-    externalSourceUrl: 'https://learning.tcsion.com/hub/nqt-sample-paper.pdf',
+    externalSourceUrl: 'https://www.tcsion.com/hub/national-qualifier-test/',
     instructions: [
       'Numerical Ability (20 Questions - 25 Mins).',
       'Reasoning Ability (20 Questions - 25 Mins).',
@@ -300,7 +296,6 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'INFOSYS ON-CAMPUS',
     officialPdfUrl: '/api/sample-papers/render/paper-infosys-springboard-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-infosys-springboard-2025?type=solution',
-    externalSourceUrl: 'https://infytq.onwingspan.com/sample-papers/se-round1.pdf',
     instructions: [
       'Contains Logical Reasoning, Cryptarithmetic, and DSA Multiple Choice Questions.',
     ],
@@ -323,7 +318,7 @@ const SEED_SAMPLE_PAPERS = [
     badge: 'FAANG / PRODUCT COMPANIES',
     officialPdfUrl: '/api/sample-papers/render/paper-amazon-sde-dsa-2025?type=question',
     solutionPdfUrl: '/api/sample-papers/render/paper-amazon-sde-dsa-2025?type=solution',
-    externalSourceUrl: 'https://amazon.jobs/content/software-development-interview-prep.pdf',
+    externalSourceUrl: 'https://www.amazon.jobs/en/',
     instructions: [
       'Covers Binary Trees, Graphs, Dynamic Programming, and System Design fundamentals.',
     ],

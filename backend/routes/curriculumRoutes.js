@@ -12,6 +12,34 @@ async function ensureCurriculumsSeeded() {
   }
 }
 
+
+// Strict lookup: returns { gradeKey, gradeData, subj, chap } or null when the
+// grade / subject / chapter in the link does not exist (never silently falls back
+// to a different chapter, which used to show the wrong content).
+function resolveChapter({ grade, subject, chapter }, { requireChapter = true } = {}) {
+  const gradeKey = (grade || '').toString();
+  const gradeData = ACADEMIC_CURRICULUM[gradeKey];
+  if (!gradeData) return null;
+  const subj = (gradeData.subjects || []).find(
+    (s) => s.id.toLowerCase() === (subject || '').toString().toLowerCase()
+  );
+  if (!subj) return null;
+  if (!requireChapter) return { gradeKey, gradeData, subj, chap: null };
+  const chapNum = parseInt(chapter, 10);
+  const chap = (subj.chapters || []).find((c) => c.chapterNumber === chapNum);
+  if (!chap) return null;
+  return { gradeKey, gradeData, subj, chap };
+}
+
+function notFoundPage(res, what) {
+  res.status(404).setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.send(
+    `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Not found</title></head>` +
+    `<body style="font-family:system-ui,sans-serif;padding:32px;text-align:center;color:#334155">` +
+    `<h2>This ${what} could not be found</h2><p>The link may be outdated. Please go back and open the chapter again from the Courses tab.</p></body></html>`
+  );
+}
+
 // GET /api/curriculum
 router.get('/', async (req, res) => {
   try {
@@ -45,28 +73,16 @@ router.get('/', async (req, res) => {
 router.get('/textbook-view', (req, res) => {
   try {
     const { grade, subject, chapter, pdf, format } = req.query;
-    const gradeKey = (grade || '7').toString();
-    const gradeData = ACADEMIC_CURRICULUM[gradeKey] || ACADEMIC_CURRICULUM['7'];
-    
-    // Find matching subject
-    let subj = (gradeData.subjects || []).find(
-      (s) => s.id === subject || s.id.toLowerCase() === (subject || '').toLowerCase()
-    );
-    if (!subj) {
-      subj = (gradeData.subjects || []).find((s) =>
-        s.name.toLowerCase().includes((subject || '').toLowerCase()) ||
-        (s.nameGujarati && s.nameGujarati.includes(subject || ''))
-      ) || (gradeData.subjects || [])[0];
-    }
+    const wantsPdf = pdf === 'true' || format === 'pdf';
+    const found = resolveChapter({ grade, subject, chapter }, { requireChapter: !wantsPdf });
+    if (!found) return notFoundPage(res, 'textbook chapter');
+    const { gradeKey, gradeData, subj, chap } = found;
 
     // Direct PDF redirect if requested
-    if (pdf === 'true' || format === 'pdf') {
+    if (wantsPdf) {
       const pdfUrl = subj.officialTextbookPdf || 'https://gujarat-education.gov.in/textbook/textbook.htm';
       return res.redirect(pdfUrl);
     }
-
-    const chapNum = parseInt(chapter) || 1;
-    const chap = (subj.chapters || []).find((c) => c.chapterNumber === chapNum) || (subj.chapters || [])[0];
 
     const html = generateTextbookHtml(gradeKey, gradeData, subj, chap);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -80,22 +96,9 @@ router.get('/textbook-view', (req, res) => {
 // GET /api/curriculum/chapter-pdf - Official Chapter-Wise PDF Printable Booklet (All Standards 7 to 12)
 router.get('/chapter-pdf', (req, res) => {
   try {
-    const { grade, subject, chapter } = req.query;
-    const gradeKey = (grade || '7').toString();
-    const gradeData = ACADEMIC_CURRICULUM[gradeKey] || ACADEMIC_CURRICULUM['7'];
-
-    let subj = (gradeData.subjects || []).find(
-      (s) => s.id === subject || s.id.toLowerCase() === (subject || '').toLowerCase()
-    );
-    if (!subj) {
-      subj = (gradeData.subjects || []).find((s) =>
-        s.name.toLowerCase().includes((subject || '').toLowerCase()) ||
-        (s.nameGujarati && s.nameGujarati.includes(subject || ''))
-      ) || (gradeData.subjects || [])[0];
-    }
-
-    const chapNum = parseInt(chapter) || 1;
-    const chap = (subj.chapters || []).find((c) => c.chapterNumber === chapNum) || (subj.chapters || [])[0];
+    const found = resolveChapter(req.query);
+    if (!found) return notFoundPage(res, 'chapter PDF');
+    const { gradeKey, gradeData, subj, chap } = found;
 
     const html = generateChapterPdfHtml(gradeKey, gradeData, subj, chap);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

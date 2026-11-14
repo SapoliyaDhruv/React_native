@@ -54,3 +54,6 @@ backend/.env.*
 *_backup_*
 __pycache__/
 *.pyc
+
+# student video reports (local fallback store)
+backend/data/video-reports.jsonl

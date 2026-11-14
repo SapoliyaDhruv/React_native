@@ -466,6 +466,40 @@ export const ApiService = {
     }
   },
 
+  // Is the MindSprint server reachable? Used to show an "offline" banner (never throws).
+  async checkServer(timeoutMs = 4000): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch(`${API_BASE_URL}/health`, { signal: controller.signal });
+      clearTimeout(timer);
+      return response.ok;
+    } catch (_) {
+      return false;
+    }
+  },
+
+  // Students flag a wrong / broken video so it can be fixed in backend/data/videos.json
+  async reportVideo(report: {
+    youtubeVideoId: string;
+    grade?: string;
+    subjectId?: string;
+    chapterNumber?: number;
+    reason: 'wrong-topic' | 'wrong-chapter' | 'not-playing' | 'bad-quality' | 'other';
+    email?: string;
+  }): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/videos/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report),
+      });
+      return response.ok;
+    } catch (_) {
+      return false;
+    }
+  },
+
   async addVideoComment(
     videoId: string,
     commentData: { author: string; userEmail?: string; role?: string; text: string }

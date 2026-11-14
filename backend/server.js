@@ -32,6 +32,9 @@ app.use(express.json({ limit: '10mb' }));
 const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 100, message: 'Too many authentication attempts. Please try again after 15 minutes.' });
 const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 2000 });
 
+// Lightweight health check used by the app to show an "offline" banner
+app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
+
 // Reset rate limits helper endpoint
 app.get('/api/reset-limits', (req, res) => {
   clearAllRateLimits();

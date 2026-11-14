@@ -10,6 +10,7 @@ import {
   Dimensions,
   Alert,
   Platform,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -31,6 +32,16 @@ import {
   ImportantQuestion,
 } from '@/constants/academicData';
 import { GlossaryTooltip } from '@/components/mindsprint/GlossaryTooltip';
+import { ServerStatusBanner } from '@/components/mindsprint/ServerStatusBanner';
+import { ContinueLearningCard } from '@/components/mindsprint/ContinueLearningCard';
+import { ChapterSearchResults, ChapterSearchHit, searchChapters } from '@/components/mindsprint/ChapterSearchResults';
+import { getLastChapter, saveLastChapter, LastChapter } from '@/services/learningProgress';
+import {
+  offlineSupported,
+  getSavedChapterIds,
+  saveChapterOffline,
+  openSavedChapter,
+} from '@/services/offlineChapters';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH - 48) * 9 / 16);
@@ -42,7 +53,9 @@ export default function CoursesScreen() {
 
   const userGrade = user?.grade || '7';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode;
+  // Language switch: Gujarati or English chapter/subject names (defaults to the student's medium)
+  const [useGujarati, setUseGujarati] = useState<boolean>(user?.medium !== 'English');
+  const isGSEB = isSchoolMode && useGujarati;
   // Official Gujarat State Board (GSSTB / Shalamitra) textbooks enabled for Classes 7 to 12
   const isPdfEligibleGrade = ['7', '8', '9', '10', '11', '12'].includes(userGrade);
 
@@ -74,6 +87,38 @@ export default function CoursesScreen() {
   // Chapter bookmark state
   const [bookmarkedChapterIds, setBookmarkedChapterIds] = useState<string[]>([]);
   const bookmarkKey = `@mindsprint_bookmarked_chapters_${userGrade}_${user?.email || 'guest'}`;
+
+  // Search, "continue where you left off", offline saves and server status
+  const [searchQuery, setSearchQuery] = useState('');
+  const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
+  const [savedChapterIds, setSavedChapterIds] = useState<string[]>([]);
+  const [savingChapterId, setSavingChapterId] = useState<string | null>(null);
+  const [serverOnline, setServerOnline] = useState<boolean | null>(null);
+  const [checkingServer, setCheckingServer] = useState(false);
+  const langKey = '@mindsprint_courses_gujarati';
+
+  const checkServer = async () => {
+    setCheckingServer(true);
+    const ok = await ApiService.checkServer();
+    setServerOnline(ok);
+    setCheckingServer(false);
+  };
+
+  useEffect(() => {
+    checkServer();
+    getSavedChapterIds().then(setSavedChapterIds).catch(() => {});
+    AsyncStorage.getItem(langKey).then((v) => { if (v !== null) setUseGujarati(v === '1'); }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getLastChapter(userGrade, user?.email).then(setLastChapter).catch(() => {});
+  }, [userGrade, user?.email]);
+
+  const toggleLanguage = async () => {
+    const next = !useGujarati;
+    setUseGujarati(next);
+    try { await AsyncStorage.setItem(langKey, next ? '1' : '0'); } catch (_) {}
+  };
 
   // Load Curriculum: immediately seed from local curriculum and sync from backend
   useEffect(() => {
@@ -172,18 +217,71 @@ export default function CoursesScreen() {
   const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
   const chapters = activeSubject?.chapters || [];
 
-  const handleOpenPdf = async (url?: string) => {
+  const toAbsoluteUrl = (url: string) => {
+    if (url.startsWith('http')) return url;
+    const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+    return `${API_BASE_URL.replace(/\/api\/?$/, '')}${normalizedPath}`;
+  };
+
+  const rememberChapter = (chap: SubjectChapter, action: LastChapter['action'], subject = activeSubject) => {
+    if (!subject) return;
+    const entry = {
+      grade: userGrade,
+      subjectId: subject.id,
+      chapterId: chap.id,
+      chapterNumber: chap.chapterNumber,
+      title: chap.title,
+      titleGujarati: chap.titleGujarati,
+      subjectName: isGSEB && subject.nameGujarati ? subject.nameGujarati : subject.name,
+      action,
+    };
+    setLastChapter(saveLastChapter(user?.email, entry));
+  };
+
+  const handleOpenNotes = (chap: SubjectChapter) => {
+    rememberChapter(chap, 'notes');
+    setSelectedChapterForRead(chap);
+  };
+
+  const handleSaveOffline = async (chap: SubjectChapter) => {
+    if (!chap.chapterPdfUrl && !chap.textbookPdfUrl) return;
+    setSavingChapterId(chap.id);
+    try {
+      await saveChapterOffline(chap.id, toAbsoluteUrl((chap.chapterPdfUrl || chap.textbookPdfUrl) as string));
+      setSavedChapterIds((prev) => (prev.includes(chap.id) ? prev : [...prev, chap.id]));
+      Alert.alert('Saved for offline use', 'You can now open this chapter without internet from the Textbooks tab.');
+    } catch (e: any) {
+      Alert.alert('Could not save the chapter', e?.message || 'Please try again.', [
+        { text: 'Try again', onPress: () => handleSaveOffline(chap) },
+        { text: 'Close', style: 'cancel' },
+      ]);
+    } finally {
+      setSavingChapterId(null);
+    }
+  };
+
+  const handleOpenSaved = async (chap: SubjectChapter) => {
+    try {
+      const opened = await openSavedChapter(chap.id, chap.title);
+      if (!opened) {
+        setSavedChapterIds((prev) => prev.filter((id) => id !== chap.id));
+        Alert.alert('Saved copy not found', 'Please save the chapter again while you are online.');
+      } else {
+        rememberChapter(chap, 'pdf');
+      }
+    } catch (e: any) {
+      Alert.alert('Could not open the saved chapter', e?.message || 'Please try again.');
+    }
+  };
+
+  const handleOpenPdf = async (url?: string, chap?: SubjectChapter) => {
+    if (chap) rememberChapter(chap, 'pdf');
     if (!url) {
       // Default to official GSSTB online textbook portal
       url = activeSubject?.officialTextbookPdf || 'https://gujarat-education.gov.in/textbook/textbook.htm';
     }
     // Resolve relative backend routes (/api/curriculum/textbook-view?...) to absolute server URL
-    let fullUrl = url;
-    if (!url.startsWith('http')) {
-      const normalizedPath = url.startsWith('/') ? url : `/${url}`;
-      const base = API_BASE_URL.replace(/\/api\/?$/, '');
-      fullUrl = `${base}${normalizedPath}`;
-    }
+    const fullUrl = toAbsoluteUrl(url);
 
     if (Platform.OS === 'web') {
       try {
@@ -208,29 +306,65 @@ export default function CoursesScreen() {
         try {
           await Linking.openURL(gDocsUrl);
         } catch (_) {
-          Alert.alert('Official Textbook (શાળા મિત્ર)', `Opening official textbook:\n${fullUrl}`);
+          Alert.alert(
+            'Could not open the textbook',
+            'Please check your internet connection and try again. If the problem continues, make sure the MindSprint server is running.',
+            [{ text: 'Try again', onPress: () => handleOpenPdf(url, chap) }, { text: 'Close', style: 'cancel' }]
+          );
         }
       }
     }
   };
 
   const handleOpenVideoModal = (chap: SubjectChapter) => {
-    setSelectedChapterForVideo(chap);
-    if (chap.videos && chap.videos.length > 0) {
-      setActiveVideoOption(chap.videos[0]);
-    } else {
-      const fallbackOption: ChapterVideo = {
-        id: `fb-${chap.id}`,
-        title: `${chap.title} - Video Lesson`,
-        titleGujarati: `${chap.titleGujarati || chap.title} - વિડિયો લેક્ચર`,
-        teacher: 'MindSprint Faculty',
-        duration: chap.duration || '15m',
-        youtubeVideoId: 'w7ejDZ8SWv8',
-        tag: 'Chapter Masterclass',
-      };
-      chap.videos = [fallbackOption];
-      setActiveVideoOption(fallbackOption);
+    if (!chap.videos || chap.videos.length === 0) {
+      Alert.alert(
+        'No video for this chapter yet',
+        'We have not added a video lesson for this chapter. You can search YouTube for one.',
+        [
+          {
+            text: 'Search YouTube',
+            onPress: () =>
+              handleLaunchExternalVideo('', `ધોરણ ${userGrade} ${activeSubject?.nameGujarati || ''} ${chap.titleGujarati || chap.title}`),
+          },
+          { text: 'Close', style: 'cancel' },
+        ]
+      );
+      return;
     }
+    rememberChapter(chap, 'video');
+    setSelectedChapterForVideo(chap);
+    setActiveVideoOption(chap.videos[0]);
+  };
+
+  // Students can flag a wrong or broken video; it is reviewed and fixed in backend/data/videos.json
+  const submitVideoReport = async (reason: 'wrong-topic' | 'wrong-chapter' | 'not-playing' | 'other') => {
+    if (!activeVideoOption) return;
+    const ok = await ApiService.reportVideo({
+      youtubeVideoId: activeVideoOption.youtubeVideoId,
+      grade: userGrade,
+      subjectId: activeSubject?.id,
+      chapterNumber: selectedChapterForVideo?.chapterNumber,
+      reason,
+      email: user?.email,
+    });
+    Alert.alert(
+      ok ? 'Thank you' : 'Could not send the report',
+      ok ? 'We will check this video and fix it.' : 'Please check your internet connection and try again.'
+    );
+  };
+
+  const handleReportVideo = () => {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm('Report this video as wrong or not working?')) submitVideoReport('other');
+      return;
+    }
+    Alert.alert('What is wrong with this video?', undefined, [
+      { text: 'Wrong topic', onPress: () => submitVideoReport('wrong-topic') },
+      { text: 'Wrong chapter', onPress: () => submitVideoReport('wrong-chapter') },
+      { text: 'Not playing', onPress: () => submitVideoReport('not-playing') },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const handleLaunchExternalVideo = async (videoId: string, searchFallback?: string) => {
@@ -261,7 +395,11 @@ export default function CoursesScreen() {
       try {
         await WebBrowser.openBrowserAsync(webUrl);
       } catch (_) {
-        Alert.alert('Video Link', webUrl);
+        Alert.alert(
+          'Could not open the video',
+          'Please check your internet connection and try again.',
+          [{ text: 'Try again', onPress: () => handleLaunchExternalVideo(videoId, searchFallback) }, { text: 'Close', style: 'cancel' }]
+        );
       }
     }
   };
@@ -277,6 +415,25 @@ export default function CoursesScreen() {
         limit: selectedLimit.toString(),
       },
     });
+  };
+
+  const isSearching = searchQuery.trim().length > 0;
+  const searchHits = isSearching ? searchChapters(activeSubjects, searchQuery) : [];
+
+  const jumpToSubject = (hit: ChapterSearchHit) => {
+    setSelectedSubjectId(hit.subject.id);
+    setSearchQuery('');
+  };
+
+  const handleContinue = () => {
+    if (!lastChapter) return;
+    const subject = activeSubjects.find((x) => x.id === lastChapter.subjectId);
+    const chap = subject?.chapters.find((c) => c.id === lastChapter.chapterId);
+    if (!subject || !chap) return;
+    setSelectedSubjectId(subject.id);
+    if (lastChapter.action === 'video') handleOpenVideoModal(chap);
+    else if (lastChapter.action === 'pdf') handleOpenPdf(chap.textbookPdfUrl || subject.officialTextbookPdf, chap);
+    else handleOpenNotes(chap);
   };
 
   const completedInSubject = chapters.filter((c) => completedChapterIds.includes(c.id)).length;
@@ -313,13 +470,65 @@ export default function CoursesScreen() {
           </View>
         </View>
 
+        {isSchoolMode && (
+          <TouchableOpacity
+            onPress={toggleLanguage}
+            accessibilityRole="button"
+            accessibilityLabel={useGujarati ? 'Switch names to English' : 'Switch names to Gujarati'}
+            style={[styles.langToggle, { borderColor: colors.primary }]}
+          >
+            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>{useGujarati ? 'ગુજ → EN' : 'EN → ગુજ'}</Text>
+          </TouchableOpacity>
+        )}
+
         <View style={[styles.headerProgressPill, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7' }]}>
           <MaterialIcons name="check-circle" size={13} color="#10b981" />
           <Text style={styles.headerProgressText}>{progressPercent}% DONE</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {serverOnline === false && <ServerStatusBanner checking={checkingServer} onRetry={checkServer} />}
+
+        {/* One search box for every chapter of every subject (video + PDF in one tap) */}
+        <View style={[styles.searchBox, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#ffffff', borderColor: colors.outlineVariant }]}>
+          <MaterialIcons name="search" size={20} color={colors.onSurfaceVariant} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search any chapter or subject"
+            placeholderTextColor={colors.onSurfaceVariant}
+            accessibilityLabel="Search chapters"
+            returnKeyType="search"
+            autoCorrect={false}
+            style={[styles.searchInput, { color: colors.onSurface }]}
+          />
+          {isSearching && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityRole="button" accessibilityLabel="Clear search" hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons name="close" size={20} color={colors.onSurfaceVariant} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {isSearching && (
+          <ChapterSearchResults
+            query={searchQuery}
+            hits={searchHits}
+            gujarati={isGSEB}
+            onClear={() => setSearchQuery('')}
+            onOpenSubject={jumpToSubject}
+            onWatch={(hit) => {
+              setSelectedSubjectId(hit.subject.id);
+              rememberChapter(hit.chapter, 'video', hit.subject);
+              handleOpenVideoModal(hit.chapter);
+            }}
+            onPdf={(hit) => handleOpenPdf(hit.chapter.textbookPdfUrl || hit.subject.officialTextbookPdf, hit.chapter)}
+          />
+        )}
+
+        {!isSearching && lastChapter && <ContinueLearningCard last={lastChapter} gujarati={isGSEB} onPress={handleContinue} />}
+
+        {!isSearching && (<>
         {/* Horizontal Subject Switcher Chips */}
         <View style={styles.subjectChipsSection}>
           <ScrollView
@@ -503,7 +712,7 @@ export default function CoursesScreen() {
                     <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                       <TouchableOpacity
                         style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#eef2ff' }]}
-                        onPress={() => setSelectedChapterForRead(chap)}
+                        onPress={() => handleOpenNotes(chap)}
                       >
                         <MaterialIcons name="menu-book" size={16} color={colors.primary} />
                         <Text style={[styles.readFullNotesBtnText, { color: colors.primary }]}>
@@ -514,13 +723,32 @@ export default function CoursesScreen() {
                       {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                         <TouchableOpacity
                           style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
-                          onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                          onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                         >
                           <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
                           <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
                         </TouchableOpacity>
                       )}
                     </View>
+
+                    {offlineSupported && (isPdfEligibleGrade || chap.textbookPdfUrl) && (
+                      <TouchableOpacity
+                        disabled={savingChapterId === chap.id}
+                        onPress={() => (savedChapterIds.includes(chap.id) ? handleOpenSaved(chap) : handleSaveOffline(chap))}
+                        accessibilityRole="button"
+                        accessibilityLabel={savedChapterIds.includes(chap.id) ? 'Open saved offline copy' : 'Save this chapter for offline reading'}
+                        style={[styles.offlineBtn, { borderColor: savedChapterIds.includes(chap.id) ? '#10b981' : colors.outlineVariant, opacity: savingChapterId === chap.id ? 0.6 : 1 }]}
+                      >
+                        <MaterialIcons
+                          name={savedChapterIds.includes(chap.id) ? 'offline-pin' : 'download-for-offline'}
+                          size={18}
+                          color={savedChapterIds.includes(chap.id) ? '#10b981' : colors.onSurfaceVariant}
+                        />
+                        <Text style={{ color: savedChapterIds.includes(chap.id) ? '#10b981' : colors.onSurfaceVariant, fontWeight: '700', fontSize: 13 }}>
+                          {savingChapterId === chap.id ? 'Saving…' : savedChapterIds.includes(chap.id) ? 'Saved offline • Open' : 'Save for offline'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                 </View>
               );
             })}
@@ -553,7 +781,10 @@ export default function CoursesScreen() {
                         {chapterTitle}
                       </Text>
                       <Text style={[styles.videoCardSub, { color: colors.onSurfaceVariant }]}>
-                        {videoCount} Alternative Teacher Videos Available
+                        {chap.videos && chap.videos.length > 0
+                          ? `${chap.videos[0].duration} • ${chap.videos[0].teacher}${videoCount > 1 ? ` • +${videoCount - 1} more` : ''}`
+                          : 'No video yet'}
+                        {completedChapterIds.includes(chap.id) ? '  ✓ Done' : ''}
                       </Text>
                     </View>
                   </View>
@@ -576,14 +807,14 @@ export default function CoursesScreen() {
                     >
                       <MaterialIcons name="smart-display" size={18} color="#ffffff" />
                       <Text style={styles.watchVideosActionBtnText}>
-                        Watch Video ({videoCount})
+                        {chap.videos && chap.videos.length > 0 ? 'Watch Video' : 'Find a video'}
                       </Text>
                     </TouchableOpacity>
 
                     {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
                       <TouchableOpacity
                         style={[styles.pdfQuickBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444', paddingHorizontal: 12 }]}
-                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                       >
                         <MaterialIcons name="picture-as-pdf" size={16} color="#ef4444" />
                         <Text style={[styles.pdfQuickBtnText, { color: '#ef4444', fontWeight: '700' }]}>PDF 📄</Text>
@@ -995,7 +1226,6 @@ export default function CoursesScreen() {
             {chapters.map((chap, index) => {
               const isCompleted = completedChapterIds.includes(chap.id);
               const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              const videoCount = chap.videos?.length || 1;
               const formulaCount = (isGSEB ? chap.keyFormulasGujarati?.length : chap.keyFormulas?.length) || chap.keyFormulas?.length || 0;
 
               return (
@@ -1072,7 +1302,7 @@ export default function CoursesScreen() {
                     <TouchableOpacity
                       activeOpacity={0.8}
                       style={[styles.pillarBtn, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#f8fafc', borderColor: colors.outlineVariant }]}
-                      onPress={() => setSelectedChapterForRead(chap)}
+                      onPress={() => handleOpenNotes(chap)}
                     >
                       <MaterialIcons name="auto-stories" size={15} color={colors.primary} />
                       <Text style={[styles.pillarBtnText, { color: colors.primary }]}>
@@ -1088,7 +1318,7 @@ export default function CoursesScreen() {
                     >
                       <MaterialIcons name="play-circle-filled" size={15} color="#ef4444" />
                       <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
-                        Watch Video 🎬
+                        {chap.videos?.[0]?.duration ? `Watch · ${chap.videos[0].duration}` : 'Watch Video 🎬'}
                       </Text>
                     </TouchableOpacity>
 
@@ -1097,7 +1327,7 @@ export default function CoursesScreen() {
                       <TouchableOpacity
                         activeOpacity={0.8}
                         style={[styles.pillarBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2', borderColor: '#ef4444' }]}
-                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
                       >
                         <MaterialIcons name="picture-as-pdf" size={15} color="#ef4444" />
                         <Text style={[styles.pillarBtnText, { color: '#ef4444' }]}>
@@ -1126,6 +1356,7 @@ export default function CoursesScreen() {
             })}
           </View>
         )}
+        </>)}
       </ScrollView>
 
       {/* ========================================================================= */}
@@ -1210,6 +1441,16 @@ export default function CoursesScreen() {
                   </TouchableOpacity>
                 </View>
 
+                <TouchableOpacity
+                  onPress={handleReportVideo}
+                  accessibilityRole="button"
+                  accessibilityLabel="Report a wrong or broken video"
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 10 }}
+                >
+                  <MaterialIcons name="flag" size={14} color={colors.onSurfaceVariant} />
+                  <Text style={{ fontSize: 12, color: colors.onSurfaceVariant, fontWeight: '600' }}>Wrong or not playing? Report this video</Text>
+                </TouchableOpacity>
+
                 {/* Direct Search Option if the user wants alternate teachers */}
                 <TouchableOpacity
                   style={{
@@ -1248,7 +1489,7 @@ export default function CoursesScreen() {
                     marginVertical: 4,
                   },
                 ]}
-                onPress={() => handleOpenPdf(selectedChapterForVideo?.textbookPdfUrl || activeSubject?.officialTextbookPdf)}
+                onPress={() => handleOpenPdf(selectedChapterForVideo?.textbookPdfUrl || activeSubject?.officialTextbookPdf, selectedChapterForVideo ?? undefined)}
               >
                 <View style={[styles.videoOptionIcon, { backgroundColor: '#ef4444' }]}>
                   <MaterialIcons name="picture-as-pdf" size={18} color="#ffffff" />
@@ -1586,6 +1827,36 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 1,
     fontWeight: '500',
+  },
+  langToggle: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    minHeight: 32,
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    minHeight: 46,
+  },
+  searchInput: { flex: 1, fontSize: 15, paddingVertical: 8 },
+  offlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 10,
+    minHeight: 40,
+    marginTop: 8,
   },
   headerProgressPill: {
     flexDirection: 'row',

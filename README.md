@@ -2,6 +2,27 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Course content (videos, PDFs, chapters)
+
+All curriculum and video data lives in **one place**, shared by the app and the server:
+
+- `backend/data/curriculum.json` – grades, subjects, chapters, per-chapter videos and PDF links
+- `backend/data/videos.json` – the video lecture library
+
+`constants/academicData.ts` and `constants/videoData.ts` import these files, and the backend reads the same files.
+Edit the JSON, never a copy.
+
+Check the content before you ship it:
+
+```bash
+npm run audit:content          # fast structure checks (runs on every PR)
+npm run audit:content:online   # also checks every YouTube video and external PDF link
+```
+
+A GitHub Action runs the online check every Monday, so videos that disappear are caught early.
+Students can report a wrong or broken video from the player; reports are stored in MongoDB
+(or in `backend/data/video-reports.jsonl` when the database is offline).
+
 ## Get started
 
 1. Install dependencies

@@ -1,0 +1,25 @@
+name: Content audit
+
+on:
+  pull_request:
+    paths: ['backend/data/**', 'scripts/audit-content.mjs']
+  push:
+    branches: [main]
+    paths: ['backend/data/**', 'scripts/audit-content.mjs']
+  schedule:
+    - cron: '0 6 * * 1' # weekly: catches videos/links that disappear over time
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Structure checks
+        run: node scripts/audit-content.mjs
+      - name: Live video and link checks
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: node scripts/audit-content.mjs --online

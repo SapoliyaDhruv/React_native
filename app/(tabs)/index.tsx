@@ -38,6 +38,8 @@ import { AcademicGradeModal } from '@/components/mindsprint/AcademicGradeModal';
 import { DailyChallengeCard } from '@/components/mindsprint/DailyChallengeCard';
 import { MorningSprintModal } from '@/components/mindsprint/MorningSprintModal';
 import { ShareProgressModal } from '@/components/mindsprint/ShareProgressModal';
+import { ContinueLearningCard } from '@/components/mindsprint/ContinueLearningCard';
+import { getLastChapter, LastChapter } from '@/services/learningProgress';
 
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
@@ -71,6 +73,16 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedChapterForRead, setSelectedChapterForRead] = useState<SubjectChapter | null>(null);
+  const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
+
+  // "Continue where you left off": refreshed every time the Home tab comes into view
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getLastChapter(userGrade, user?.email).then((c) => { if (active) setLastChapter(c); });
+      return () => { active = false; };
+    }, [userGrade, user?.email])
+  );
   const [showMorningSprint, setShowMorningSprint] = useState<boolean>(false);
   const [showShareProgress, setShowShareProgress] = useState<boolean>(false);
 
@@ -243,6 +255,12 @@ export default function DashboardScreen() {
             />
           }
         >
+          {isSchoolMode && lastChapter && (
+            <View style={{ marginHorizontal: -16 }}>
+              <ContinueLearningCard last={lastChapter} gujarati={isGSEB} onPress={() => router.push('/(tabs)/courses')} />
+            </View>
+          )}
+
           {/* 1-Tap Academic Grade & Board Switcher Banner */}
           <View style={[styles.gradeBannerRow, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
             <View style={styles.gradeBannerLeft}>
