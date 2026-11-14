@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-reanimated';
 import { MindSprintThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
   useFonts,
@@ -84,9 +85,11 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <MindSprintThemeProvider>
-          <InitialLayout />
-        </MindSprintThemeProvider>
+        <LanguageProvider>
+          <MindSprintThemeProvider>
+            <InitialLayout />
+          </MindSprintThemeProvider>
+        </LanguageProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

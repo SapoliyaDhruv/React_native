@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   Modal,
   Share,
-  Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify } from '@/components/common/dialogs';
 import { Question } from '@/constants/mindsprintData';
 import { WeakSpotAnalyzer } from '@/components/mindsprint/WeakSpotAnalyzer';
 import { ConfettiEffect } from '@/components/mindsprint/ConfettiEffect';
@@ -22,6 +23,8 @@ interface ExamResultViewProps {
   userAnswers: Record<number, number>;
   bookmarkedQuestionIds: number[];
   isDiagnostic?: boolean;
+  /** Server didn't store this result; show a small note. */
+  savedOnDevice?: boolean;
   onToggleBookmark: (qId: number) => void;
   onDone: () => void;
 }
@@ -31,13 +34,17 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
   userAnswers,
   bookmarkedQuestionIds,
   isDiagnostic = false,
+  savedOnDevice = false,
   onToggleBookmark,
   onDone,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
   const { user } = useAuth();
+  const { tr } = useLanguage();
 
   const [showCertModal, setShowCertModal] = useState(false);
+  // Generated once per result, not on every render.
+  const [certId] = useState(() => 'MS-' + Math.random().toString(36).substring(2, 9).toUpperCase());
 
   let correctCount = 0;
   questions.forEach((q, idx) => {
@@ -51,24 +58,22 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
   const isCertificateEligible = percentage >= 80;
 
   const examTitle = isDiagnostic
-    ? 'AI Weak-Spot Diagnostic Exam'
+    ? tr('Weak-topic check', 'નબળા વિષયોની ચકાસણી')
     : user?.grade && user?.grade !== 'college'
-    ? `Class ${user?.grade} (${user?.board || 'CBSE'}) Mock Assessment`
-    : 'Quantitative & IT Placement Mock Test';
+    ? tr(`Class ${user?.grade} practice test`, `ધોરણ ${user?.grade} પ્રેક્ટિસ ટેસ્ટ`)
+    : tr('Aptitude & IT mock test', 'એપ્ટિટ્યુડ અને IT મોક ટેસ્ટ');
 
-  const certId = 'MS-' + Math.random().toString(36).substring(2, 9).toUpperCase();
   const todayDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   const handleShareScorecard = async () => {
     try {
-      const studentName = user?.name || 'A MindSprint Scholar';
-      const shareMsg = `🎓 Proud Moment! I just scored ${percentage}% on the ${examTitle} on MindSprint! 🚀\n\n🎯 Score: ${correctCount}/${questions.length} Correct\n📜 Certificate ID: ${certId}\n\n#MindSprint #Education #LearningGoals #Exams`;
+      const shareMsg = `I scored ${percentage}% (${correctCount}/${questions.length}) on the ${examTitle} on MindSprint.`;
       await Share.share({
         message: shareMsg,
-        title: 'MindSprint Academic Achievement',
+        title: 'MindSprint',
       });
     } catch (err: any) {
-      Alert.alert('Share Error', err.message);
+      notify(tr('Could not share your score', 'સ્કોર શેર થઈ શક્યો નહીં'), err.message);
     }
   };
 
@@ -83,7 +88,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           style={[
             styles.resultCard,
             {
-              backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
+              backgroundColor: colors.surface,
               borderColor: isDiagnostic ? '#2F6FD6' : colors.outlineVariant,
               borderWidth: isDiagnostic ? 2 : 1,
             },
@@ -93,7 +98,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           {isDiagnostic && (
             <View style={styles.diagnosticPill}>
               <MaterialIcons name="auto-awesome" size={14} color="#2F6FD6" />
-              <Text style={styles.diagnosticPillText}>Diagnostic report</Text>
+              <Text style={styles.diagnosticPillText}>{tr('Weak-topic report', 'નબળા વિષયોનો રિપોર્ટ')}</Text>
             </View>
           )}
 
@@ -111,7 +116,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           </View>
 
           <Text style={[styles.resultTitle, { color: colors.onSurface }]}>
-            {isPassed ? (percentage >= 80 ? 'Excellent work' : 'You passed') : 'Test finished'}
+            {isPassed ? (percentage >= 80 ? tr('Excellent work', 'ખૂબ સરસ') : tr('You passed', 'તમે પાસ થયા')) : tr('Test finished', 'ટેસ્ટ પૂરો થયો')}
           </Text>
           <Text style={[styles.resultSubtitle, { color: colors.onSurfaceVariant }]}>
             {examTitle}
@@ -129,7 +134,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               ]}
             >
               <Text style={styles.passText}>
-                {isPassed ? 'Passed' : 'Needs practice'}
+                {isPassed ? tr('Passed', 'પાસ') : tr('Needs practice', 'વધુ પ્રેક્ટિસ કરો')}
               </Text>
             </View>
           </View>
@@ -138,24 +143,24 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           <View
             style={[
               styles.statsGrid,
-              { borderTopColor: isDarkMode ? colors.outlineVariant : '#DCE2EE' },
+              { borderTopColor: colors.outlineVariant },
             ]}
           >
             <View style={styles.statBox}>
               <Text style={[styles.statVal, { color: '#12805C' }]}>{correctCount}</Text>
-              <Text style={[styles.statLbl, { color: colors.outline }]}>Correct</Text>
+              <Text style={[styles.statLbl, { color: colors.outline }]}>{tr('Correct', 'સાચા')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statVal, { color: '#C8372D' }]}>
                 {questions.length - correctCount}
               </Text>
-              <Text style={[styles.statLbl, { color: colors.outline }]}>Incorrect</Text>
+              <Text style={[styles.statLbl, { color: colors.outline }]}>{tr('Incorrect', 'ખોટા')}</Text>
             </View>
             <View style={styles.statBox}>
               <Text style={[styles.statVal, { color: colors.onSurface }]}>
                 {Object.keys(userAnswers).length}
               </Text>
-              <Text style={[styles.statLbl, { color: colors.outline }]}>Attempted</Text>
+              <Text style={[styles.statLbl, { color: colors.outline }]}>{tr('Attempted', 'પ્રયાસ કર્યા')}</Text>
             </View>
           </View>
 
@@ -168,7 +173,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                 onPress={() => setShowCertModal(true)}
               >
                 <MaterialIcons name="workspace-premium" size={18} color="#ffffff" />
-                <Text style={styles.certActionBtnText}>View certificate</Text>
+                <Text style={styles.certActionBtnText}>{tr('View certificate', 'પ્રમાણપત્ર જુઓ')}</Text>
               </TouchableOpacity>
             )}
 
@@ -177,10 +182,21 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               activeOpacity={0.85}
               onPress={handleShareScorecard}
             >
-              <MaterialIcons name="share" size={18} color="#ffffff" />
-              <Text style={styles.shareActionBtnText}>Share score</Text>
+              <MaterialIcons name="share" size={18} color={colors.onPrimary} />
+              <Text style={[styles.shareActionBtnText, { color: colors.onPrimary }]}>{tr('Share score', 'સ્કોર શેર કરો')}</Text>
             </TouchableOpacity>
           </View>
+          {savedOnDevice && (
+            <View style={styles.savedNote}>
+              <MaterialIcons name="smartphone" size={16} color={colors.onSurfaceVariant} />
+              <Text style={[styles.savedNoteText, { color: colors.onSurfaceVariant }]}>
+                {tr(
+                  'Saved on this phone. It will not appear in rankings until the server is online.',
+                  'આ ફોનમાં સેવ થયું. સર્વર ચાલુ થાય ત્યાં સુધી રેન્કિંગમાં નહીં દેખાય.'
+                )}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* AI Weak Spot Analyzer */}
@@ -188,7 +204,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
 
         {/* Solutions & Explanations */}
         <Text style={[styles.solutionsHeading, { color: colors.onSurface }]}>
-          Answers and explanations
+          {tr('Answers and explanations', 'જવાબ અને સમજૂતી')}
         </Text>
 
         {questions.map((q, idx) => {
@@ -201,25 +217,25 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               style={[
                 styles.explanationCard,
                 {
-                  backgroundColor: isDarkMode ? colors.surfaceContainerLowest : '#ffffff',
-                  borderColor: isCorrect ? '#12805C' : userAns !== undefined ? '#C8372D' : colors.outlineVariant,
+                  backgroundColor: colors.surface,
+                  borderColor: isCorrect ? colors.tertiary : userAns !== undefined ? colors.error : colors.outlineVariant,
                 },
                 MindSprintShadows.card,
               ]}
             >
               <View style={styles.questionMetaHeader}>
                 <Text style={[styles.qIndexText, { color: colors.outline }]}>
-                  Question {idx + 1} • {q.category}
+                  {tr('Question', 'પ્રશ્ન')} {idx + 1} · {q.category}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <View
                     style={[
                       styles.statusBadge,
-                      { backgroundColor: isCorrect ? 'rgba(18, 128, 92, 0.15)' : 'rgba(200, 55, 45, 0.15)' },
+                      { backgroundColor: isCorrect ? colors.tertiaryContainer : colors.errorContainer },
                     ]}
                   >
-                    <Text style={[styles.statusText, { color: isCorrect ? '#12805C' : '#C8372D' }]}>
-                      {isCorrect ? 'Correct ✓' : userAns === undefined ? 'Skipped' : 'Incorrect ✗'}
+                    <Text style={[styles.statusText, { color: isCorrect ? colors.onTertiaryContainer : colors.error }]}>
+                      {isCorrect ? tr('Correct', 'સાચો') : userAns === undefined ? tr('Skipped', 'છોડી દીધો') : tr('Incorrect', 'ખોટો')}
                     </Text>
                   </View>
 
@@ -243,26 +259,26 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                   const isCorrectAnswer = optIdx === q.correctAnswer;
                   const isUserChosen = optIdx === userAns;
 
-                  let bg = isDarkMode ? colors.surfaceContainerLow : '#F5F7FB';
-                  let border = isDarkMode ? colors.outlineVariant : '#DCE2EE';
+                  let bg = colors.surfaceContainerLow;
+                  let border = colors.outlineVariant;
                   let textClr = colors.onSurface;
                   let badge = null;
 
                   if (isUserChosen && isCorrectAnswer) {
-                    bg = 'rgba(18, 128, 92, 0.15)';
-                    border = '#12805C';
-                    textClr = '#0B5C42';
-                    badge = 'Your Answer ✓';
+                    bg = colors.tertiaryContainer;
+                    border = colors.tertiary;
+                    textClr = colors.onTertiaryContainer;
+                    badge = tr('Your answer · correct', 'તમારો જવાબ · સાચો');
                   } else if (isUserChosen && !isCorrectAnswer) {
-                    bg = 'rgba(200, 55, 45, 0.15)';
-                    border = '#C8372D';
-                    textClr = '#8E2219';
-                    badge = 'Your Choice ✗';
+                    bg = colors.errorContainer;
+                    border = colors.error;
+                    textClr = colors.onSurface;
+                    badge = tr('Your answer', 'તમારો જવાબ');
                   } else if (isCorrectAnswer) {
-                    bg = 'rgba(18, 128, 92, 0.15)';
-                    border = '#12805C';
-                    textClr = '#0B5C42';
-                    badge = 'Correct Answer ✓';
+                    bg = colors.tertiaryContainer;
+                    border = colors.tertiary;
+                    textClr = colors.onTertiaryContainer;
+                    badge = tr('Correct answer', 'સાચો જવાબ');
                   }
 
                   return (
@@ -288,10 +304,10 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                             paddingHorizontal: 8,
                             paddingVertical: 2,
                             borderRadius: 6,
-                            backgroundColor: isUserChosen && !isCorrectAnswer ? '#C8372D' : '#12805C',
+                            backgroundColor: isUserChosen && !isCorrectAnswer ? colors.error : colors.tertiary,
                           }}
                         >
-                          <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                          <Text style={{ fontSize: 10.5, fontWeight: '700', color: isUserChosen && !isCorrectAnswer ? colors.surface : colors.onTertiary }}>
                             {badge}
                           </Text>
                         </View>
@@ -305,10 +321,10 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
               <View
                 style={[
                   styles.explBox,
-                  { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' },
+                  { backgroundColor: colors.surfaceContainerLow },
                 ]}
               >
-                <Text style={[styles.explTitle, { color: colors.primary }]}>Explanation:</Text>
+                <Text style={[styles.explTitle, { color: colors.primary }]}>{tr('Explanation', 'સમજૂતી')}</Text>
                 <Text style={[styles.explContent, { color: colors.onSurface }]}>
                   {q.explanation}
                 </Text>
@@ -323,8 +339,8 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
           activeOpacity={0.85}
           onPress={onDone}
         >
-          <Text style={styles.doneBtnText}>Back to Dashboard</Text>
-          <MaterialIcons name="home" size={20} color="#ffffff" />
+          <Text style={[styles.doneBtnText, { color: colors.onPrimary }]}>{tr('Back to home', 'હોમ પર પાછા જાઓ')}</Text>
+          <MaterialIcons name="home" size={20} color={colors.onPrimary} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -384,7 +400,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
                 style={styles.certCloseBtn}
                 onPress={() => setShowCertModal(false)}
               >
-                <Text style={styles.certCloseBtnText}>Close</Text>
+                <Text style={styles.certCloseBtnText}>{tr('Close', 'બંધ કરો')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -395,6 +411,17 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({
 };
 
 const styles = StyleSheet.create({
+  savedNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 12,
+  },
+  savedNoteText: {
+    flex: 1,
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,

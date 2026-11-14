@@ -3,6 +3,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -10,6 +11,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { confirmAction } from '@/components/common/dialogs';
 import { Question, getOfflineQuestions } from '@/constants/mindsprintData';
 import { ApiService } from '@/services/api';
 import { ExamHeader } from '@/components/mindsprint/ExamHeader';
@@ -22,6 +25,9 @@ import { ExamSkeleton } from '@/components/mindsprint/SkeletonLoader';
 export default function ExamScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { tr } = useLanguage();
+  // True when the server didn't store the result (offline): the score lives on this phone only.
+  const [savedOnDevice, setSavedOnDevice] = useState<boolean>(false);
   const { user } = useAuth();
   const searchParams = useLocalSearchParams<{
     limit?: string;
@@ -69,15 +75,13 @@ export default function ExamScreen() {
   // Guest Notice Effect
   useEffect(() => {
     if (user?.isGuest) {
+      // Native only: on web this would block the test with a browser dialog every time.
       Alert.alert(
-        'Guest Student Notice',
-        'You are currently exploring as a Guest. Guest mock test scores are temporary and will not save to a permanent profile.',
+        tr('You are using a guest account', 'તમે મહેમાન ખાતાથી છો'),
+        tr('Scores from this test will not be saved to a profile.', 'આ ટેસ્ટના ગુણ પ્રોફાઇલમાં સેવ નહીં થાય.'),
         [
-          { text: 'Continue Preview', style: 'cancel' },
-          {
-            text: 'Sign Up / Log In',
-            onPress: () => router.push('/(tabs)/profile' as any),
-          },
+          { text: tr('Continue as guest', 'મહેમાન તરીકે ચાલુ રાખો'), style: 'cancel' },
+          { text: tr('Sign in', 'સાઇન ઇન કરો'), onPress: () => router.push('/(tabs)/profile' as any) },
         ]
       );
     }
@@ -128,42 +132,35 @@ export default function ExamScreen() {
             const isRecent = Date.now() - (draft.timestamp || 0) < 4 * 60 * 60 * 1000; // 4 hours
             if (isRecent && Array.isArray(draft.questions) && draft.questions.length > 0) {
               const answeredCount = Object.keys(draft.userAnswers || {}).length;
-              Alert.alert(
-                'Resume Previous Exam?',
-                `You have an ongoing test session with ${answeredCount} of ${draft.questions.length} questions answered. Would you like to resume where you left off?`,
-                [
-                  {
-                    text: 'Start Fresh',
-                    style: 'destructive',
-                    onPress: async () => {
-                      await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
-                      if (!isCancelled) fetchFreshQuestions();
-                    },
-                  },
-                  {
-                    text: 'Resume Test',
-                    onPress: () => {
-                      if (isCancelled) return;
-                      setQuestions(draft.questions);
-                      setUserAnswers(draft.userAnswers || {});
-                      setMarkedForReview(draft.markedForReview || {});
-                      setSecondsLeft(
-                        typeof draft.secondsLeft === 'number' && draft.secondsLeft > 0
-                          ? draft.secondsLeft
-                          : initialSeconds
-                      );
-                      setCurrentIndex(
-                        typeof draft.currentIndex === 'number' && draft.currentIndex < draft.questions.length
-                          ? draft.currentIndex
-                          : 0
-                      );
-                      setLoading(false);
-                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-                    },
-                  },
-                ],
-                { cancelable: false }
-              );
+              confirmAction({
+                title: tr('Resume your last test?', 'છેલ્લો ટેસ્ટ ચાલુ રાખવો છે?'),
+                message: tr(
+                  `You answered ${answeredCount} of ${draft.questions.length} questions.`,
+                  `તમે ${draft.questions.length} માંથી ${answeredCount} પ્રશ્નોના જવાબ આપ્યા છે.`
+                ),
+                confirmText: tr('Resume test', 'ટેસ્ટ ચાલુ રાખો'),
+                cancelText: tr('Start fresh', 'નવો ટેસ્ટ શરૂ કરો'),
+                onCancel: async () => {
+                  await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+                  if (!isCancelled) fetchFreshQuestions();
+                },
+                onConfirm: () => {
+                  if (isCancelled) return;
+                  setQuestions(draft.questions);
+                  setUserAnswers(draft.userAnswers || {});
+                  setMarkedForReview(draft.markedForReview || {});
+                  setSecondsLeft(
+                    typeof draft.secondsLeft === 'number' && draft.secondsLeft > 0 ? draft.secondsLeft : initialSeconds
+                  );
+                  setCurrentIndex(
+                    typeof draft.currentIndex === 'number' && draft.currentIndex < draft.questions.length
+                      ? draft.currentIndex
+                      : 0
+                  );
+                  setLoading(false);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+                },
+              });
               return;
             } else {
               await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
@@ -265,7 +262,7 @@ export default function ExamScreen() {
     });
 
     try {
-      await ApiService.submitExamResult({
+      const res: any = await ApiService.submitExamResult({
         userEmail: user?.email,
         scorePercentage,
         correctCount,
@@ -274,8 +271,10 @@ export default function ExamScreen() {
         weakCategories,
         questionIds: questions.map((q) => q.id),
       });
+      setSavedOnDevice(!!res?.savedOnDevice);
     } catch (e) {
       console.error('Failed to submit results to database:', e);
+      setSavedOnDevice(true);
     }
   }, [questions, userAnswers, user?.email, DRAFT_KEY]);
 
@@ -357,6 +356,7 @@ export default function ExamScreen() {
           userAnswers={userAnswers}
           bookmarkedQuestionIds={bookmarkedQuestionIds}
           isDiagnostic={isDiagnostic}
+          savedOnDevice={savedOnDevice}
           onToggleBookmark={handleToggleBookmark}
           onDone={() => router.replace('/(tabs)')}
         />
@@ -367,58 +367,63 @@ export default function ExamScreen() {
   const isSchoolUser = user?.grade && user?.grade !== 'college';
 
   const examHeaderTitle = isDiagnostic
-    ? 'Diagnostic test'
+    ? tr('Weak-topic check', 'નબળા વિષયોની ચકાસણી')
     : isSchoolUser
-    ? `${examCategory || 'Practice quiz'} · Class ${user?.grade}`
+    ? `${examCategory || tr('Practice quiz', 'પ્રેક્ટિસ ક્વિઝ')} · ${tr('Class', 'ધોરણ')} ${user?.grade}`
     : examCompany && examCompany !== 'All Companies'
-    ? `${examCompany} mock test`
-    : 'Aptitude & IT mock test';
+    ? tr(`${examCompany} mock test`, `${examCompany} મોક ટેસ્ટ`)
+    : tr('Aptitude & IT mock test', 'એપ્ટિટ્યુડ અને IT મોક ટેસ્ટ');
 
   const flaggedIndicesList = Object.keys(markedForReview)
     .filter((k) => markedForReview[parseInt(k, 10)])
     .map((k) => parseInt(k, 10));
 
+  const leaveExam = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)');
+  };
+
   const handleSafeExit = () => {
+    if (Platform.OS === 'web') {
+      // Browser dialogs only offer OK / Cancel, so web keeps the draft (safest choice).
+      confirmAction({
+        title: tr('Leave this test?', 'ટેસ્ટ છોડવો છે?'),
+        message: tr('Your answers are saved so you can finish later.', 'તમારા જવાબ સેવ છે, પછી પૂરો કરી શકશો.'),
+        confirmText: tr('Save and leave', 'સેવ કરીને બહાર જાઓ'),
+        cancelText: tr('Keep answering', 'જવાબ આપતા રહો'),
+        onConfirm: leaveExam,
+      });
+      return;
+    }
     Alert.alert(
-      'Leave this test?',
-      'Save your answers to finish later, or discard them.',
+      tr('Leave this test?', 'ટેસ્ટ છોડવો છે?'),
+      tr('Save your answers to finish later, or discard them.', 'જવાબ સેવ કરીને પછી પૂરો કરો, અથવા કાઢી નાખો.'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: tr('Keep answering', 'જવાબ આપતા રહો'), style: 'cancel' },
         {
-          text: 'Discard answers',
+          text: tr('Discard answers', 'જવાબ કાઢી નાખો'),
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/(tabs)');
-            }
+            leaveExam();
           },
         },
-        {
-          text: 'Save and leave',
-          onPress: () => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/(tabs)');
-            }
-          },
-        },
+        { text: tr('Save and leave', 'સેવ કરીને બહાર જાઓ'), onPress: leaveExam },
       ]
     );
   };
 
   const promptSubmitExam = () => {
-    Alert.alert(
-      'Submit test?',
-      `You answered ${Object.keys(userAnswers).length} of ${questions.length} questions.`,
-      [
-        { text: 'Keep answering', style: 'cancel' },
-        { text: 'Submit test', onPress: handleSubmitExam },
-      ]
-    );
+    confirmAction({
+      title: tr('Submit test?', 'ટેસ્ટ સબમિટ કરવો છે?'),
+      message: tr(
+        `You answered ${Object.keys(userAnswers).length} of ${questions.length} questions.`,
+        `તમે ${questions.length} માંથી ${Object.keys(userAnswers).length} પ્રશ્નોના જવાબ આપ્યા છે.`
+      ),
+      confirmText: tr('Submit test', 'ટેસ્ટ સબમિટ કરો'),
+      cancelText: tr('Keep answering', 'જવાબ આપતા રહો'),
+      onConfirm: handleSubmitExam,
+    });
   };
 
   return (

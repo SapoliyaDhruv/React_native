@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
@@ -19,6 +20,8 @@ import * as Speech from 'expo-speech';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify } from '@/components/common/dialogs';
 import { ACADEMIC_CURRICULUM, AcademicGrade, IMPORTANT_QUESTIONS_DATA } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 
@@ -118,6 +121,7 @@ const ALL_DOUBTS_CATALOG: MatchedDoubtSolution[] = [
 export default function DoubtSolverScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || '10';
@@ -135,7 +139,10 @@ export default function DoubtSolverScreen() {
     try {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Camera Permission Required', 'Please enable camera access in settings to snap textbook questions.');
+        notify(
+          tr('Camera access needed', 'કેમેરાની મંજૂરી જોઈએ'),
+          tr('Turn on camera access for MindSprint in your phone settings, then try again.', 'ફોન સેટિંગ્સમાં MindSprint માટે કેમેરા ચાલુ કરો અને ફરી પ્રયાસ કરો.')
+        );
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -285,14 +292,18 @@ export default function DoubtSolverScreen() {
   };
 
   const handlePromptVoice = () => {
+    if (Platform.OS === 'web') {
+      notify(tr('Voice is not available in the browser', 'બ્રાઉઝરમાં અવાજથી પૂછી શકાતું નથી'), tr('Type your doubt in the search box instead.', 'તેના બદલે સર્ચ બોક્સમાં તમારો પ્રશ્ન લખો.'));
+      return;
+    }
     Alert.alert(
-      'Ask by voice',
-      'Select a spoken query or type your doubt into the search box:',
+      tr('Ask by voice', 'અવાજથી પૂછો'),
+      tr('Pick a sample question, or type your doubt in the search box.', 'નમૂનાનો પ્રશ્ન પસંદ કરો, અથવા સર્ચ બોક્સમાં લખો.'),
       [
-        { text: 'Ohm\'s Law Formula', onPress: () => handleSearchDoubt('Ohm\'s Law') },
-        { text: 'Quadratic Equation Roots', onPress: () => handleSearchDoubt('Quadratic Equation') },
-        { text: 'Newton\'s Second Law', onPress: () => handleSearchDoubt('Newton') },
-        { text: 'Cancel', style: 'cancel' },
+        { text: tr("Ohm's law formula", 'ઓહ્મનો નિયમ'), onPress: () => handleSearchDoubt("Ohm's Law") },
+        { text: tr('Roots of a quadratic equation', 'દ્વિઘાત સમીકરણના બીજ'), onPress: () => handleSearchDoubt('Quadratic Equation') },
+        { text: tr("Newton's second law", 'ન્યૂટનનો બીજો નિયમ'), onPress: () => handleSearchDoubt('Newton') },
+        { text: tr('Cancel', 'રદ કરો'), style: 'cancel' },
       ]
     );
   };
@@ -300,8 +311,8 @@ export default function DoubtSolverScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Scan a doubt"
-        subtitle="Photo or type a question to get a step-by-step answer"
+        title={tr('Scan a doubt', 'પ્રશ્ન સ્કેન કરો')}
+        subtitle={tr('Photo or type a question to get a step-by-step answer', 'ફોટો લો કે પ્રશ્ન લખો, પગલાવાર જવાબ મેળવો')}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>

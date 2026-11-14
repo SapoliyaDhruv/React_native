@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify } from '@/components/common/dialogs';
 import { VoiceVivaPlayer } from '@/components/common/VoiceVivaPlayer';
 import { ApiService } from '@/services/api';
 
@@ -208,6 +209,7 @@ const COLLEGE_INTERVIEW_TRACKS: Record<string, InterviewTrack> = {
 
 export default function InterviewSimulatorScreen() {
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade = user?.grade || 'college';
@@ -250,9 +252,9 @@ export default function InterviewSimulatorScreen() {
 
   const handleEvaluateWithAi = async () => {
     if (!userNotes.trim()) {
-      Alert.alert(
-        'Oral Answer Required',
-        'Please enter or speak your answer notes into the box before submitting to the AI examiner.'
+      notify(
+        tr('Add your answer first', 'પહેલા તમારો જવાબ લખો'),
+        tr('Type or speak your answer in the box, then press submit.', 'બોક્સમાં જવાબ લખો કે બોલો, પછી સબમિટ દબાવો.')
       );
       return;
     }
@@ -339,8 +341,8 @@ export default function InterviewSimulatorScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title={isSchoolMode ? 'Viva practice' : 'Interview practice'}
-        subtitle={isSchoolMode ? `Class ${userGrade} · answer questions out loud or by typing` : 'HR and technical rounds'}
+        title={isSchoolMode ? tr('Viva practice', 'મૌખિક પ્રેક્ટિસ') : tr('Interview practice', 'ઇન્ટરવ્યૂ પ્રેક્ટિસ')}
+        subtitle={isSchoolMode ? tr(`Class ${userGrade} · answer out loud or by typing`, `ધોરણ ${userGrade} · બોલીને કે લખીને જવાબ આપો`) : tr('HR and technical rounds', 'HR અને ટેકનિકલ રાઉન્ડ')}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -536,7 +538,7 @@ export default function InterviewSimulatorScreen() {
               </View>
 
               <Text style={[styles.simQuestionText, { color: colors.onSurface }]}>
-                "{isGSEB && currentQuestion.questionGujarati ? currentQuestion.questionGujarati : currentQuestion.question}"
+                &ldquo;{isGSEB && currentQuestion.questionGujarati ? currentQuestion.questionGujarati : currentQuestion.question}&rdquo;
               </Text>
 
               {/* Expected Keywords Pills */}

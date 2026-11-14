@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/mindsprint/ScreenHeader';
@@ -16,11 +15,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify, confirmAction } from '@/components/common/dialogs';
 import { MistakeItem, MistakeStorage } from '@/services/mistakeStorage';
 
 export default function ErrorVaultScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade = user?.grade || '10';
@@ -54,21 +56,21 @@ export default function ErrorVaultScreen() {
   const handleMarkResolved = async (id: string) => {
     const updated = await MistakeStorage.markResolved(id, user?.email || 'guest', userGrade);
     setMistakes(updated);
-    Alert.alert('Concept Mastered! 🌟', 'Great job fixing this concept. It has been moved to your Mastered list.');
+    notify(tr('Marked as fixed', 'સુધારેલું તરીકે નોંધ્યું'), tr('This question moved to your Fixed list.', 'આ પ્રશ્ન તમારી સુધારેલી યાદીમાં ગયો.'));
   };
 
   const handleRemove = async (id: string) => {
-    Alert.alert('Remove question?', 'It will no longer appear in Fix my mistakes.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: async () => {
-          const updated = await MistakeStorage.removeMistake(id, user?.email || 'guest', userGrade);
-          setMistakes(updated);
-        },
+    confirmAction({
+      title: tr('Remove question?', 'પ્રશ્ન દૂર કરવો છે?'),
+      message: tr('It will no longer appear in Fix my mistakes.', 'તે હવે "ભૂલો સુધારો"માં નહીં દેખાય.'),
+      confirmText: tr('Remove', 'દૂર કરો'),
+      cancelText: tr('Cancel', 'રદ કરો'),
+      destructive: true,
+      onConfirm: async () => {
+        const updated = await MistakeStorage.removeMistake(id, user?.email || 'guest', userGrade);
+        setMistakes(updated);
       },
-    ]);
+    });
   };
 
   // Distinct subjects for filter
@@ -86,8 +88,8 @@ export default function ErrorVaultScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Fix my mistakes"
-        subtitle={isSchoolMode ? `Class ${userGrade} · questions you got wrong` : 'Placement prep · questions you got wrong'}
+        title={tr('Fix my mistakes', 'મારી ભૂલો સુધારો')}
+        subtitle={isSchoolMode ? tr(`Class ${userGrade} · questions you got wrong`, `ધોરણ ${userGrade} · ખોટા પડેલા પ્રશ્નો`) : tr('Placement prep · questions you got wrong', 'પ્લેસમેન્ટ · ખોટા પડેલા પ્રશ્નો')}
         right={
           needsPracticeCount > 0 ? (
             <View style={[styles.badgePill, { backgroundColor: colors.errorContainer }]}>

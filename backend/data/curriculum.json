@@ -3563,9 +3563,9 @@
                 "id": "vid-g7-g7-eng-ch1-1",
                 "title": "Three Questions & The Squirrel - Full Chapter Detailed Explanation",
                 "titleGujarati": "પ્રકરણ 1: ત્રણ પ્રશ્નો અને ખિસકોલી - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Dhaval Sangani",
-                "duration": "21m",
-                "youtubeVideoId": "qoJUNJYO1AE",
+                "teacher": "MKG Academy",
+                "duration": "20m",
+                "youtubeVideoId": "LilobYGiljU",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
@@ -3614,9 +3614,9 @@
                 "id": "vid-g7-g7-eng-ch2-1",
                 "title": "A Gift of Chappals & The Rebel - Full Chapter Detailed Explanation",
                 "titleGujarati": "પ્રકરણ 2: એ ગિફ્ટ ઓફ ચપ્પલ અને બળવાખોર - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Dhaval Sangani",
-                "duration": "18m",
-                "youtubeVideoId": "Dusfkm9MxWI",
+                "teacher": "MKG Academy",
+                "duration": "15m",
+                "youtubeVideoId": "uHQs1u7CoaM",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
@@ -3664,9 +3664,9 @@
                 "id": "vid-g7-g7-eng-ch3-1",
                 "title": "Gopal and the Hilsa Fish & The Shed - Full Chapter Detailed Explanation",
                 "titleGujarati": "પ્રકરણ 3: ગોપાલ અને હિલસા માછલી - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Magnet Brains",
-                "duration": "29m",
-                "youtubeVideoId": "TP2N93HVBhg",
+                "teacher": "MKG Academy",
+                "duration": "9m",
+                "youtubeVideoId": "IDauEQCSJEo",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
@@ -11469,11 +11469,11 @@
           {
             "id": "g9-guj-ch15",
             "chapterNumber": 15,
-            "title": "Mara Sapna Ma Aavya Hari",
-            "titleGujarati": "મારા સપનામાં આવ્યા હરિ (કાવ્ય)",
+            "title": "God Matni Kya?",
+            "titleGujarati": "ગોદ માતની ક્યાં? (ઊર્મિકાવ્ય)",
             "duration": "20m",
-            "summary": "Comprehensive study of Mara Sapna Ma Aavya Hari under official GSEB Gujarati medium syllabus.",
-            "summaryGujarati": "રમેશ પારેખ: ગોપીના સ્વપ્નમાં શ્રીકૃષ્ણનું આગમન અને ભાવવિભોર પ્રેમ.",
+            "summary": "God Matni Kya?: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+            "summaryGujarati": "ઊર્મિકાવ્ય \"ગોદ માતની ક્યાં?\" – કાવ્યનો ભાવ, સમજૂતી અને સ્વાધ્યાય.",
             "questionCount": 15,
             "iconName": "menu-book",
             "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=9&subject=g9-guj&chapter=15",
@@ -11484,37 +11484,31 @@
             "videos": [
               {
                 "id": "vid-g9-g9-guj-ch15-1",
-                "title": "Mara Sapna Ma Aavya Hari - Full Chapter Detailed Explanation",
-                "titleGujarati": "પ્રકરણ 15: મારા સપનામાં આવ્યા હરિ (કાવ્ય) - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Pathshala STD 9 Gujarati Medium",
-                "duration": "8m",
-                "youtubeVideoId": "cXmzmDobsPc",
+                "title": "God Matni Kya? - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 15: ગોદ માતની ક્યાં? (ઊર્મિકાવ્ય) - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "BALAJI CLASSES JAMNAGAR",
+                "duration": "20m",
+                "youtubeVideoId": "9_T2054iXAk",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
             "concepts": [
               {
-                "heading": "Mara Sapna Ma Aavya Hari Core Concepts",
-                "headingGujarati": "મારા સપનામાં આવ્યા હરિ (કાવ્ય) ના મુખ્ય મુદ્દાઓ",
-                "explanation": "Detailed concepts of Mara Sapna Ma Aavya Hari.",
-                "explanationGujarati": "રમેશ પારેખ: ગોપીના સ્વપ્નમાં શ્રીકૃષ્ણનું આગમન અને ભાવવિભોર પ્રેમ."
+                "heading": "God Matni Kya?: key ideas",
+                "headingGujarati": "ગોદ માતની ક્યાં? (ઊર્મિકાવ્ય): મુખ્ય મુદ્દાઓ",
+                "explanation": "God Matni Kya?: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+                "explanationGujarati": "ઊર્મિકાવ્ય \"ગોદ માતની ક્યાં?\" – કાવ્યનો ભાવ, સમજૂતી અને સ્વાધ્યાય."
               }
             ],
             "keyFormulas": [
-              "Key formula for Mara Sapna Ma Aavya Hari",
-              "Important point for Mara Sapna Ma Aavya Hari"
+              "Central idea of the lesson",
+              "Author and literary form"
             ],
             "keyFormulasGujarati": [
-              "ભક્તિ શૃંગાર અને સમર્પણ"
+              "પાઠનો મધ્યવર્તી વિચાર",
+              "લેખક/કવિ અને સાહિત્યપ્રકાર"
             ],
-            "exerciseSolutions": [
-              {
-                "question": "Important textbook question from Mara Sapna Ma Aavya Hari",
-                "answer": "Model answer for Mara Sapna Ma Aavya Hari.",
-                "questionGujarati": "હરિએ સ્વપ્નમાં આવીને શું કર્યું?",
-                "answerGujarati": "ગોપીને પ્રેમથી બોલાવી અને આલિંગન આપ્યું."
-              }
-            ]
+            "exerciseSolutions": []
           },
           {
             "id": "g9-guj-ch16",
@@ -11569,11 +11563,11 @@
           {
             "id": "g9-guj-ch17",
             "chapterNumber": 17,
-            "title": "Mara Balpan Na Divaso",
-            "titleGujarati": "મારા બાળપણના દિવસો (આત્મકથા)",
+            "title": "Mara Sapna Ma Aavya Hari",
+            "titleGujarati": "મારા સપનામાં આવ્યા હરિ (ઊર્મિગીત)",
             "duration": "20m",
-            "summary": "Comprehensive study of Mara Balpan Na Divaso under official GSEB Gujarati medium syllabus.",
-            "summaryGujarati": "ડૉ. એ. પી. જે. અબ્દુલ કલામ: રામેશ્વરમમાં વિતાવેલું બાળપણ, પિતાજીના સંસ્કાર અને સામાજિક સમરસતા.",
+            "summary": "Mara Sapna Ma Aavya Hari: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+            "summaryGujarati": "રમેશ પારેખ: ગોપીના સ્વપ્નમાં શ્રીકૃષ્ણનું આગમન અને ભાવવિભોર પ્રેમ.",
             "questionCount": 15,
             "iconName": "menu-book",
             "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=9&subject=g9-guj&chapter=17",
@@ -11584,46 +11578,40 @@
             "videos": [
               {
                 "id": "vid-g9-g9-guj-ch17-1",
-                "title": "Mara Balpan Na Divaso - Full Chapter Detailed Explanation",
-                "titleGujarati": "પ્રકરણ 17: મારા બાળપણના દિવસો (આત્મકથા) - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Creative learning - Kuldeep",
-                "duration": "5m",
-                "youtubeVideoId": "_kWJ2YDBQlM",
+                "title": "Mara Sapna Ma Aavya Hari - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 17: મારા સપનામાં આવ્યા હરિ (ઊર્મિગીત) - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Pathshala STD 9 Gujarati Medium",
+                "duration": "8m",
+                "youtubeVideoId": "cXmzmDobsPc",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
             "concepts": [
               {
-                "heading": "Mara Balpan Na Divaso Core Concepts",
-                "headingGujarati": "મારા બાળપણના દિવસો (આત્મકથા) ના મુખ્ય મુદ્દાઓ",
-                "explanation": "Detailed concepts of Mara Balpan Na Divaso.",
-                "explanationGujarati": "ડૉ. એ. પી. જે. અબ્દુલ કલામ: રામેશ્વરમમાં વિતાવેલું બાળપણ, પિતાજીના સંસ્કાર અને સામાજિક સમરસતા."
+                "heading": "Mara Sapna Ma Aavya Hari: key ideas",
+                "headingGujarati": "મારા સપનામાં આવ્યા હરિ (ઊર્મિગીત): મુખ્ય મુદ્દાઓ",
+                "explanation": "Mara Sapna Ma Aavya Hari: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+                "explanationGujarati": "રમેશ પારેખ: ગોપીના સ્વપ્નમાં શ્રીકૃષ્ણનું આગમન અને ભાવવિભોર પ્રેમ."
               }
             ],
             "keyFormulas": [
-              "Key formula for Mara Balpan Na Divaso",
-              "Important point for Mara Balpan Na Divaso"
+              "Central idea of the lesson",
+              "Author and literary form"
             ],
             "keyFormulasGujarati": [
-              "સાદગી, પરિશ્રમ અને સર્વધર્મ સમભાવ"
+              "પાઠનો મધ્યવર્તી વિચાર",
+              "લેખક/કવિ અને સાહિત્યપ્રકાર"
             ],
-            "exerciseSolutions": [
-              {
-                "question": "Important textbook question from Mara Balpan Na Divaso",
-                "answer": "Model answer for Mara Balpan Na Divaso.",
-                "questionGujarati": "કલામના શ્રેષ્ઠ બાળપણના મિત્ર કોણ હતા?",
-                "answerGujarati": "રામાનંદ શાસ્ત્રી."
-              }
-            ]
+            "exerciseSolutions": []
           },
           {
             "id": "g9-guj-ch18",
             "chapterNumber": 18,
-            "title": "Pankhi Lok",
-            "titleGujarati": "પંખી લોક (કાવ્ય)",
+            "title": "Pangum Langhayate Girim",
+            "titleGujarati": "પંગુમ્ લંઘયતે ગિરિમ્ (રેખાચિત્ર)",
             "duration": "20m",
-            "summary": "Comprehensive study of Pankhi Lok under official GSEB Gujarati medium syllabus.",
-            "summaryGujarati": "ગીતા પરીખ: વૃક્ષો કપાતાં પંખીઓની ઘરવિહોણી થવાની અસહ્ય વેદના.",
+            "summary": "Pangum Langhayate Girim: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+            "summaryGujarati": "રેખાચિત્ર \"પંગુમ્ લંઘયતે ગિરિમ્\" – પાઠની સમજૂતી અને સ્વાધ્યાય.",
             "questionCount": 15,
             "iconName": "menu-book",
             "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=9&subject=g9-guj&chapter=18",
@@ -11634,37 +11622,31 @@
             "videos": [
               {
                 "id": "vid-g9-g9-guj-ch18-1",
-                "title": "Pankhi Lok - Full Chapter Detailed Explanation",
-                "titleGujarati": "પ્રકરણ 18: પંખી લોક (કાવ્ય) - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Parul's Classes",
-                "duration": "11m",
-                "youtubeVideoId": "_NrGNxjPesw",
+                "title": "Pangum Langhayate Girim - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 18: પંગુમ્ લંઘયતે ગિરિમ્ (રેખાચિત્ર) - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Rishit Edu",
+                "duration": "26m",
+                "youtubeVideoId": "5OBG3SAmmck",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
             "concepts": [
               {
-                "heading": "Pankhi Lok Core Concepts",
-                "headingGujarati": "પંખી લોક (કાવ્ય) ના મુખ્ય મુદ્દાઓ",
-                "explanation": "Detailed concepts of Pankhi Lok.",
-                "explanationGujarati": "ગીતા પરીખ: વૃક્ષો કપાતાં પંખીઓની ઘરવિહોણી થવાની અસહ્ય વેદના."
+                "heading": "Pangum Langhayate Girim: key ideas",
+                "headingGujarati": "પંગુમ્ લંઘયતે ગિરિમ્ (રેખાચિત્ર): મુખ્ય મુદ્દાઓ",
+                "explanation": "Pangum Langhayate Girim: poem/lesson explanation, meaning and textbook exercises (GSEB Std 9 Gujarati).",
+                "explanationGujarati": "રેખાચિત્ર \"પંગુમ્ લંઘયતે ગિરિમ્\" – પાઠની સમજૂતી અને સ્વાધ્યાય."
               }
             ],
             "keyFormulas": [
-              "Key formula for Pankhi Lok",
-              "Important point for Pankhi Lok"
+              "Central idea of the lesson",
+              "Author and literary form"
             ],
             "keyFormulasGujarati": [
-              "પર્યાવરણ સંરક્ષણ અને પશુ-પક્ષીઓ પ્રત્યે કરુણા"
+              "પાઠનો મધ્યવર્તી વિચાર",
+              "લેખક/કવિ અને સાહિત્યપ્રકાર"
             ],
-            "exerciseSolutions": [
-              {
-                "question": "Important textbook question from Pankhi Lok",
-                "answer": "Model answer for Pankhi Lok.",
-                "questionGujarati": "પંખીઓ ક્યાં શોક મનાવી રહ્યા છે?",
-                "answerGujarati": "કપાયેલા વૃક્ષના ઠૂંઠા પર બેસીને."
-              }
-            ]
+            "exerciseSolutions": []
           },
           {
             "id": "g9-guj-ch19",
@@ -11847,12 +11829,21 @@
             "videos": [
               {
                 "id": "vid-g9-g9-eng-ch2-1",
-                "title": "The Sound of Music - Full Chapter Detailed Explanation",
-                "titleGujarati": "પ્રકરણ 2: ધ સાઉન્ડ ઓફ મ્યુઝિક - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "title": "The Sound of Music (Part 1: Evelyn Glennie)",
+                "titleGujarati": "પ્રકરણ 2: ધ સાઉન્ડ ઓફ મ્યુઝિક – ભાગ 1",
                 "teacher": "Magnet Brains",
                 "duration": "30m",
                 "youtubeVideoId": "PiarTp5kP8s",
-                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+                "tag": "ભાગ 1"
+              },
+              {
+                "id": "vid-g9-g9-eng-ch2-2",
+                "title": "The Sound of Music (Part 2: Bismillah Khan)",
+                "titleGujarati": "પ્રકરણ 2: ધ સાઉન્ડ ઓફ મ્યુઝિક – ભાગ 2",
+                "teacher": "Educational Bhaiya",
+                "duration": "11m",
+                "youtubeVideoId": "9POOeeA4Tdw",
+                "tag": "ભાગ 2"
               }
             ],
             "concepts": [
@@ -19243,25 +19234,25 @@
       },
       {
         "id": "g12-cs",
-        "name": "Computer Science",
-        "nameGujarati": "કોમ્પ્યુટર સાયન્સ",
+        "name": "Computer Studies",
+        "nameGujarati": "કમ્પ્યૂટર અભ્યાસ",
         "code": "CS12",
         "color": "#64748b",
-        "textbookTitle": "Computer Science Class 12",
-        "textbookTitleGujarati": "કોમ્પ્યુટર સાયન્સ ધોરણ ૧૨ (GSEB)",
+        "textbookTitle": "Computer Studies Std 12",
+        "textbookTitleGujarati": "કમ્પ્યૂટર અભ્યાસ ધોરણ ૧૨ (GSEB)",
         "officialTextbookPdf": "https://shalamitra.in/std/12",
         "shalamitraUrl": "https://shalamitra.in/std/12",
         "chapters": [
           {
             "id": "g12-cs-ch1",
             "chapterNumber": 1,
-            "title": "Computer Science: Python and SQL",
-            "titleGujarati": "કોમ્પ્યુટર સાયન્સ (પાયથોન & SQL)",
+            "title": "Creating HTML Forms using KompoZer",
+            "titleGujarati": "KompoZer વડે HTML ફૉર્મ બનાવવાં",
             "duration": "20m",
-            "summary": "Comprehensive study of Computer Science: Python and SQL under official GSEB Gujarati medium syllabus.",
-            "summaryGujarati": "ડેટા ફાઈલ હેન્ડલિંગ, સ્ટેક, કતાર, MySQL ક્વેરીઓ (SELECT, JOIN, GROUP BY) અને નેટવર્કિંગ.",
+            "summary": "HTML form elements (text box, radio button, checkbox, drop-down list, text area, submit/reset) and form properties such as action and method (GET/POST), built visually in KompoZer.",
+            "summaryGujarati": "HTML ફૉર્મના ઘટકો (ટેક્સ્ટ બૉક્સ, રેડિયો બટન, ચેકબૉક્સ, ડ્રૉપ-ડાઉન, ટેક્સ્ટ એરિયા, સબમિટ) અને action/method (GET/POST) – KompoZer માં.",
             "questionCount": 15,
-            "iconName": "laptop",
+            "iconName": "web",
             "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=1",
             "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=1",
             "fullBookPdfUrl": "https://shalamitra.in/std/12",
@@ -19270,37 +19261,559 @@
             "videos": [
               {
                 "id": "vid-g12-g12-cs-ch1-1",
-                "title": "Computer Science: Python and SQL - Full Chapter Detailed Explanation",
-                "titleGujarati": "પ્રકરણ 1: કોમ્પ્યુટર સાયન્સ (પાયથોન & SQL) - સંપૂર્ણ પ્રકરણ સમજૂતી",
-                "teacher": "Pradnya's Class",
-                "duration": "38m",
-                "youtubeVideoId": "_LNQ6hldKLo",
+                "title": "Creating HTML Forms using KompoZer - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 1: KompoZer વડે HTML ફૉર્મ બનાવવાં - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Guru's Academy Computer Education",
+                "duration": "53m",
+                "youtubeVideoId": "TXLLsa-JjIg",
                 "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
             ],
             "concepts": [
               {
-                "heading": "Computer Science: Python and SQL Core Concepts",
-                "headingGujarati": "કોમ્પ્યુટર સાયન્સ (પાયથોન & SQL) ના મુખ્ય મુદ્દાઓ",
-                "explanation": "Detailed concepts of Computer Science: Python and SQL.",
-                "explanationGujarati": "ડેટા ફાઈલ હેન્ડલિંગ, સ્ટેક, કતાર, MySQL ક્વેરીઓ (SELECT, JOIN, GROUP BY) અને નેટવર્કિંગ."
+                "heading": "Creating HTML Forms using KompoZer: key ideas",
+                "headingGujarati": "KompoZer વડે HTML ફૉર્મ બનાવવાં: મુખ્ય મુદ્દાઓ",
+                "explanation": "HTML form elements (text box, radio button, checkbox, drop-down list, text area, submit/reset) and form properties such as action and method (GET/POST), built visually in KompoZer.",
+                "explanationGujarati": "HTML ફૉર્મના ઘટકો (ટેક્સ્ટ બૉક્સ, રેડિયો બટન, ચેકબૉક્સ, ડ્રૉપ-ડાઉન, ટેક્સ્ટ એરિયા, સબમિટ) અને action/method (GET/POST) – KompoZer માં."
               }
             ],
             "keyFormulas": [
-              "Key formula for Computer Science: Python and SQL",
-              "Important point for Computer Science: Python and SQL"
+              "<form action method>",
+              "input types: text, radio, checkbox, submit"
             ],
             "keyFormulasGujarati": [
-              "SQL: Structured Query Language"
+              "<form action method>",
+              "input types: text, radio, checkbox, submit"
             ],
-            "exerciseSolutions": [
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch2",
+            "chapterNumber": 2,
+            "title": "Cascading Style Sheets and JavaScript",
+            "titleGujarati": "કૅસ્કેડિંગ સ્ટાઇલ શીટ અને જાવાસ્ક્રિપ્ટ",
+            "duration": "20m",
+            "summary": "Styling pages with CSS (inline, internal, external; selectors and properties) and adding behaviour with JavaScript (variables, functions, events, form validation).",
+            "summaryGujarati": "CSS (ઇનલાઇન, ઇન્ટરનલ, એક્સટર્નલ; સિલેક્ટર અને પ્રૉપર્ટી) તથા જાવાસ્ક્રિપ્ટ (વેરિએબલ, ફંક્શન, ઇવેન્ટ, ફૉર્મ વેલિડેશન).",
+            "questionCount": 15,
+            "iconName": "code",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=2",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=2",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=2",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
               {
-                "question": "Important textbook question from Computer Science: Python and SQL",
-                "answer": "Model answer for Computer Science: Python and SQL.",
-                "questionGujarati": "Which command is used to retrieve data in SQL?",
-                "answerGujarati": "SELECT command."
+                "id": "vid-g12-g12-cs-ch2-1",
+                "title": "Cascading Style Sheets and JavaScript - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 2: કૅસ્કેડિંગ સ્ટાઇલ શીટ અને જાવાસ્ક્રિપ્ટ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Guru's Academy Computer Education",
+                "duration": "49m",
+                "youtubeVideoId": "JQJP-htYHRA",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
               }
-            ]
+            ],
+            "concepts": [
+              {
+                "heading": "Cascading Style Sheets and JavaScript: key ideas",
+                "headingGujarati": "કૅસ્કેડિંગ સ્ટાઇલ શીટ અને જાવાસ્ક્રિપ્ટ: મુખ્ય મુદ્દાઓ",
+                "explanation": "Styling pages with CSS (inline, internal, external; selectors and properties) and adding behaviour with JavaScript (variables, functions, events, form validation).",
+                "explanationGujarati": "CSS (ઇનલાઇન, ઇન્ટરનલ, એક્સટર્નલ; સિલેક્ટર અને પ્રૉપર્ટી) તથા જાવાસ્ક્રિપ્ટ (વેરિએબલ, ફંક્શન, ઇવેન્ટ, ફૉર્મ વેલિડેશન)."
+              }
+            ],
+            "keyFormulas": [
+              "selector { property: value; }",
+              "<script> … </script>"
+            ],
+            "keyFormulasGujarati": [
+              "selector { property: value; }",
+              "<script> … </script>"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch3",
+            "chapterNumber": 3,
+            "title": "Designing Simple Website using KompoZer",
+            "titleGujarati": "KompoZer વડે સરળ વેબસાઇટ બનાવવી",
+            "duration": "20m",
+            "summary": "Planning a small website and building its pages in KompoZer: layout, images, tables, hyperlinks between pages and site management.",
+            "summaryGujarati": "નાની વેબસાઇટનું આયોજન અને KompoZer માં પાનાં બનાવવાં: લેઆઉટ, ચિત્રો, ટેબલ, હાઇપરલિંક અને સાઇટ મૅનેજમેન્ટ.",
+            "questionCount": 15,
+            "iconName": "language",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=3",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=3",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=3",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch3-1",
+                "title": "Designing Simple Website using KompoZer - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 3: KompoZer વડે સરળ વેબસાઇટ બનાવવી - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Guru's Academy Computer Education",
+                "duration": "34m",
+                "youtubeVideoId": "W-I5ja6Hisw",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Designing Simple Website using KompoZer: key ideas",
+                "headingGujarati": "KompoZer વડે સરળ વેબસાઇટ બનાવવી: મુખ્ય મુદ્દાઓ",
+                "explanation": "Planning a small website and building its pages in KompoZer: layout, images, tables, hyperlinks between pages and site management.",
+                "explanationGujarati": "નાની વેબસાઇટનું આયોજન અને KompoZer માં પાનાં બનાવવાં: લેઆઉટ, ચિત્રો, ટેબલ, હાઇપરલિંક અને સાઇટ મૅનેજમેન્ટ."
+              }
+            ],
+            "keyFormulas": [
+              "Home page + linked pages",
+              "Hyperlinks and images"
+            ],
+            "keyFormulasGujarati": [
+              "Home page + linked pages",
+              "Hyperlinks and images"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch4",
+            "chapterNumber": 4,
+            "title": "Introduction to E-Commerce",
+            "titleGujarati": "ઇ-કૉમર્સનો પરિચય",
+            "duration": "20m",
+            "summary": "What e-commerce is, its types (B2B, B2C, C2C, C2B), advantages and limitations, online payment methods and security.",
+            "summaryGujarati": "ઇ-કૉમર્સ એટલે શું, તેના પ્રકારો (B2B, B2C, C2C, C2B), ફાયદા-મર્યાદાઓ, ઑનલાઇન ચુકવણી અને સુરક્ષા.",
+            "questionCount": 15,
+            "iconName": "shopping-cart",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=4",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=4",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=4",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch4-1",
+                "title": "Introduction to E-Commerce - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 4: ઇ-કૉમર્સનો પરિચય - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Jai Ambe Classes",
+                "duration": "26m",
+                "youtubeVideoId": "L_PhcHj8FXM",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Introduction to E-Commerce: key ideas",
+                "headingGujarati": "ઇ-કૉમર્સનો પરિચય: મુખ્ય મુદ્દાઓ",
+                "explanation": "What e-commerce is, its types (B2B, B2C, C2C, C2B), advantages and limitations, online payment methods and security.",
+                "explanationGujarati": "ઇ-કૉમર્સ એટલે શું, તેના પ્રકારો (B2B, B2C, C2C, C2B), ફાયદા-મર્યાદાઓ, ઑનલાઇન ચુકવણી અને સુરક્ષા."
+              }
+            ],
+            "keyFormulas": [
+              "B2B, B2C, C2C, C2B",
+              "Payment: cards, net banking, e-wallet"
+            ],
+            "keyFormulasGujarati": [
+              "B2B, B2C, C2C, C2B",
+              "Payment: cards, net banking, e-wallet"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch5",
+            "chapterNumber": 5,
+            "title": "Introduction to M-Commerce",
+            "titleGujarati": "એમ-કૉમર્સનો પરિચય",
+            "duration": "20m",
+            "summary": "Commerce on mobile devices: applications (banking, ticketing, shopping), enabling technologies, mobile payments and security concerns.",
+            "summaryGujarati": "મોબાઇલ દ્વારા વ્યવહાર: ઉપયોગો (બૅન્કિંગ, ટિકિટ, શૉપિંગ), ટેક્નોલૉજી, મોબાઇલ ચુકવણી અને સુરક્ષા.",
+            "questionCount": 15,
+            "iconName": "smartphone",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=5",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=5",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=5",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch5-1",
+                "title": "Introduction to M-Commerce - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 5: એમ-કૉમર્સનો પરિચય - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Chirag Sir Ai",
+                "duration": "46m",
+                "youtubeVideoId": "7hfRPJxE5FI",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Introduction to M-Commerce: key ideas",
+                "headingGujarati": "એમ-કૉમર્સનો પરિચય: મુખ્ય મુદ્દાઓ",
+                "explanation": "Commerce on mobile devices: applications (banking, ticketing, shopping), enabling technologies, mobile payments and security concerns.",
+                "explanationGujarati": "મોબાઇલ દ્વારા વ્યવહાર: ઉપયોગો (બૅન્કિંગ, ટિકિટ, શૉપિંગ), ટેક્નોલૉજી, મોબાઇલ ચુકવણી અને સુરક્ષા."
+              }
+            ],
+            "keyFormulas": [
+              "M-commerce applications",
+              "Mobile payment and security"
+            ],
+            "keyFormulasGujarati": [
+              "M-commerce applications",
+              "Mobile payment and security"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch6",
+            "chapterNumber": 6,
+            "title": "Object-Oriented Concepts",
+            "titleGujarati": "ઑબ્જેક્ટ-ઓરિએન્ટેડ ખ્યાલો",
+            "duration": "20m",
+            "summary": "Objects and classes, encapsulation, abstraction, inheritance, polymorphism, aggregation/composition and class diagrams.",
+            "summaryGujarati": "ઑબ્જેક્ટ અને ક્લાસ, એન્કેપ્સ્યુલેશન, એબ્સ્ટ્રેક્શન, ઇન્હેરિટન્સ, પૉલિમૉર્ફિઝમ અને ક્લાસ ડાયાગ્રામ.",
+            "questionCount": 15,
+            "iconName": "category",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=6",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=6",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=6",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch6-1",
+                "title": "Object-Oriented Concepts - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 6: ઑબ્જેક્ટ-ઓરિએન્ટેડ ખ્યાલો - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "ikip",
+                "duration": "31m",
+                "youtubeVideoId": "Gno-7JzZySg",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Object-Oriented Concepts: key ideas",
+                "headingGujarati": "ઑબ્જેક્ટ-ઓરિએન્ટેડ ખ્યાલો: મુખ્ય મુદ્દાઓ",
+                "explanation": "Objects and classes, encapsulation, abstraction, inheritance, polymorphism, aggregation/composition and class diagrams.",
+                "explanationGujarati": "ઑબ્જેક્ટ અને ક્લાસ, એન્કેપ્સ્યુલેશન, એબ્સ્ટ્રેક્શન, ઇન્હેરિટન્સ, પૉલિમૉર્ફિઝમ અને ક્લાસ ડાયાગ્રામ."
+              }
+            ],
+            "keyFormulas": [
+              "Encapsulation, Inheritance, Polymorphism",
+              "Class diagram"
+            ],
+            "keyFormulasGujarati": [
+              "Encapsulation, Inheritance, Polymorphism",
+              "Class diagram"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch7",
+            "chapterNumber": 7,
+            "title": "Java Basics",
+            "titleGujarati": "જાવાની મૂળભૂત બાબતો",
+            "duration": "20m",
+            "summary": "Java program structure, compiling to bytecode and running on the JVM, data types, variables, operators and control structures (if, switch, loops).",
+            "summaryGujarati": "જાવા પ્રોગ્રામનું માળખું, બાઇટકોડ અને JVM, ડેટા ટાઇપ, વેરિએબલ, ઑપરેટર અને કન્ટ્રોલ સ્ટ્રક્ચર (if, switch, લૂપ).",
+            "questionCount": 15,
+            "iconName": "code",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=7",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=7",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=7",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch7-1",
+                "title": "Java Basics - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 7: જાવાની મૂળભૂત બાબતો - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Jitendrabhai Talpada",
+                "duration": "8m",
+                "youtubeVideoId": "86FCUijpYKs",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Java Basics: key ideas",
+                "headingGujarati": "જાવાની મૂળભૂત બાબતો: મુખ્ય મુદ્દાઓ",
+                "explanation": "Java program structure, compiling to bytecode and running on the JVM, data types, variables, operators and control structures (if, switch, loops).",
+                "explanationGujarati": "જાવા પ્રોગ્રામનું માળખું, બાઇટકોડ અને JVM, ડેટા ટાઇપ, વેરિએબલ, ઑપરેટર અને કન્ટ્રોલ સ્ટ્રક્ચર (if, switch, લૂપ)."
+              }
+            ],
+            "keyFormulas": [
+              "javac File.java → java File",
+              "if / switch / for / while"
+            ],
+            "keyFormulasGujarati": [
+              "javac File.java → java File",
+              "if / switch / for / while"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch8",
+            "chapterNumber": 8,
+            "title": "Classes and Objects in Java",
+            "titleGujarati": "જાવામાં ક્લાસ અને ઑબ્જેક્ટ",
+            "duration": "20m",
+            "summary": "Defining classes, creating objects, instance and class (static) members, methods, constructors, access modifiers and inheritance.",
+            "summaryGujarati": "ક્લાસ બનાવવો, ઑબ્જેક્ટ બનાવવા, instance અને static સભ્યો, મેથડ, કન્સ્ટ્રક્ટર, ઍક્સેસ મૉડિફાયર અને ઇન્હેરિટન્સ.",
+            "questionCount": 15,
+            "iconName": "class",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=8",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=8",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=8",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch8-1",
+                "title": "Classes and Objects in Java - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 8: જાવામાં ક્લાસ અને ઑબ્જેક્ટ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "ENJOY COMPUTER WITH DIVYAKANT SIR",
+                "duration": "36m",
+                "youtubeVideoId": "LXaTPDLKBKU",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Classes and Objects in Java: key ideas",
+                "headingGujarati": "જાવામાં ક્લાસ અને ઑબ્જેક્ટ: મુખ્ય મુદ્દાઓ",
+                "explanation": "Defining classes, creating objects, instance and class (static) members, methods, constructors, access modifiers and inheritance.",
+                "explanationGujarati": "ક્લાસ બનાવવો, ઑબ્જેક્ટ બનાવવા, instance અને static સભ્યો, મેથડ, કન્સ્ટ્રક્ટર, ઍક્સેસ મૉડિફાયર અને ઇન્હેરિટન્સ."
+              }
+            ],
+            "keyFormulas": [
+              "ClassName obj = new ClassName();",
+              "Constructor, static, extends"
+            ],
+            "keyFormulasGujarati": [
+              "ClassName obj = new ClassName();",
+              "Constructor, static, extends"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch9",
+            "chapterNumber": 9,
+            "title": "Working with Array and String",
+            "titleGujarati": "એરે અને સ્ટ્રિંગ સાથે કામ",
+            "duration": "20m",
+            "summary": "One- and two-dimensional arrays, the Arrays class, and String class methods for working with text.",
+            "summaryGujarati": "એક અને બે-પરિમાણીય એરે, Arrays ક્લાસ અને લખાણ માટે String ક્લાસની મેથડ.",
+            "questionCount": 15,
+            "iconName": "data-array",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=9",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=9",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=9",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch9-1",
+                "title": "Working with Array and String - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 9: એરે અને સ્ટ્રિંગ સાથે કામ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "ENJOY COMPUTER WITH DIVYAKANT SIR",
+                "duration": "27m",
+                "youtubeVideoId": "dZM9Ao38HNk",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Working with Array and String: key ideas",
+                "headingGujarati": "એરે અને સ્ટ્રિંગ સાથે કામ: મુખ્ય મુદ્દાઓ",
+                "explanation": "One- and two-dimensional arrays, the Arrays class, and String class methods for working with text.",
+                "explanationGujarati": "એક અને બે-પરિમાણીય એરે, Arrays ક્લાસ અને લખાણ માટે String ક્લાસની મેથડ."
+              }
+            ],
+            "keyFormulas": [
+              "int[] a = new int[5];",
+              "String methods: length(), charAt(), substring()"
+            ],
+            "keyFormulasGujarati": [
+              "int[] a = new int[5];",
+              "String methods: length(), charAt(), substring()"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch10",
+            "chapterNumber": 10,
+            "title": "Exception Handling in Java",
+            "titleGujarati": "જાવામાં એક્સેપ્શન હૅન્ડલિંગ",
+            "duration": "20m",
+            "summary": "Runtime errors and exceptions, try-catch-finally blocks, throw and throws, and common built-in exceptions.",
+            "summaryGujarati": "રનટાઇમ ભૂલો અને એક્સેપ્શન, try-catch-finally, throw અને throws, અને સામાન્ય બિલ્ટ-ઇન એક્સેપ્શન.",
+            "questionCount": 15,
+            "iconName": "error-outline",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=10",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=10",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=10",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch10-1",
+                "title": "Exception Handling in Java - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 10: જાવામાં એક્સેપ્શન હૅન્ડલિંગ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Jai Ambe Classes",
+                "duration": "16m",
+                "youtubeVideoId": "lqntdcDce_8",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Exception Handling in Java: key ideas",
+                "headingGujarati": "જાવામાં એક્સેપ્શન હૅન્ડલિંગ: મુખ્ય મુદ્દાઓ",
+                "explanation": "Runtime errors and exceptions, try-catch-finally blocks, throw and throws, and common built-in exceptions.",
+                "explanationGujarati": "રનટાઇમ ભૂલો અને એક્સેપ્શન, try-catch-finally, throw અને throws, અને સામાન્ય બિલ્ટ-ઇન એક્સેપ્શન."
+              }
+            ],
+            "keyFormulas": [
+              "try { } catch (Exception e) { } finally { }",
+              "throw / throws"
+            ],
+            "keyFormulasGujarati": [
+              "try { } catch (Exception e) { } finally { }",
+              "throw / throws"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch11",
+            "chapterNumber": 11,
+            "title": "File Handling",
+            "titleGujarati": "ફાઇલ હૅન્ડલિંગ",
+            "duration": "20m",
+            "summary": "Reading and writing files in Java with the java.io package: the File class, character and byte streams, and Scanner.",
+            "summaryGujarati": "java.io પૅકેજ વડે ફાઇલ વાંચવી-લખવી: File ક્લાસ, કૅરેક્ટર અને બાઇટ સ્ટ્રીમ, Scanner.",
+            "questionCount": 15,
+            "iconName": "insert-drive-file",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=11",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=11",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=11",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch11-1",
+                "title": "File Handling - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 11: ફાઇલ હૅન્ડલિંગ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Jai Ambe Classes",
+                "duration": "19m",
+                "youtubeVideoId": "I8hHFhwcbjw",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "File Handling: key ideas",
+                "headingGujarati": "ફાઇલ હૅન્ડલિંગ: મુખ્ય મુદ્દાઓ",
+                "explanation": "Reading and writing files in Java with the java.io package: the File class, character and byte streams, and Scanner.",
+                "explanationGujarati": "java.io પૅકેજ વડે ફાઇલ વાંચવી-લખવી: File ક્લાસ, કૅરેક્ટર અને બાઇટ સ્ટ્રીમ, Scanner."
+              }
+            ],
+            "keyFormulas": [
+              "File, FileReader, FileWriter",
+              "Scanner for input"
+            ],
+            "keyFormulasGujarati": [
+              "File, FileReader, FileWriter",
+              "Scanner for input"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch12",
+            "chapterNumber": 12,
+            "title": "Publishing Documents using LaTeX",
+            "titleGujarati": "LaTeX વડે દસ્તાવેજ પ્રકાશન",
+            "duration": "20m",
+            "summary": "Structure of a LaTeX document, common commands, formatting text, mathematical equations, and producing a PDF.",
+            "summaryGujarati": "LaTeX દસ્તાવેજનું માળખું, સામાન્ય કમાન્ડ, લખાણનું ફૉર્મેટિંગ, ગાણિતિક સમીકરણ અને PDF બનાવવી.",
+            "questionCount": 15,
+            "iconName": "description",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=12",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=12",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=12",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch12-1",
+                "title": "Publishing Documents using LaTeX - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 12: LaTeX વડે દસ્તાવેજ પ્રકાશન - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "ikip",
+                "duration": "25m",
+                "youtubeVideoId": "0zT-rRBo9b4",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Publishing Documents using LaTeX: key ideas",
+                "headingGujarati": "LaTeX વડે દસ્તાવેજ પ્રકાશન: મુખ્ય મુદ્દાઓ",
+                "explanation": "Structure of a LaTeX document, common commands, formatting text, mathematical equations, and producing a PDF.",
+                "explanationGujarati": "LaTeX દસ્તાવેજનું માળખું, સામાન્ય કમાન્ડ, લખાણનું ફૉર્મેટિંગ, ગાણિતિક સમીકરણ અને PDF બનાવવી."
+              }
+            ],
+            "keyFormulas": [
+              "\\\\documentclass{article} … \\\\begin{document}",
+              "Math mode: $ … $"
+            ],
+            "keyFormulasGujarati": [
+              "\\\\documentclass{article} … \\\\begin{document}",
+              "Math mode: $ … $"
+            ],
+            "exerciseSolutions": []
+          },
+          {
+            "id": "g12-cs-ch13",
+            "chapterNumber": 13,
+            "title": "Other Useful Free Tools and Services",
+            "titleGujarati": "અન્ય ઉપયોગી મફત સાધનો અને સેવાઓ",
+            "duration": "20m",
+            "summary": "Free and open-source software and online services that help with everyday computing tasks.",
+            "summaryGujarati": "રોજિંદા કમ્પ્યૂટર કામ માટે ઉપયોગી મફત અને ઓપન-સોર્સ સૉફ્ટવેર તથા ઑનલાઇન સેવાઓ.",
+            "questionCount": 15,
+            "iconName": "build",
+            "textbookPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=13",
+            "chapterPdfUrl": "/api/curriculum/chapter-pdf?grade=12&subject=g12-cs&chapter=13",
+            "fullBookPdfUrl": "https://shalamitra.in/std/12",
+            "textbookViewerUrl": "/api/curriculum/textbook-view?grade=12&subject=g12-cs&chapter=13",
+            "shalamitraUrl": "https://shalamitra.in/std/12",
+            "videos": [
+              {
+                "id": "vid-g12-g12-cs-ch13-1",
+                "title": "Other Useful Free Tools and Services - Full Chapter Detailed Explanation",
+                "titleGujarati": "પ્રકરણ 13: અન્ય ઉપયોગી મફત સાધનો અને સેવાઓ - સંપૂર્ણ પ્રકરણ સમજૂતી",
+                "teacher": "Jai Ambe Classes",
+                "duration": "17m",
+                "youtubeVideoId": "B45JDpEC15E",
+                "tag": "સંપૂર્ણ પ્રકરણ (GSEB)"
+              }
+            ],
+            "concepts": [
+              {
+                "heading": "Other Useful Free Tools and Services: key ideas",
+                "headingGujarati": "અન્ય ઉપયોગી મફત સાધનો અને સેવાઓ: મુખ્ય મુદ્દાઓ",
+                "explanation": "Free and open-source software and online services that help with everyday computing tasks.",
+                "explanationGujarati": "રોજિંદા કમ્પ્યૂટર કામ માટે ઉપયોગી મફત અને ઓપન-સોર્સ સૉફ્ટવેર તથા ઑનલાઇન સેવાઓ."
+              }
+            ],
+            "keyFormulas": [
+              "Free / open-source tools",
+              "Online services"
+            ],
+            "keyFormulasGujarati": [
+              "Free / open-source tools",
+              "Online services"
+            ],
+            "exerciseSolutions": []
           }
         ]
       }

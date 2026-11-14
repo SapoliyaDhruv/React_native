@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface StatsCardProps {
   totalTests?: number;
@@ -12,6 +13,7 @@ interface StatsCardProps {
 
 export const StatsCard: React.FC<StatsCardProps> = ({ totalTests = 0, avgScore = 0, totalQuestions = 0 }) => {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
 
   return (
     <View style={styles.grid}>
@@ -30,11 +32,11 @@ export const StatsCard: React.FC<StatsCardProps> = ({ totalTests = 0, avgScore =
           <View style={[styles.iconBox, { backgroundColor: colors.secondaryContainer }]}>
             <MaterialIcons name="quiz" size={18} color={colors.onSecondaryContainer} />
           </View>
-          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>Tests taken</Text>
+          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>{tr('Tests taken', 'આપેલા ટેસ્ટ')}</Text>
         </View>
         <View style={styles.valueRow}>
           <Text style={[styles.valueText, { color: colors.onSurface }]}>{totalTests}</Text>
-          <Text style={[styles.subText, { color: colors.outline }]}>completed</Text>
+          <Text style={[styles.subText, { color: colors.outline }]}>{tr('completed', 'પૂરા')}</Text>
         </View>
       </View>
 
@@ -53,11 +55,11 @@ export const StatsCard: React.FC<StatsCardProps> = ({ totalTests = 0, avgScore =
           <View style={[styles.iconBox, { backgroundColor: colors.tertiaryContainer }]}>
             <MaterialIcons name="analytics" size={18} color={colors.onTertiaryContainer} />
           </View>
-          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>Accuracy</Text>
+          <Text style={[styles.label, { color: colors.onSurfaceVariant }]}>{tr('Accuracy', 'ચોકસાઈ')}</Text>
         </View>
         <View style={styles.valueRow}>
           <Text style={[styles.valueText, { color: colors.onSurface }]}>{avgScore}%</Text>
-          <Text style={[styles.subText, { color: colors.outline }]}>average</Text>
+          <Text style={[styles.subText, { color: colors.outline }]}>{tr('average', 'સરેરાશ')}</Text>
         </View>
       </View>
     </View>

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,6 +18,8 @@ import * as Clipboard from 'expo-clipboard';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify } from '@/components/common/dialogs';
 import { ApiService } from '@/services/api';
 import { Question } from '@/constants/mindsprintData';
 import {
@@ -48,6 +49,7 @@ const getCategoryStyle = (category: string) => {
 export default function BookmarksScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState<BookmarkTab>('questions');
@@ -120,9 +122,9 @@ export default function BookmarksScreen() {
         }
       }
       setOfflineSynced(true);
-      Alert.alert('Offline Vault Synced ⚡', 'All your bookmarks are downloaded locally for revision without internet.');
+      notify(tr('Saved for offline', 'ઑફલાઇન માટે સેવ થયું'), tr('Your saved items are on this phone and work without internet.', 'તમારી સેવ કરેલી વસ્તુઓ આ ફોનમાં છે અને ઇન્ટરનેટ વગર ચાલશે.'));
     } catch (e) {
-      Alert.alert('Offline Vault Ready', 'Cached copy is available for offline revision.');
+      notify(tr('Saved for offline', 'ઑફલાઇન માટે સેવ થયું'), tr('The last saved copy is available without internet.', 'છેલ્લી સેવ કરેલી નકલ ઇન્ટરનેટ વગર મળશે.'));
     }
   };
 
@@ -144,7 +146,7 @@ export default function BookmarksScreen() {
   const handleRemoveFormulaBookmark = async (item: CheatSheetItem) => {
     const res = await FormulaStorage.toggleSave(user?.email, item.id);
     setSavedFormulaIds(res.ids);
-    Alert.alert('Bookmark Removed', `"${item.title}" removed from saved formulas.`);
+    notify(tr('Removed from saved', 'સેવમાંથી દૂર કર્યું'), item.title);
   };
 
   const handleCopyFormula = async (title: string, formulaText: string) => {
@@ -154,9 +156,9 @@ export default function BookmarksScreen() {
       } else {
         await Clipboard.setStringAsync(formulaText);
       }
-      Alert.alert('Formula Copied 📋', `"${formulaText}" copied to clipboard!`);
+      notify(tr('Formula copied', 'સૂત્ર કૉપિ થયું'), formulaText);
     } catch (e) {
-      Alert.alert('Formula Copied 📋', `"${formulaText}" copied for quick revision!`);
+      notify(tr('Could not copy the formula', 'સૂત્ર કૉપિ ન થયું'), formulaText);
     }
   };
 
@@ -188,8 +190,11 @@ export default function BookmarksScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Saved for revision"
-        subtitle={`${questions.length} questions · ${savedFormulasList.length} formulas · ${bookmarkedChaptersList.length} chapters`}
+        title={tr('Saved for revision', 'રિવિઝન માટે સેવ')}
+        subtitle={tr(
+          `${questions.length} questions · ${savedFormulasList.length} formulas · ${bookmarkedChaptersList.length} chapters`,
+          `${questions.length} પ્રશ્નો · ${savedFormulasList.length} સૂત્રો · ${bookmarkedChaptersList.length} પ્રકરણ`
+        )}
         right={<HeaderIconButton icon="cloud-download" onPress={handleSyncOffline} label="Save a copy for offline use" />}
       />
 

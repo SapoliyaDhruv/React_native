@@ -16,7 +16,7 @@ export default function AboutModalScreen() {
         </View>
         <Text style={[styles.title, { color: colors.primary }]}>MindSprint v1.2.0</Text>
         <Text style={[styles.sub, { color: colors.onSurfaceVariant }]}>
-          Empowering Gujarat's Students for Campus Placements & Board Exam Excellence
+          Empowering Gujarat&apos;s Students for Campus Placements & Board Exam Excellence
         </Text>
 
         <View style={styles.infoRow}>

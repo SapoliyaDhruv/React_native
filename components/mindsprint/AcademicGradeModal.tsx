@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   AcademicGrade,
   EducationBoard,
@@ -37,14 +38,15 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
   const { colors } = useTheme();
   const styles = React.useMemo(() => makeStyles(colors), [colors]);
 
+  const { tr } = useLanguage();
   const [selectedGrade, setSelectedGrade] = useState<AcademicGrade>(currentGrade);
 
-  // Sync state when props change or modal opens
-  React.useEffect(() => {
-    if (visible) {
-      setSelectedGrade(currentGrade);
-    }
-  }, [visible, currentGrade]);
+  // Reset the selection each time the sheet opens (adjusting state during render, no effect needed).
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible) setSelectedGrade(currentGrade);
+  }
 
   const isSchool = selectedGrade !== 'college';
 
@@ -60,11 +62,20 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
   const GUJ_DIGITS = ['૦', '૧', '૨', '૩', '૪', '૫', '૬', '૭', '૮', '૯'];
   const toGuj = (n: string) => n.replace(/[0-9]/g, (d) => GUJ_DIGITS[Number(d)]);
   const describe = (g: AcademicGrade) => {
-    if (g === 'college') return { title: 'College', gu: 'Placement prep', sub: 'Aptitude, reasoning, technical' };
-    const sub = g === '10' ? 'GSEB · SSC board exam' : g === '12' ? 'GSEB · HSC board and GUJCET' : 'GSEB · Gujarati medium';
+    if (g === 'college')
+      return {
+        title: tr('College', 'કૉલેજ'),
+        gu: tr('Placement prep', 'પ્લેસમેન્ટ તૈયારી'),
+        sub: tr('Aptitude, reasoning, technical', 'ઍપ્ટિટ્યૂડ, રીઝનિંગ, ટેક્નિકલ'),
+      };
+    const sub =
+      g === '10'
+        ? tr('GSEB · SSC board exam', 'GSEB · SSC બોર્ડ પરીક્ષા')
+        : g === '12'
+          ? tr('GSEB · HSC board and GUJCET', 'GSEB · HSC બોર્ડ અને GUJCET')
+          : tr('GSEB · Gujarati medium', 'GSEB · ગુજરાતી માધ્યમ');
     return { title: `ધોરણ ${toGuj(g)}`, gu: `Class ${g}`, sub };
   };
-  const selectedInfo = describe(selectedGrade);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -73,10 +84,10 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
           <View style={styles.handle} />
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.title}>Choose your class</Text>
-              <Text style={styles.subtitle}>Your chapters, videos and tests will match it.</Text>
+              <Text style={styles.title}>{tr('Choose your class', 'તમારું ધોરણ પસંદ કરો')}</Text>
+              <Text style={styles.subtitle}>{tr('Your chapters, videos and tests will match it.', 'તમારાં પ્રકરણ, વિડિયો અને ટેસ્ટ તે પ્રમાણે બદલાશે.')}</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Close">
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel={tr('Close', 'બંધ કરો')}>
               <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
@@ -119,15 +130,20 @@ export const AcademicGradeModal: React.FC<AcademicGradeModalProps> = ({
             })}
             <Text style={styles.note}>
               {isSchool
-                ? 'School classes follow the GSEB syllabus in Gujarati medium.'
-                : 'College content is in English.'}
+                ? tr('School classes follow the GSEB syllabus in Gujarati medium.', 'શાળાનાં ધોરણો GSEB ગુજરાતી માધ્યમના અભ્યાસક્રમ પ્રમાણે છે.')
+                : tr('College content is in English.', 'કૉલેજનું સાહિત્ય અંગ્રેજીમાં છે.')}
             </Text>
           </ScrollView>
 
           <TouchableOpacity style={styles.confirmBtn} activeOpacity={0.85} onPress={handleConfirm} accessibilityRole="button">
             <Text style={styles.confirmBtnText}>
-              {selectedGrade === currentGrade ? 'Keep ' : 'Switch to '}
-              {selectedGrade === 'college' ? 'College' : `Class ${selectedGrade}`}
+              {selectedGrade === 'college'
+                ? selectedGrade === currentGrade
+                  ? tr('Keep College', 'કૉલેજ જ રાખો')
+                  : tr('Switch to College', 'કૉલેજ પસંદ કરો')
+                : selectedGrade === currentGrade
+                  ? tr(`Keep Class ${selectedGrade}`, `ધોરણ ${selectedGrade} જ રાખો`)
+                  : tr(`Switch to Class ${selectedGrade}`, `ધોરણ ${selectedGrade} પસંદ કરો`)}
             </Text>
           </TouchableOpacity>
         </View>

@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 
@@ -20,9 +21,9 @@ interface DailyChallengeCardProps {
 
 export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
   userGrade = 'college',
-  streakCount = 1,
 }) => {
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
 
   const [questionData, setQuestionData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,26 +82,13 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
 
     const isCorrect = index === questionData.correctIndex;
 
-    const isSchool = userGrade !== 'college';
     Alert.alert(
+      isCorrect ? tr('Correct', 'સાચો જવાબ') : tr('Not quite', 'થોડું ચૂકી ગયા'),
       isCorrect
-        ? (isSchool ? 'શાબાશ! સાચો જવાબ 🎯' : 'Brilliant! Correct Answer 🎯')
-        : (isSchool ? 'સારો પ્રયાસ! 💪' : 'Good Attempt! 💪'),
-      isCorrect
-        ? (isSchool ? '+૧ દિવસ તમારા અભ્યાસ સ્ટ્રીકમાં ઉમેરાયો! પડકાર ઉકેલાઈ ગયો.' : '+1 Day added to your study streak! Challenge solved.')
-        : (isSchool ? 'રિવ્યુ બટન પર ક્લિક કરીને વિગતવાર સમજૂતી જોઈ શકો છો.' : 'Review the explanation anytime using the Review button.'),
-      [
-        {
-          text: isSchool ? 'સમજાઈ ગયું ✓' : 'Got it ✓',
-          onPress: () => setIsCollapsed(true),
-        },
-      ]
+        ? tr('Well done. Come back tomorrow for a new question.', 'સરસ. કાલે નવો પ્રશ્ન આવશે.')
+        : tr('The right answer and its solution are shown on the card.', 'સાચો જવાબ અને ઉકેલ કાર્ડ પર બતાવ્યો છે.'),
+      [{ text: tr('OK, got it', 'સમજાઈ ગયું') }]
     );
-
-    // Auto-collapse after brief timeout in case alert is dismissed
-    setTimeout(() => {
-      setIsCollapsed(true);
-    }, 2500);
   };
 
   const handleDismiss = async () => {
@@ -123,8 +111,8 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         style={[
           styles.collapsedCard,
           {
-            backgroundColor: isDarkMode ? 'rgba(18, 128, 92, 0.15)' : '#DDF3EA',
-            borderColor: '#12805C',
+            backgroundColor: colors.tertiaryContainer,
+            borderColor: colors.tertiary,
           },
           MindSprintShadows.card,
         ]}
@@ -133,29 +121,30 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           <MaterialIcons
             name={isCorrect ? 'check-circle' : 'offline-pin'}
             size={22}
-            color="#12805C"
+            color={colors.tertiary}
           />
           <View style={{ flex: 1 }}>
             <Text style={[styles.collapsedTitle, { color: colors.onSurface }]}>
-              {userGrade !== 'college' ? 'આજનો પ્રશ્ન ઉકેલાઈ ગયો! 🔥' : "Today's Challenge Solved! 🔥"}
+              {tr("Today's question is done", 'આજનો પ્રશ્ન પૂરો થયો')}
             </Text>
             <Text style={[styles.collapsedSub, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-              {questionData.topic} • {isCorrect ? (userGrade !== 'college' ? 'સાચો જવાબ 🎯' : 'Correct 🎯') : (userGrade !== 'college' ? 'ઉકેલ જોયો 💡' : 'Reviewed 💡')}
+              {questionData.topic} · {isCorrect ? tr('Correct', 'સાચો જવાબ') : tr('Solution seen', 'ઉકેલ જોયો')}
             </Text>
           </View>
         </View>
 
         <View style={styles.collapsedActions}>
           <TouchableOpacity
-            style={[styles.reviewBtn, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : '#DDF3EA' }]}
+            style={[styles.reviewBtn, { backgroundColor: colors.surface }]}
             onPress={() => setIsCollapsed(false)}
           >
-            <Text style={styles.reviewBtnText}>Review ▾</Text>
+            <Text style={[styles.reviewBtnText, { color: colors.onTertiaryContainer }]}>{tr('See again', 'ફરી જુઓ')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.dismissBtn}
             onPress={handleDismiss}
+            accessibilityLabel={tr("Hide today's question", 'આજનો પ્રશ્ન છુપાવો')}
           >
             <MaterialIcons name="close" size={18} color={colors.outline} />
           </TouchableOpacity>
@@ -180,7 +169,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         <View style={styles.badgeRow}>
           <View style={styles.qotdBadge}>
             <MaterialIcons name="bolt" size={14} color="#3A2600" />
-            <Text style={styles.qotdText}>Question of the day</Text>
+            <Text style={styles.qotdText}>{tr('Question of the day', 'આજનો પ્રશ્ન')}</Text>
           </View>
           <View style={[styles.topicPill, { backgroundColor: colors.primaryFixed }]}>
             <Text style={[styles.topicText, { color: colors.primary }]} numberOfLines={1}>{questionData.topic}</Text>
@@ -188,14 +177,9 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
         </View>
 
         <View style={styles.rightHeaderActions}>
-          <View style={styles.streakBadge}>
-            <MaterialIcons name="local-fire-department" size={15} color="#F4A30B" />
-            <Text style={styles.streakText}>+1</Text>
-          </View>
-
           {isAnswered && (
             <TouchableOpacity onPress={() => setIsCollapsed(true)} style={styles.collapseToggleBtn}>
-              <Text style={[styles.collapseToggleText, { color: colors.primary }]}>Collapse ✕</Text>
+              <Text style={[styles.collapseToggleText, { color: colors.primary }]}>{tr('Hide', 'છુપાવો')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -286,7 +270,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
             <MaterialIcons name="lightbulb" size={16} color={colors.primary} />
             <Text style={[styles.explanationHeading, { color: colors.primary }]}>
-              Solution & Step-by-Step Logic:
+              {tr('Solution', 'ઉકેલ')}
             </Text>
           </View>
           <Text style={[styles.explanationText, { color: colors.onSurface }]}>

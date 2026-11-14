@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,18 +12,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows } from '@/constants/mindsprintTheme';
+import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
 import { TrackType } from '@/constants/mindsprintData';
 import {
-  GRADE_OPTIONS,
   AcademicGrade,
   EducationBoard,
   InstructionMedium,
   GradeCurriculum,
-  SubjectChapter,
   ACADEMIC_CURRICULUM,
 } from '@/constants/academicData';
 import { TrackSwitcher } from '@/components/mindsprint/TrackSwitcher';
@@ -42,23 +40,26 @@ import { TodayCard } from '@/components/mindsprint/home/TodayCard';
 import { TextbookShelf } from '@/components/mindsprint/home/TextbookShelf';
 import { ToolList, ToolItem } from '@/components/mindsprint/home/ToolList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { getLastChapter, LastChapter } from '@/services/learningProgress';
+import { useLanguage } from '@/context/LanguageContext';
+import { PlanCard } from '@/components/mindsprint/home/PlanCard';
+import { examCountdown, nextChapters, shortSubjectName } from '@/components/mindsprint/home/studyPlan';
+import { CoachTour, CoachStep } from '@/components/tour/CoachTour';
 
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
 
-// Number of chapters previewed on Home; the full list is in Courses.
-const HOME_CHAPTER_PREVIEW = 4;
+// Set once the first-open Home tour has been shown or skipped.
+const TOUR_KEY = '@mindsprint_home_tour_v1';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { isDarkMode, toggleDarkMode, colors } = useTheme();
+  const { colors } = useTheme();
   const { user, updateAcademicProfile } = useAuth();
+  const { tr, isGujarati } = useLanguage();
 
   const userGrade: AcademicGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode;
 
   // Initial state with immediate fallback so there is never a blank flash
   const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
@@ -74,14 +75,22 @@ export default function DashboardScreen() {
   const [showExamModal, setShowExamModal] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [selectedLimit, setSelectedLimit] = useState<number>(10);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Topics');
   const [userStats, setUserStats] = useState<any>(null);
-  const [weakSpots, setWeakSpots] = useState<string[]>(['Quantitative Aptitude', 'Data Structures']);
+  // Real weak topics only; empty until the student has taken tests.
+  const [weakSpots, setWeakSpots] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [selectedChapterForRead, setSelectedChapterForRead] = useState<SubjectChapter | null>(null);
   const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
   const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
+  const [showMorningSprint, setShowMorningSprint] = useState<boolean>(false);
+  const [showShareProgress, setShowShareProgress] = useState<boolean>(false);
+  const [showTour, setShowTour] = useState<boolean>(false);
+
+  // Tour targets
+  const rootRef = useRef<View>(null);
+  const todayRef = useRef<View>(null);
+  const shelfRef = useRef<View>(null);
+  const searchRef = useRef<View>(null);
 
   // Chapter completion is written by Courses; read it so the shelf shows real progress.
   useFocusEffect(
@@ -102,19 +111,31 @@ export default function DashboardScreen() {
       return () => { active = false; };
     }, [userGrade, user?.email])
   );
-  const [showMorningSprint, setShowMorningSprint] = useState<boolean>(false);
-  const [showShareProgress, setShowShareProgress] = useState<boolean>(false);
 
-  // Fetch dynamic curriculum from MongoDB
+  // Show the first-open tour once per device.
+  useEffect(() => {
+    let active = true;
+    AsyncStorage.getItem(TOUR_KEY)
+      .then((seen) => { if (active && !seen) setShowTour(true); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const finishTour = () => {
+    setShowTour(false);
+    AsyncStorage.setItem(TOUR_KEY, '1').catch(() => {});
+  };
+
+  // Fetch dynamic curriculum from the server (falls back to bundled data)
   useEffect(() => {
     async function loadCurriculum() {
       try {
         const currData = await ApiService.getCurriculum(userGrade);
         if (currData && currData.subjects && currData.subjects.length > 0) {
           setCurriculum(currData);
-          if (!selectedSubjectId || !currData.subjects.find((s: any) => s.id === selectedSubjectId)) {
-            setSelectedSubjectId(currData.subjects[0].id);
-          }
+          setSelectedSubjectId((prev) =>
+            prev && currData.subjects.find((s: any) => s.id === prev) ? prev : currData.subjects[0].id
+          );
         }
       } catch (err) {
         console.warn('Failed to load dynamic curriculum:', err);
@@ -123,16 +144,21 @@ export default function DashboardScreen() {
     loadCurriculum();
   }, [userGrade]);
 
+  const hasStatsRef = useRef(false);
+  const userEmail = user?.email;
   const loadStats = useCallback(async (isRefresh = false) => {
-    if (!isRefresh && !userStats) setLoading(true);
+    if (!isRefresh && !hasStatsRef.current) setLoading(true);
     try {
-      if (user?.email) {
+      if (userEmail) {
         const [stats, weak] = await Promise.all([
-          ApiService.getDashboardStats(user.email, userGrade),
-          ApiService.getWeakSpots(user.email, userGrade),
+          ApiService.getDashboardStats(userEmail, userGrade),
+          ApiService.getWeakSpots(userEmail, userGrade),
         ]);
-        if (stats) setUserStats(stats);
-        if (weak && weak.weakTopics) setWeakSpots(weak.weakTopics);
+        if (stats) {
+          setUserStats(stats);
+          hasStatsRef.current = true;
+        }
+        setWeakSpots(weak && weak.totalTests > 0 && Array.isArray(weak.weakTopics) ? weak.weakTopics : []);
       }
     } catch (e) {
       console.warn('Dashboard stats load note:', e);
@@ -140,7 +166,7 @@ export default function DashboardScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user?.email, userGrade, userStats]);
+  }, [userEmail, userGrade]);
 
   useFocusEffect(
     useCallback(() => {
@@ -174,53 +200,86 @@ export default function DashboardScreen() {
         ApiService.getWeakSpots(user.email, grade),
       ]);
       if (stats) setUserStats(stats);
-      if (weak && weak.weakTopics) setWeakSpots(weak.weakTopics);
+      setWeakSpots(weak && weak.totalTests > 0 && Array.isArray(weak.weakTopics) ? weak.weakTopics : []);
     }
   };
 
   const activeSubjects = curriculum?.subjects || [];
   const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
-  const currentGradeLabel = GRADE_OPTIONS.find((g) => g.grade === userGrade)?.label || 'Class ' + userGrade;
+  const recentActivity = Array.isArray(userStats?.recentActivity) ? userStats.recentActivity : [];
+  // A streak needs recorded activity; never show one for a student with no tests.
+  const hasActivity = (Number(userStats?.totalTests) || 0) > 0 || recentActivity.length > 0;
+  const streak: number = hasActivity ? Number(userStats?.streakCount) || 0 : 0;
 
   // Practice tools: one calm list. Wording says what each tool does.
+  const subjectLabel = activeSubject ? shortSubjectName(activeSubject, isGujarati) : tr('Mixed', 'મિશ્ર');
   const practiceTools: ToolItem[] = isSchoolMode
     ? [
-        { key: 'quiz', icon: 'bolt', title: 'Quick 10-question quiz', subtitle: `${activeSubject?.name || 'Mixed'} · about 5 minutes`, onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(activeSubject?.name || 'Science')}`) },
-        { key: 'board', icon: 'assignment', title: 'Board exam paper', subtitle: 'Full 80-mark timed paper', onPress: () => router.push('/board-exam-simulator' as any) },
-        { key: 'imp', icon: 'star-outline', title: 'Important questions', subtitle: '1 to 4 mark questions by chapter', onPress: () => router.push('/(tabs)/courses') },
-        { key: 'sprint', icon: 'timer', title: '2-minute revision', subtitle: 'Recall what you studied before', onPress: () => setShowMorningSprint(true) },
-        { key: 'vault', icon: 'replay', title: 'Fix my mistakes', subtitle: 'Retry questions you got wrong', onPress: () => router.push('/error-vault' as any) },
-        { key: 'doubt', icon: 'photo-camera', title: 'Scan a doubt', subtitle: 'Photo of a question → step-by-step help', onPress: () => router.push('/doubt-solver' as any) },
+        { key: 'quiz', icon: 'bolt', title: tr('Quick 10-question quiz', 'ઝડપી 10 પ્રશ્નોની ક્વિઝ'), subtitle: tr(`${subjectLabel} · about 5 minutes`, `${subjectLabel} · આશરે 5 મિનિટ`), onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(activeSubject?.name || 'Science')}`) },
+        { key: 'board', icon: 'assignment', title: tr('Board exam paper', 'બોર્ડ પરીક્ષાનું પેપર'), subtitle: tr('Full 80-mark timed paper', '80 ગુણનું પૂરું સમયબદ્ધ પેપર'), onPress: () => router.push('/board-exam-simulator' as any) },
+        { key: 'imp', icon: 'star-outline', title: tr('Important questions', 'મહત્વના પ્રશ્નો'), subtitle: tr('1 to 4 mark questions by chapter', 'પ્રકરણ પ્રમાણે 1 થી 4 ગુણના પ્રશ્નો'), onPress: () => router.push('/(tabs)/courses') },
+        { key: 'sprint', icon: 'timer', title: tr('2-minute revision', '2 મિનિટનું પુનરાવર્તન'), subtitle: tr('Recall what you studied before', 'પહેલાં ભણેલું યાદ કરો'), onPress: () => setShowMorningSprint(true) },
+        { key: 'vault', icon: 'replay', title: tr('Fix my mistakes', 'મારી ભૂલો સુધારો'), subtitle: tr('Retry questions you got wrong', 'ખોટા પડેલા પ્રશ્નો ફરી કરો'), onPress: () => router.push('/error-vault' as any) },
+        { key: 'doubt', icon: 'photo-camera', title: tr('Scan a doubt', 'શંકાનો ફોટો પાડો'), subtitle: tr('Photo of a question → step-by-step help', 'પ્રશ્નનો ફોટો → પગલાવાર મદદ'), onPress: () => router.push('/doubt-solver' as any) },
       ]
     : [
-        { key: 'mock', icon: 'tune', title: 'Custom mock test', subtitle: 'Pick topics and number of questions', onPress: () => setShowExamModal(true) },
-        { key: 'interview', icon: 'record-voice-over', title: 'Interview practice', subtitle: 'Answer HR and technical questions', onPress: () => router.push('/interview-simulator') },
-        { key: 'cards', icon: 'style', title: 'Flashcards', subtitle: 'HR and technical Q&A', onPress: () => router.push('/flashcards') },
-        { key: 'sprint', icon: 'timer', title: '2-minute revision', subtitle: 'Recall what you studied before', onPress: () => setShowMorningSprint(true) },
-        { key: 'vault', icon: 'replay', title: 'Fix my mistakes', subtitle: 'Retry questions you got wrong', onPress: () => router.push('/error-vault' as any) },
-        { key: 'doubt', icon: 'photo-camera', title: 'Scan a doubt', subtitle: 'Photo of a question → step-by-step help', onPress: () => router.push('/doubt-solver' as any) },
+        { key: 'mock', icon: 'tune', title: tr('Custom mock test', 'તમારી પસંદગીનો મૉક ટેસ્ટ'), subtitle: tr('Pick topics and number of questions', 'વિષય અને પ્રશ્નોની સંખ્યા પસંદ કરો'), onPress: () => setShowExamModal(true) },
+        { key: 'interview', icon: 'record-voice-over', title: tr('Interview practice', 'ઇન્ટરવ્યૂની પ્રેક્ટિસ'), subtitle: tr('Answer HR and technical questions', 'HR અને ટેક્નિકલ પ્રશ્નોના જવાબ આપો'), onPress: () => router.push('/interview-simulator') },
+        { key: 'cards', icon: 'style', title: tr('Flashcards', 'ફ્લૅશકાર્ડ'), subtitle: tr('HR and technical Q&A', 'HR અને ટેક્નિકલ પ્રશ્નોત્તર'), onPress: () => router.push('/flashcards') },
+        { key: 'sprint', icon: 'timer', title: tr('2-minute revision', '2 મિનિટનું પુનરાવર્તન'), subtitle: tr('Recall what you studied before', 'પહેલાં ભણેલું યાદ કરો'), onPress: () => setShowMorningSprint(true) },
+        { key: 'vault', icon: 'replay', title: tr('Fix my mistakes', 'મારી ભૂલો સુધારો'), subtitle: tr('Retry questions you got wrong', 'ખોટા પડેલા પ્રશ્નો ફરી કરો'), onPress: () => router.push('/error-vault' as any) },
+        { key: 'doubt', icon: 'photo-camera', title: tr('Scan a doubt', 'શંકાનો ફોટો પાડો'), subtitle: tr('Photo of a question → step-by-step help', 'પ્રશ્નનો ફોટો → પગલાવાર મદદ'), onPress: () => router.push('/doubt-solver' as any) },
       ];
 
   const competeTools: { key: string; icon: React.ComponentProps<typeof MaterialIcons>['name']; label: string; onPress: () => void }[] = [
-    { key: 'duel', icon: 'sports-kabaddi', label: '1v1 duel', onPress: () => router.push('/quiz-duel') },
-    { key: 'board', icon: 'emoji-events', label: 'Rankings', onPress: () => router.push('/leaderboard') },
-    { key: 'radar', icon: 'insights', label: 'Strengths', onPress: () => router.push('/mastery-analytics') },
-    { key: 'share', icon: 'ios-share', label: 'Share', onPress: () => setShowShareProgress(true) },
+    { key: 'duel', icon: 'sports-kabaddi', label: tr('1v1 duel', '1v1 મુકાબલો'), onPress: () => router.push('/quiz-duel') },
+    { key: 'board', icon: 'emoji-events', label: tr('Rankings', 'રેન્કિંગ'), onPress: () => router.push('/leaderboard') },
+    { key: 'radar', icon: 'insights', label: tr('Strengths', 'મજબૂત વિષયો'), onPress: () => router.push('/mastery-analytics') },
+    { key: 'share', icon: 'ios-share', label: tr('Share', 'શેર કરો'), onPress: () => setShowShareProgress(true) },
   ];
 
   // Hero: resume the last chapter, otherwise suggest the first unfinished chapter.
   const firstSubject = activeSubjects[0];
   const suggestedChapter = firstSubject?.chapters?.find((c) => !completedChapterIds.includes(c.id)) || firstSubject?.chapters?.[0];
-  const firstName = (user?.name || '').split(' ')[0] || 'there';
+  const firstName = (user?.name || '').split(' ')[0] || tr('there', 'મિત્ર');
   const gradeLine = isSchoolMode
-    ? `Class ${userGrade} · ${user?.board || 'GSEB'}`
-    : 'College · Campus placements';
+    ? tr(`Class ${userGrade} · ${user?.board || 'GSEB'}`, `ધોરણ ${userGrade} · ${user?.board || 'GSEB'}`)
+    : tr('College · Campus placements', 'કૉલેજ · કૅમ્પસ પ્લેસમેન્ટ');
+
+  // Exam countdown + today's plan (school only). Skip the chapter already shown in the hero.
+  const countdown = isSchoolMode ? examCountdown(userGrade) : null;
+  const heroChapterId = lastChapter?.chapterId ?? suggestedChapter?.id;
+  const plan = isSchoolMode ? nextChapters(activeSubjects, completedChapterIds, 3, heroChapterId) : [];
+
+  const subjectNameFor = (id: string, fallback: string) => {
+    const s = activeSubjects.find((x) => x.id === id);
+    return s ? shortSubjectName(s, isGujarati) : fallback;
+  };
+
+  const tourSteps: CoachStep[] = [
+    {
+      target: todayRef,
+      title: tr('Start here every day', 'દરરોજ અહીંથી શરૂ કરો'),
+      body: tr('This card opens the chapter you should study now, or takes you back to where you stopped.', 'આ કાર્ડ હવે ભણવાનું પ્રકરણ ખોલે છે, અથવા તમે જ્યાં અટક્યા હતા ત્યાં લઈ જાય છે.'),
+    },
+    {
+      target: shelfRef,
+      title: tr('Your textbooks', 'તમારાં પાઠ્યપુસ્તકો'),
+      body: tr('Tap a book to see its chapters, videos, PDFs and quizzes. The yellow line shows how much you have finished.', 'પ્રકરણો, વિડિયો, PDF અને ક્વિઝ જોવા પુસ્તક પર ટૅપ કરો. પીળી લીટી બતાવે છે કે તમે કેટલું પૂરું કર્યું.'),
+    },
+    {
+      target: searchRef,
+      title: tr('Search anything', 'કંઈ પણ શોધો'),
+      body: tr('Find any chapter, formula or practice test by typing its name.', 'નામ લખીને કોઈ પણ પ્રકરણ, સૂત્ર કે ટેસ્ટ શોધો.'),
+    },
+  ];
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
+      <View ref={rootRef} style={{ flex: 1 }} collapsable={false}>
       {/* Header: who you are and which syllabus you're on (tap to change) */}
       <View style={styles.header}>
-        <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/(tabs)/profile')} accessibilityLabel="Open profile">
+        <TouchableOpacity activeOpacity={0.8} onPress={() => router.push('/(tabs)/profile')} accessibilityLabel={tr('Open profile', 'પ્રોફાઇલ ખોલો')}>
           {user?.avatarUrl && !user.avatarUrl.startsWith('http') && !user.avatarUrl.startsWith('file:') && !user.avatarUrl.startsWith('data:') ? (
             <View style={[styles.avatar, styles.emojiAvatarBox, { backgroundColor: colors.primaryFixed }]}>
               <Text style={styles.emojiAvatarText}>{user.avatarUrl}</Text>
@@ -231,9 +290,9 @@ export default function DashboardScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.headerTitle, { color: colors.onSurface }]} numberOfLines={1}>
-            Hi, {firstName}
+            {tr(`Hi, ${firstName}`, `નમસ્તે, ${firstName}`)}
           </Text>
-          <TouchableOpacity onPress={() => setShowGradeModal(true)} activeOpacity={0.7} style={styles.gradeLine} accessibilityRole="button" accessibilityLabel={`Change class. Current: ${gradeLine}`}>
+          <TouchableOpacity onPress={() => setShowGradeModal(true)} activeOpacity={0.7} style={styles.gradeLine} accessibilityRole="button" accessibilityLabel={tr(`Change class. Current: ${gradeLine}`, `ધોરણ બદલો. હાલ: ${gradeLine}`)}>
             <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
               {gradeLine}
             </Text>
@@ -241,18 +300,20 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
         <TouchableOpacity
-          style={[styles.streakPillHeader, { backgroundColor: colors.accentContainer }]}
+          style={[styles.streakPillHeader, { backgroundColor: streak > 0 ? colors.accentContainer : colors.surfaceContainerLow }]}
           onPress={() => router.push('/(tabs)/profile')}
           activeOpacity={0.8}
-          accessibilityLabel={`${userStats?.streakCount || 1} day streak`}
+          accessibilityLabel={streak > 0 ? tr(`${streak} day streak`, `${streak} દિવસ સતત અભ્યાસ`) : tr('No streak yet. Study today to start one.', 'હજુ સ્ટ્રીક નથી. આજે ભણીને શરૂ કરો.')}
         >
-          <MaterialIcons name="local-fire-department" size={18} color={colors.accent} />
-          <Text style={[styles.streakPillHeaderText, { color: colors.onAccentContainer }]}>{userStats?.streakCount || 1}</Text>
+          <MaterialIcons name="local-fire-department" size={18} color={streak > 0 ? colors.accent : colors.outline} />
+          <Text style={[styles.streakPillHeaderText, { color: streak > 0 ? colors.onAccentContainer : colors.onSurfaceVariant }]}>{streak}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => setShowSearchBar(!showSearchBar)} accessibilityLabel="Search">
-          <MaterialIcons name={showSearchBar ? 'close' : 'search'} size={24} color={colors.onSurface} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/bookmarks')} accessibilityLabel="Bookmarks">
+        <View ref={searchRef} collapsable={false}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => setShowSearchBar(!showSearchBar)} accessibilityLabel={showSearchBar ? tr('Close search', 'શોધ બંધ કરો') : tr('Search', 'શોધો')}>
+            <MaterialIcons name={showSearchBar ? 'close' : 'search'} size={24} color={colors.onSurface} />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/bookmarks')} accessibilityLabel={tr('Saved items', 'સાચવેલું')}>
           <MaterialIcons name="bookmark-border" size={24} color={colors.onSurface} />
         </TouchableOpacity>
       </View>
@@ -271,40 +332,67 @@ export default function DashboardScreen() {
                 value={searchQuery}
                 onChangeText={(text) => setSearchQuery(text)}
                 onClear={() => setSearchQuery('')}
-                placeholder="Search chapters, formulas, practice tests..."
+                placeholder={tr('Search chapters, formulas, practice tests...', 'પ્રકરણ, સૂત્રો, ટેસ્ટ શોધો...')}
               />
             </View>
           )}
 
+          <View ref={todayRef} collapsable={false}>
           {isSchoolMode && curriculum ? (
             lastChapter ? (
               <TodayCard
-                context={`Continue · ${lastChapter.subjectName} · Chapter ${lastChapter.chapterNumber}`}
-                title={(isGSEB && lastChapter.titleGujarati) || lastChapter.title}
-                subtitle={lastChapter.action === 'video' ? 'Pick up the video where you stopped.' : lastChapter.action === 'pdf' ? 'Open the chapter PDF again.' : 'Back to your chapter notes.'}
+                context={tr(
+                  `Continue · ${subjectNameFor(lastChapter.subjectId, lastChapter.subjectName)} · Chapter ${lastChapter.chapterNumber}`,
+                  `ચાલુ રાખો · ${subjectNameFor(lastChapter.subjectId, lastChapter.subjectName)} · પ્રકરણ ${lastChapter.chapterNumber}`
+                )}
+                title={(isGujarati && lastChapter.titleGujarati) || lastChapter.title}
+                subtitle={
+                  lastChapter.action === 'video'
+                    ? tr('Pick up the video where you stopped.', 'જ્યાં અટક્યા હતા ત્યાંથી વિડિયો જુઓ.')
+                    : lastChapter.action === 'pdf'
+                      ? tr('Open the chapter PDF again.', 'પ્રકરણની PDF ફરી ખોલો.')
+                      : tr('Back to your chapter notes.', 'તમારી પ્રકરણ નોંધ પર પાછા જાઓ.')
+                }
                 primary={{
-                  label: lastChapter.action === 'video' ? 'Resume video' : lastChapter.action === 'pdf' ? 'Open PDF' : 'Open notes',
+                  label:
+                    lastChapter.action === 'video'
+                      ? tr('Resume video', 'વિડિયો આગળ જુઓ')
+                      : lastChapter.action === 'pdf'
+                        ? tr('Open PDF', 'PDF ખોલો')
+                        : tr('Open notes', 'નોંધ ખોલો'),
                   icon: lastChapter.action === 'video' ? 'play-arrow' : 'menu-book',
                   onPress: () => router.push({ pathname: '/(tabs)/courses', params: { subject: lastChapter.subjectId, resume: String(Date.now()) } }),
                 }}
-                secondary={{ label: 'Quiz', icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(lastChapter.title)}`) }}
+                secondary={{ label: tr('Quiz', 'ક્વિઝ'), icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(lastChapter.title)}`) }}
               />
             ) : suggestedChapter && firstSubject ? (
               <TodayCard
-                context={`Start here · ${(isGSEB && firstSubject.nameGujarati?.replace(/\s*\(.*\)/, '')) || firstSubject.name} · Chapter ${suggestedChapter.chapterNumber}`}
-                title={(isGSEB && suggestedChapter.titleGujarati) || suggestedChapter.title}
-                subtitle="Watch the lesson, read the chapter, then try a quick quiz."
-                primary={{ label: 'Open chapter', icon: 'play-arrow', onPress: () => router.push({ pathname: '/(tabs)/courses', params: { subject: firstSubject.id } }) }}
-                secondary={{ label: 'Quiz', icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(suggestedChapter.title)}`) }}
+                context={tr(
+                  `Start here · ${shortSubjectName(firstSubject, isGujarati)} · Chapter ${suggestedChapter.chapterNumber}`,
+                  `અહીંથી શરૂ કરો · ${shortSubjectName(firstSubject, isGujarati)} · પ્રકરણ ${suggestedChapter.chapterNumber}`
+                )}
+                title={(isGujarati && suggestedChapter.titleGujarati) || suggestedChapter.title}
+                subtitle={tr('Watch the lesson, read the chapter, then try a quick quiz.', 'પાઠ જુઓ, પ્રકરણ વાંચો, પછી ઝડપી ક્વિઝ આપો.')}
+                primary={{ label: tr('Open chapter', 'પ્રકરણ ખોલો'), icon: 'play-arrow', onPress: () => router.push({ pathname: '/(tabs)/courses', params: { subject: firstSubject.id } }) }}
+                secondary={{ label: tr('Quiz', 'ક્વિઝ'), icon: 'quiz', onPress: () => router.push(`/exam?limit=10&category=${encodeURIComponent(suggestedChapter.title)}`) }}
               />
             ) : null
           ) : (
             <TodayCard
-              context={`Placement prep · ${selectedCompany}`}
-              title={selectedCompany === 'All Companies' ? 'Aptitude & technical mock test' : `${selectedCompany} mock test`}
-              subtitle="15 minutes, timed like a real screening round."
-              primary={{ label: 'Start mock test', icon: 'play-arrow', onPress: () => setShowExamModal(true) }}
-              secondary={{ label: 'Interview', icon: 'record-voice-over', onPress: () => router.push('/interview-simulator') }}
+              context={tr(`Placement prep · ${selectedCompany}`, `પ્લેસમેન્ટ તૈયારી · ${selectedCompany === 'All Companies' ? 'બધી કંપનીઓ' : selectedCompany}`)}
+              title={selectedCompany === 'All Companies' ? tr('Aptitude & technical mock test', 'ઍપ્ટિટ્યૂડ અને ટેક્નિકલ મૉક ટેસ્ટ') : tr(`${selectedCompany} mock test`, `${selectedCompany} મૉક ટેસ્ટ`)}
+              subtitle={tr('15 minutes, timed like a real screening round.', '15 મિનિટ, સાચા સ્ક્રીનિંગ રાઉન્ડ જેવો સમય.')}
+              primary={{ label: tr('Start mock test', 'મૉક ટેસ્ટ શરૂ કરો'), icon: 'play-arrow', onPress: () => setShowExamModal(true) }}
+              secondary={{ label: tr('Interview', 'ઇન્ટરવ્યૂ'), icon: 'record-voice-over', onPress: () => router.push('/interview-simulator') }}
+            />
+          )}
+          </View>
+
+          {isSchoolMode && (
+            <PlanCard
+              countdown={countdown}
+              plan={plan}
+              onOpen={(item) => router.push({ pathname: '/(tabs)/courses', params: { subject: item.subject.id } })}
             />
           )}
 
@@ -313,32 +401,34 @@ export default function DashboardScreen() {
             <View style={styles.section}>
               <View style={[styles.sectionHeaderRow, styles.padded]}>
                 <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-                  {isSchoolMode ? 'Your textbooks' : 'Your subjects'}
+                  {isSchoolMode ? tr('Your textbooks', 'તમારાં પાઠ્યપુસ્તકો') : tr('Your subjects', 'તમારા વિષયો')}
                 </Text>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Text style={[styles.sectionHeaderLink, { color: colors.primary }]}>All courses</Text>
+                  <Text style={[styles.sectionHeaderLink, { color: colors.primary }]}>{tr('All courses', 'બધા વિષયો')}</Text>
                 </TouchableOpacity>
               </View>
-              <TextbookShelf
-                subjects={activeSubjects}
-                gujarati={isGSEB}
-                completedIds={completedChapterIds}
-                onOpen={(sub) => router.push({ pathname: '/(tabs)/courses', params: { subject: sub.id } })}
-              />
+              <View ref={shelfRef} collapsable={false}>
+                <TextbookShelf
+                  subjects={activeSubjects}
+                  gujarati={isGujarati}
+                  completedIds={completedChapterIds}
+                  onOpen={(sub) => router.push({ pathname: '/(tabs)/courses', params: { subject: sub.id } })}
+                />
+              </View>
             </View>
           )}
 
           <View style={styles.padded}>
-            <DailyChallengeCard userGrade={userGrade} streakCount={userStats?.streakCount || 1} />
+            <DailyChallengeCard userGrade={userGrade} streakCount={streak} />
           </View>
 
           <View style={[styles.section, styles.padded]}>
-            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>Practice</Text>
+            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>{tr('Practice', 'પ્રેક્ટિસ')}</Text>
             <ToolList items={practiceTools} />
           </View>
 
           <View style={[styles.section, styles.padded]}>
-            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>Compete and track</Text>
+            <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>{tr('Compete and track', 'સ્પર્ધા અને પ્રગતિ')}</Text>
             <View style={styles.competeRow}>
               {competeTools.map((t) => (
                 <TouchableOpacity
@@ -358,95 +448,80 @@ export default function DashboardScreen() {
           {/* College-only placement tools */}
           {!isSchoolMode && (
             <View style={styles.padded}>
-
-              {/* Track Switcher */}
               <TrackSwitcher
                 activeTrack={activeTrack}
                 onSelectTrack={(track) => setActiveTrack(track)}
               />
 
-              {/* AI Weak Spot Diagnostic Card */}
-              <View
-                style={[
-                  styles.diagnosticCard,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.outlineVariant,
-                  },
-                ]}
-              >
+              {/* Weak topics: only real data; otherwise invite a first check */}
+              <View style={[styles.diagnosticCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
                 <View style={styles.diagnosticHeader}>
                   <View style={[styles.diagnosticIconCircle, { backgroundColor: colors.primaryFixed }]}>
                     <MaterialIcons name="track-changes" size={22} color={colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.diagnosticTitle, { color: colors.onSurface }]}>
-                      Find your weak topics
+                      {tr('Find your weak topics', 'તમારા નબળા વિષયો શોધો')}
                     </Text>
                     <Text style={[styles.diagnosticSub, { color: colors.onSurfaceVariant }]}>
-                      Based on your recent test answers
+                      {weakSpots.length > 0
+                        ? tr('Based on your recent test answers', 'તમારા તાજેતરના ટેસ્ટના જવાબો પરથી')
+                        : tr('Take a short check and we will show where to focus.', 'નાની ચકાસણી આપો, ક્યાં ધ્યાન આપવું તે અમે બતાવીશું.')}
                     </Text>
                   </View>
                 </View>
 
-                {/* Weak Category Tags */}
-                <View style={styles.weakTagsRow}>
-                  {weakSpots.slice(0, 2).map((topic, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.weakTag,
-                        { backgroundColor: colors.errorContainer },
-                      ]}
-                    >
-                      <MaterialIcons name="trending-down" size={12} color={colors.error} />
-                      <Text style={[styles.weakTagText, { color: colors.error }]} numberOfLines={1}>
-                        {topic}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                {weakSpots.length > 0 && (
+                  <View style={styles.weakTagsRow}>
+                    {weakSpots.slice(0, 2).map((topic, i) => (
+                      <View key={i} style={[styles.weakTag, { backgroundColor: colors.errorContainer }]}>
+                        <MaterialIcons name="trending-down" size={12} color={colors.error} />
+                        <Text style={[styles.weakTagText, { color: colors.error }]} numberOfLines={1}>
+                          {topic}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
 
                 <TouchableOpacity
                   activeOpacity={0.85}
                   style={[styles.launchDiagnosticBtn, { backgroundColor: colors.primary }]}
                   onPress={() => router.push('/exam?isDiagnostic=true&limit=10')}
                 >
-                  <MaterialIcons name="bolt" size={18} color="#ffffff" />
-                  <Text style={styles.launchDiagnosticText}>
-                    Take a 10-minute check
+                  <MaterialIcons name="bolt" size={18} color={colors.onPrimary} />
+                  <Text style={[styles.launchDiagnosticText, { color: colors.onPrimary }]}>
+                    {tr('Take a 10-minute check', '10 મિનિટની ચકાસણી આપો')}
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Target Company Filter (Dynamic from MongoDB) */}
               <CompanyFilterBar
                 selectedCompany={selectedCompany}
                 onSelectCompany={(company) => setSelectedCompany(company)}
               />
-
             </View>
           )}
 
           {/* Progress */}
           <View style={[styles.section, styles.padded]}>
-            <StreakWidget
-              streakCount={userStats?.streakCount || 1}
-              recentActivity={userStats?.recentActivity || []}
-            />
+            <StreakWidget streakCount={streak} recentActivity={recentActivity} />
             <StatsCard
               totalTests={userStats?.totalTests || 0}
               avgScore={userStats?.avgScore || 0}
               totalQuestions={userStats?.totalQuestionsAnswered || 0}
             />
             <PerformanceChart
-              scoresHistory={(userStats?.recentActivity || []).map((r: any) => r.scorePercentage).reverse()}
-              recentActivity={userStats?.recentActivity || []}
+              scoresHistory={recentActivity.map((r: any) => r.scorePercentage).reverse()}
+              recentActivity={recentActivity}
             />
-            <RecentActivityList items={userStats?.recentActivity || []} />
+            <RecentActivityList items={recentActivity} />
           </View>
         </ScrollView>
       )}
+
+      <CoachTour visible={showTour && !loading} steps={tourSteps} rootRef={rootRef} onDone={finishTour} />
+      </View>
 
       {/* Grade Selector Modal */}
       <AcademicGradeModal
@@ -457,68 +532,6 @@ export default function DashboardScreen() {
         onClose={() => setShowGradeModal(false)}
         onSave={handleSaveGrade}
       />
-
-      {/* Chapter Reader Summary Modal */}
-      <Modal
-        visible={!!selectedChapterForRead}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSelectedChapterForRead(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                <MaterialIcons name="menu-book" size={24} color={colors.primary} />
-                <Text style={[styles.modalTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                  {isGSEB && selectedChapterForRead?.titleGujarati
-                    ? selectedChapterForRead.titleGujarati
-                    : selectedChapterForRead?.title}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setSelectedChapterForRead(null)}>
-                <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 380, marginVertical: 10 }}>
-              <Text style={[styles.chapterReadHeading, { color: colors.primary }]}>
-                Chapter Summary & Core Concepts:
-              </Text>
-              <Text style={[styles.chapterReadBody, { color: colors.onSurface }]}>
-                {selectedChapterForRead?.summary}
-              </Text>
-
-              <View style={[styles.chapterReadTipBox, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.1)' : '#E3EDFC' }]}>
-                <Text style={[styles.chapterReadTipTitle, { color: colors.primary }]}>
-                  💡 NCERT / GSEB Exam Advice:
-                </Text>
-                <Text style={[styles.chapterReadTipText, { color: colors.onSurfaceVariant }]}>
-                  {isGSEB
-                    ? 'પાઠ્યપુસ્તકના સ્વાધ્યાયના પ્રશ્નો અને ઉદાહરણો સારી રીતે સમજો. પ્રકરણ ક્વિઝ આપીને તમારી તૈયારી ચકાસો.'
-                    : `Review the textbook exercises thoroughly. Practice ${selectedChapterForRead?.questionCount || 15} questions in the chapter quiz to reinforce your understanding.`}
-                </Text>
-              </View>
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[styles.launchBtn, MindSprintShadows.glow]}
-              onPress={() => {
-                const chap = selectedChapterForRead;
-                setSelectedChapterForRead(null);
-                if (chap) {
-                  router.push(`/exam?limit=10&category=${encodeURIComponent(chap.title)}`);
-                }
-              }}
-            >
-              <MaterialIcons name="play-arrow" size={22} color="#ffffff" />
-              <Text style={styles.launchBtnText}>
-                Take Chapter Assessment (10 Qs)
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Custom Exam Setup Modal */}
       <Modal
@@ -533,17 +546,16 @@ export default function DashboardScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MaterialIcons name="tune" size={22} color={colors.primary} />
                 <Text style={[styles.modalTitle, { color: colors.onSurface }]}>
-                  Exam Configurator
+                  {tr('Set up your test', 'તમારો ટેસ્ટ તૈયાર કરો')}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => setShowExamModal(false)}>
+              <TouchableOpacity onPress={() => setShowExamModal(false)} accessibilityLabel={tr('Close', 'બંધ કરો')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
 
-            {/* Question Count Chips */}
             <Text style={[styles.modalSectionLabel, { color: colors.onSurface }]}>
-              1. Select Number of Questions:
+              {tr('Number of questions', 'પ્રશ્નોની સંખ્યા')}
             </Text>
             <View style={styles.chipRow}>
               {[10, 25, 50].map((num) => (
@@ -556,49 +568,47 @@ export default function DashboardScreen() {
                       : { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant },
                   ]}
                   onPress={() => setSelectedLimit(num)}
+                  accessibilityState={{ selected: selectedLimit === num }}
                 >
                   <Text
                     style={[
                       styles.chipText,
-                      { color: selectedLimit === num ? '#ffffff' : colors.onSurface },
+                      { color: selectedLimit === num ? colors.onPrimary : colors.onSurface },
                     ]}
                   >
-                    {num} Qs ({num === 50 ? '45m' : num === 25 ? '25m' : '10m'})
+                    {tr(`${num} questions · ${num === 50 ? 45 : num === 25 ? 25 : 10} min`, `${num} પ્રશ્નો · ${num === 50 ? 45 : num === 25 ? 25 : 10} મિનિટ`)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* Launch Exam Action */}
             <TouchableOpacity
               style={[styles.launchBtn, MindSprintShadows.glow]}
               onPress={() => {
                 setShowExamModal(false);
                 router.push(
-                  `/exam?limit=${selectedLimit}&category=${encodeURIComponent(selectedCategory)}&company=${encodeURIComponent(selectedCompany)}`
+                  `/exam?limit=${selectedLimit}&category=${encodeURIComponent('All Topics')}&company=${encodeURIComponent(selectedCompany)}`
                 );
               }}
             >
               <MaterialIcons name="play-arrow" size={22} color="#ffffff" />
               <Text style={styles.launchBtnText}>
-                Launch {selectedLimit}-Question Test
+                {tr(`Start ${selectedLimit}-question test`, `${selectedLimit} પ્રશ્નોનો ટેસ્ટ શરૂ કરો`)}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* Morning Sprint Modal */}
       <MorningSprintModal
         visible={showMorningSprint}
         onClose={() => setShowMorningSprint(false)}
       />
 
-      {/* Share Progress Modal */}
       <ShareProgressModal
         visible={showShareProgress}
         onClose={() => setShowShareProgress(false)}
-        streakDays={userStats?.streakCount || 1}
+        streakDays={streak}
         masteryPercentage={userStats?.avgScore || 0}
         chaptersCompleted={completedChapterIds.length}
         questionsSolved={userStats?.totalQuestionsAnswered || 0}

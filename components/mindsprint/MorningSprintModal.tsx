@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { SpacedItem, SpacedRepetitionStorage } from '@/services/spacedRepetitionStorage';
 
@@ -26,10 +27,9 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
 }) => {
   const { colors, isDarkMode } = useTheme();
   const { user } = useAuth();
+  const { tr, isGujarati: isGSEB } = useLanguage();
 
   const userGrade = user?.grade || '10';
-  const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
 
   const [loading, setLoading] = useState<boolean>(true);
   const [items, setItems] = useState<SpacedItem[]>([]);
@@ -38,27 +38,29 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
   const [completed, setCompleted] = useState<boolean>(false);
   const [correctCount, setCorrectCount] = useState<number>(0);
 
-  useEffect(() => {
+  const userEmail = user?.email;
+  // Reset the card state each time the sheet opens (during render, no effect needed).
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
     if (visible) {
-      loadSprintCards();
+      setLoading(true);
+      setCurrentIndex(0);
+      setIsRevealed(false);
+      setCompleted(false);
+      setCorrectCount(0);
     }
-  }, [visible, userGrade, user?.email]);
+  }
 
-  const loadSprintCards = async () => {
-    setLoading(true);
-    setCurrentIndex(0);
-    setIsRevealed(false);
-    setCompleted(false);
-    setCorrectCount(0);
-    try {
-      const cards = await SpacedRepetitionStorage.getItemsForReview(user?.email || 'guest', userGrade);
-      setItems(cards);
-    } catch (e) {
-      console.warn('Error loading sprint cards:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!visible) return;
+    let active = true;
+    SpacedRepetitionStorage.getItemsForReview(userEmail || 'guest', userGrade)
+      .then((cards) => { if (active) setItems(cards); })
+      .catch((e) => console.warn('Error loading sprint cards:', e))
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [visible, userGrade, userEmail]);
 
   const handleAnswer = async (remembered: boolean) => {
     const currentItem = items[currentIndex];
@@ -96,15 +98,15 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[styles.headerTitle, { color: colors.onSurface }]}>
-                  2-minute revision
+                  {tr('2-minute revision', '2 મિનિટનું પુનરાવર્તન')}
                 </Text>
                 <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-                  Recall what you studied before
+                  {tr('Recall what you studied before', 'પહેલાં ભણેલું યાદ કરો')}
                 </Text>
               </View>
             </View>
 
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel={tr('Close', 'બંધ કરો')}>
               <MaterialIcons name="close" size={22} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
@@ -113,30 +115,30 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
             <View style={styles.centerBox}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={[styles.subText, { color: colors.onSurfaceVariant, marginTop: 10 }]}>
-                Loading your revision cards…
+                {tr('Loading your revision cards…', 'પુનરાવર્તન કાર્ડ લોડ થાય છે…')}
               </Text>
             </View>
           ) : completed ? (
             /* COMPLETED SPRINT SCREEN */
             <View style={styles.finishBox}>
-              <View style={[styles.trophyCircle, { backgroundColor: 'rgba(18, 128, 92, 0.15)' }]}>
-                <MaterialIcons name="local-fire-department" size={48} color="#F4A30B" />
+              <View style={[styles.trophyCircle, { backgroundColor: colors.tertiaryContainer }]}>
+                <MaterialIcons name="check-circle" size={48} color={colors.tertiary} />
               </View>
               <Text style={[styles.finishTitle, { color: colors.onSurface }]}>
-                Revision done
+                {tr('Revision done', 'પુનરાવર્તન પૂરું')}
               </Text>
               <Text style={[styles.finishSub, { color: colors.onSurfaceVariant }]}>
-                You reviewed {items.length} cards today and recalled {correctCount}/{items.length} correctly. Your streak is safe for today.
+                {tr(
+                  `You reviewed ${items.length} cards and remembered ${correctCount} of them. Cards you missed will come back sooner.`,
+                  `તમે ${items.length} કાર્ડ જોયાં અને ${correctCount} યાદ રહ્યાં. ભુલાયેલાં કાર્ડ જલદી ફરી આવશે.`
+                )}
               </Text>
-              <View style={styles.xpBadge}>
-                <Text style={styles.xpBadgeText}>+50 XP</Text>
-              </View>
 
               <TouchableOpacity
                 style={[styles.doneBtn, { backgroundColor: colors.primary }]}
                 onPress={onClose}
               >
-                <Text style={styles.doneBtnText}>Back to studying</Text>
+                <Text style={styles.doneBtnText}>{tr('Back to studying', 'ભણવા પાછા જાઓ')}</Text>
               </TouchableOpacity>
             </View>
           ) : currentItem ? (
@@ -145,11 +147,11 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
               {/* Progress Bar & Leitner Box Indicator */}
               <View style={styles.progressRow}>
                 <Text style={[styles.progressText, { color: colors.onSurfaceVariant }]}>
-                  Card {currentIndex + 1} of {items.length} • {currentItem.subject}
+                  {tr(`Card ${currentIndex + 1} of ${items.length}`, `${items.length} માંથી કાર્ડ ${currentIndex + 1}`)} · {currentItem.subject}
                 </Text>
                 <View style={[styles.boxBadge, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : '#E4EAF8' }]}>
                   <Text style={[styles.boxBadgeText, { color: colors.primary }]}>
-                    Box {currentItem.box}/5
+                    {tr(`Level ${currentItem.box} of 5`, `સ્તર ${currentItem.box}/5`)}
                   </Text>
                 </View>
               </View>
@@ -178,7 +180,7 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                 ]}
               >
                 <Text style={[styles.cardPrompt, { color: colors.primary }]}>
-                  {isRevealed ? 'Answer' : 'Try to recall'}
+                  {isRevealed ? tr('Answer', 'જવાબ') : tr('Try to recall', 'યાદ કરવાનો પ્રયાસ કરો')}
                 </Text>
 
                 <Text style={[styles.cardContentText, { color: colors.onSurface }]}>
@@ -191,7 +193,7 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                     onPress={() => setIsRevealed(true)}
                   >
                     <MaterialIcons name="touch-app" size={18} color="#ffffff" />
-                    <Text style={styles.revealBtnText}>Show answer</Text>
+                    <Text style={styles.revealBtnText}>{tr('Show answer', 'જવાબ બતાવો')}</Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.actionRow}>
@@ -200,7 +202,7 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                       onPress={() => handleAnswer(false)}
                     >
                       <MaterialIcons name="close" size={18} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>Didn’t know</Text>
+                      <Text style={styles.actionBtnText}>{tr('Didn’t know', 'ખબર નહોતી')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -208,13 +210,27 @@ export const MorningSprintModal: React.FC<MorningSprintModalProps> = ({
                       onPress={() => handleAnswer(true)}
                     >
                       <MaterialIcons name="check" size={18} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>Knew it</Text>
+                      <Text style={styles.actionBtnText}>{tr('Knew it', 'આવડતું હતું')}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
               </View>
             </View>
-          ) : null}
+          ) : (
+            /* Nothing due: say so and offer the way forward */
+            <View style={styles.finishBox}>
+              <MaterialIcons name="event-available" size={40} color={colors.primary} />
+              <Text style={[styles.finishTitle, { color: colors.onSurface }]}>
+                {tr('Nothing to revise right now', 'હાલ પુનરાવર્તન માટે કંઈ નથી')}
+              </Text>
+              <Text style={[styles.finishSub, { color: colors.onSurfaceVariant }]}>
+                {tr('Finish a chapter quiz and its key points will show up here for revision.', 'પ્રકરણની ક્વિઝ પૂરી કરો, તેના મુખ્ય મુદ્દા અહીં પુનરાવર્તન માટે આવશે.')}
+              </Text>
+              <TouchableOpacity style={[styles.doneBtn, { backgroundColor: colors.primary }]} onPress={onClose}>
+                <Text style={styles.doneBtnText}>{tr('Back to studying', 'ભણવા પાછા જાઓ')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </Modal>

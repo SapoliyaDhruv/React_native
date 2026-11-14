@@ -1,2658 +1,283 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Linking,
-  Dimensions,
-  Alert,
-  Platform,
-  TextInput,
-} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import YoutubePlayer from 'react-native-youtube-iframe';
-import * as WebBrowser from 'expo-web-browser';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
+import { useLanguage } from '@/context/LanguageContext';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { subjectTone } from '@/constants/subjectTones';
-import { ApiService, API_BASE_URL } from '@/services/api';
-import {
-  AcademicGrade,
-  GradeCurriculum,
-  SubjectChapter,
-  ChapterVideo,
-  ACADEMIC_CURRICULUM,
-  SamplePaper,
-  ImportantQuestion,
-} from '@/constants/academicData';
-import { GlossaryTooltip } from '@/components/mindsprint/GlossaryTooltip';
+import { ACADEMIC_CURRICULUM, AcademicGrade, GradeCurriculum, SubjectChapter } from '@/constants/academicData';
+import { ApiService } from '@/services/api';
 import { ServerStatusBanner } from '@/components/mindsprint/ServerStatusBanner';
 import { ContinueLearningCard } from '@/components/mindsprint/ContinueLearningCard';
-import { ChapterSearchResults, ChapterSearchHit, searchChapters } from '@/components/mindsprint/ChapterSearchResults';
-import { getLastChapter, saveLastChapter, LastChapter } from '@/services/learningProgress';
-import {
-  offlineSupported,
-  getSavedChapterIds,
-  saveChapterOffline,
-  openSavedChapter,
-} from '@/services/offlineChapters';
+import { ChapterSearchResults, searchChapters } from '@/components/mindsprint/ChapterSearchResults';
+import { useCourseProgress } from '@/components/courses/useCourseProgress';
+import { ChapterRow } from '@/components/courses/ChapterRow';
+import { SubjectHeader } from '@/components/courses/SubjectHeader';
+import { FormulasView } from '@/components/courses/FormulasView';
+import { ImportantQuestionsView } from '@/components/courses/ImportantQuestionsView';
+import { BoardPapersView } from '@/components/courses/BoardPapersView';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const VIDEO_HEIGHT = Math.round((SCREEN_WIDTH - 48) * 9 / 16);
+type View_ = 'chapters' | 'formulas' | 'imp' | 'papers';
 
+/**
+ * Courses: pick a subject, scan its chapters, tap one to open the chapter page.
+ * Formulas, important questions and board papers are one tap away in the chips.
+ */
 export default function CoursesScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { tr, isGujarati, toggleLang } = useLanguage();
 
-  const userGrade = user?.grade || '7';
+  const userGrade = (user?.grade || '7') as AcademicGrade;
   const isSchoolMode = userGrade !== 'college';
-  // Language switch: Gujarati or English chapter/subject names (defaults to the student's medium)
-  const [useGujarati, setUseGujarati] = useState<boolean>(user?.medium !== 'English');
-  const isGSEB = isSchoolMode && useGujarati;
-  // Official Gujarat State Board (GSSTB / Shalamitra) textbooks enabled for Classes 7 to 12
-  const isPdfEligibleGrade = ['7', '8', '9', '10', '11', '12'].includes(userGrade);
+  const localCurriculum = ACADEMIC_CURRICULUM[userGrade] || ACADEMIC_CURRICULUM['7'];
 
-  const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
-    ACADEMIC_CURRICULUM[userGrade as AcademicGrade] || ACADEMIC_CURRICULUM['7']
-  );
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
-    ACADEMIC_CURRICULUM[userGrade as AcademicGrade]?.subjects?.[0]?.id || 'g7-math'
-  );
-  const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'imp' | 'books' | 'papers' | 'videos' | 'practice' | 'formulas'>('all');
-  const [samplePapers, setSamplePapers] = useState<SamplePaper[]>([]);
-  const [importantQuestions, setImportantQuestions] = useState<ImportantQuestion[]>([]);
-  const [selectedMarksFilter, setSelectedMarksFilter] = useState<number | null>(null);
-  const [expandedQuestionIds, setExpandedQuestionIds] = useState<string[]>([]);
-
-  // Modals state
-  const [selectedChapterForRead, setSelectedChapterForRead] = useState<SubjectChapter | null>(null);
-  const [selectedChapterForVideo, setSelectedChapterForVideo] = useState<SubjectChapter | null>(null);
-  const [activeVideoOption, setActiveVideoOption] = useState<ChapterVideo | null>(null);
-  const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
-  const [selectedChapterForQuiz, setSelectedChapterForQuiz] = useState<SubjectChapter | null>(null);
-  const [selectedLimit, setSelectedLimit] = useState<number>(10);
-  const [activeGlossaryTerm, setActiveGlossaryTerm] = useState<string | null>(null);
-
-  // Chapter completion tracking state
-  const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
-  const storageKey = `@mindsprint_completed_chapters_${userGrade}_${user?.email || 'guest'}`;
-
-  // Chapter bookmark state
-  const [bookmarkedChapterIds, setBookmarkedChapterIds] = useState<string[]>([]);
-  const bookmarkKey = `@mindsprint_bookmarked_chapters_${userGrade}_${user?.email || 'guest'}`;
-
-  // Search, "continue where you left off", offline saves and server status
+  const [curriculum, setCurriculum] = useState<GradeCurriculum>(localCurriculum);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(localCurriculum.subjects[0]?.id || '');
+  const [view, setView] = useState<View_>('chapters');
   const [searchQuery, setSearchQuery] = useState('');
-  const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
-  const [savedChapterIds, setSavedChapterIds] = useState<string[]>([]);
-  const [savingChapterId, setSavingChapterId] = useState<string | null>(null);
   const [serverOnline, setServerOnline] = useState<boolean | null>(null);
   const [checkingServer, setCheckingServer] = useState(false);
-  const langKey = '@mindsprint_courses_gujarati';
+
+  const progress = useCourseProgress(userGrade, user?.email);
 
   const checkServer = async () => {
     setCheckingServer(true);
-    const ok = await ApiService.checkServer();
-    setServerOnline(ok);
+    setServerOnline(await ApiService.checkServer());
     setCheckingServer(false);
   };
 
   useEffect(() => {
-    checkServer();
-    getSavedChapterIds().then(setSavedChapterIds).catch(() => {});
-    AsyncStorage.getItem(langKey).then((v) => { if (v !== null) setUseGujarati(v === '1'); }).catch(() => {});
+    let active = true;
+    ApiService.checkServer().then((ok) => { if (active) setServerOnline(ok); });
+    return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    getLastChapter(userGrade, user?.email).then(setLastChapter).catch(() => {});
-  }, [userGrade, user?.email]);
-
-  const toggleLanguage = async () => {
-    const next = !useGujarati;
-    setUseGujarati(next);
-    try { await AsyncStorage.setItem(langKey, next ? '1' : '0'); } catch (_) {}
-  };
-
-  // Load Curriculum: immediately seed from local curriculum and sync from backend
-  useEffect(() => {
-    const localCurriculum = ACADEMIC_CURRICULUM[userGrade as AcademicGrade] || ACADEMIC_CURRICULUM['7'];
+  // Grade changed: show the bundled curriculum immediately, then sync from the server.
+  const [loadedGrade, setLoadedGrade] = useState(userGrade);
+  if (loadedGrade !== userGrade) {
+    setLoadedGrade(userGrade);
     setCurriculum(localCurriculum);
-    if (!localCurriculum.subjects.some((s: any) => s.id === selectedSubjectId)) {
-      setSelectedSubjectId(localCurriculum.subjects[0]?.id || 'g7-math');
-    }
-
-    async function loadCurriculum() {
-      try {
-        const currData = await ApiService.getCurriculum(userGrade);
-        if (currData && currData.subjects && currData.subjects.length > 0) {
-          setCurriculum(currData);
-          if (!currData.subjects.some((s: any) => s.id === selectedSubjectId)) {
-            setSelectedSubjectId(currData.subjects[0].id);
-          }
-        }
-      } catch (e) {
-        console.warn('Courses curriculum load note:', e);
-      }
-    }
-    loadCurriculum();
+    setSelectedSubjectId(localCurriculum.subjects[0]?.id || '');
+  }
+  useEffect(() => {
+    let active = true;
+    ApiService.getCurriculum(userGrade)
+      .then((data) => {
+        if (active && data?.subjects?.length) setCurriculum(data);
+      })
+      .catch(() => {});
+    return () => { active = false; };
   }, [userGrade]);
 
-  // Load Official Sample & Board Exam Papers
-  useEffect(() => {
-    async function loadPapers() {
-      try {
-        const targetBoard = isSchoolMode ? 'GSEB' : (user?.board || 'CBSE');
-        const papers = await ApiService.getSamplePapers(userGrade, targetBoard);
-        setSamplePapers(papers);
-      } catch (e) {
-        console.warn('Error loading sample papers:', e);
-      }
-    }
-    loadPapers();
-  }, [userGrade, isSchoolMode, user?.board]);
-
-  // Load Frequently Asked Important Questions (1M, 2M, 3M, 4M)
-  useEffect(() => {
-    async function loadImpQs() {
-      try {
-        const activeSub = curriculum?.subjects.find((s) => s.id === selectedSubjectId);
-        const questions = await ApiService.getImportantQuestions(
-          userGrade,
-          activeSub?.name,
-          selectedMarksFilter || undefined
-        );
-        setImportantQuestions(questions);
-      } catch (e) {
-        console.warn('Error loading important questions:', e);
-      }
-    }
-    loadImpQs();
-  }, [userGrade, selectedSubjectId, curriculum, selectedMarksFilter]);
-
-  const toggleExpandQuestion = (id: string) => {
-    setExpandedQuestionIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  // Load saved completed chapters
-  useEffect(() => {
-    async function loadSaved() {
-      try {
-        const [chapRaw, bookRaw] = await Promise.all([
-          AsyncStorage.getItem(storageKey),
-          AsyncStorage.getItem(bookmarkKey),
-        ]);
-        if (chapRaw) setCompletedChapterIds(JSON.parse(chapRaw));
-        if (bookRaw) setBookmarkedChapterIds(JSON.parse(bookRaw));
-      } catch (_) {}
-    }
-    loadSaved();
-  }, [storageKey, bookmarkKey]);
-
-  const toggleChapterComplete = async (chapId: string) => {
-    const updated = completedChapterIds.includes(chapId)
-      ? completedChapterIds.filter((id) => id !== chapId)
-      : [...completedChapterIds, chapId];
-    setCompletedChapterIds(updated);
-    try { await AsyncStorage.setItem(storageKey, JSON.stringify(updated)); } catch (_) {}
-  };
-
-  const toggleChapterBookmark = async (chapId: string) => {
-    const updated = bookmarkedChapterIds.includes(chapId)
-      ? bookmarkedChapterIds.filter((id) => id !== chapId)
-      : [...bookmarkedChapterIds, chapId];
-    setBookmarkedChapterIds(updated);
-    try { await AsyncStorage.setItem(bookmarkKey, JSON.stringify(updated)); } catch (_) {}
-  };
-
-  const activeSubjects = curriculum?.subjects || ACADEMIC_CURRICULUM[userGrade]?.subjects || [];
-  const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
-  const chapters = activeSubject?.chapters || [];
-
-  const toAbsoluteUrl = (url: string) => {
-    if (url.startsWith('http')) return url;
-    const normalizedPath = url.startsWith('/') ? url : `/${url}`;
-    return `${API_BASE_URL.replace(/\/api\/?$/, '')}${normalizedPath}`;
-  };
-
-  const rememberChapter = (chap: SubjectChapter, action: LastChapter['action'], subject = activeSubject) => {
-    if (!subject) return;
-    const entry = {
-      grade: userGrade,
-      subjectId: subject.id,
-      chapterId: chap.id,
-      chapterNumber: chap.chapterNumber,
-      title: chap.title,
-      titleGujarati: chap.titleGujarati,
-      subjectName: isGSEB && subject.nameGujarati ? subject.nameGujarati : subject.name,
-      action,
-    };
-    setLastChapter(saveLastChapter(user?.email, entry));
-  };
-
-  const handleOpenNotes = (chap: SubjectChapter) => {
-    rememberChapter(chap, 'notes');
-    setSelectedChapterForRead(chap);
-  };
-
-  const handleSaveOffline = async (chap: SubjectChapter) => {
-    if (!chap.chapterPdfUrl && !chap.textbookPdfUrl) return;
-    setSavingChapterId(chap.id);
-    try {
-      await saveChapterOffline(chap.id, toAbsoluteUrl((chap.chapterPdfUrl || chap.textbookPdfUrl) as string));
-      setSavedChapterIds((prev) => (prev.includes(chap.id) ? prev : [...prev, chap.id]));
-      Alert.alert('Saved for offline use', 'You can now open this chapter without internet from the Textbooks tab.');
-    } catch (e: any) {
-      Alert.alert('Could not save the chapter', e?.message || 'Please try again.', [
-        { text: 'Try again', onPress: () => handleSaveOffline(chap) },
-        { text: 'Close', style: 'cancel' },
-      ]);
-    } finally {
-      setSavingChapterId(null);
-    }
-  };
-
-  const handleOpenSaved = async (chap: SubjectChapter) => {
-    try {
-      const opened = await openSavedChapter(chap.id, chap.title);
-      if (!opened) {
-        setSavedChapterIds((prev) => prev.filter((id) => id !== chap.id));
-        Alert.alert('Saved copy not found', 'Please save the chapter again while you are online.');
-      } else {
-        rememberChapter(chap, 'pdf');
-      }
-    } catch (e: any) {
-      Alert.alert('Could not open the saved chapter', e?.message || 'Please try again.');
-    }
-  };
-
-  const handleOpenPdf = async (url?: string, chap?: SubjectChapter) => {
-    if (chap) rememberChapter(chap, 'pdf');
-    if (!url) {
-      // Default to official GSSTB online textbook portal
-      url = activeSubject?.officialTextbookPdf || 'https://gujarat-education.gov.in/textbook/textbook.htm';
-    }
-    // Resolve relative backend routes (/api/curriculum/textbook-view?...) to absolute server URL
-    const fullUrl = toAbsoluteUrl(url);
-
-    if (Platform.OS === 'web') {
-      try {
-        if (typeof window !== 'undefined') {
-          window.open(fullUrl, '_blank');
-          return;
-        }
-      } catch (_) {}
-    }
-
-    try {
-      await WebBrowser.openBrowserAsync(fullUrl, {
-        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-        toolbarColor: colors.primary,
-      });
-    } catch (_) {
-      try {
-        await Linking.openURL(fullUrl);
-      } catch (err) {
-        // Fallback using Google Docs viewer for high compatibility on all devices
-        const gDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}`;
-        try {
-          await Linking.openURL(gDocsUrl);
-        } catch (_) {
-          Alert.alert(
-            'Could not open the textbook',
-            'Please check your internet connection and try again. If the problem continues, make sure the MindSprint server is running.',
-            [{ text: 'Try again', onPress: () => handleOpenPdf(url, chap) }, { text: 'Close', style: 'cancel' }]
-          );
-        }
-      }
-    }
-  };
-
-  const handleOpenVideoModal = (chap: SubjectChapter) => {
-    if (!chap.videos || chap.videos.length === 0) {
-      Alert.alert(
-        'No video for this chapter yet',
-        'We have not added a video lesson for this chapter. You can search YouTube for one.',
-        [
-          {
-            text: 'Search YouTube',
-            onPress: () =>
-              handleLaunchExternalVideo('', `ધોરણ ${userGrade} ${activeSubject?.nameGujarati || ''} ${chap.titleGujarati || chap.title}`),
-          },
-          { text: 'Close', style: 'cancel' },
-        ]
-      );
-      return;
-    }
-    rememberChapter(chap, 'video');
-    setSelectedChapterForVideo(chap);
-    setActiveVideoOption(chap.videos[0]);
-  };
-
-  // Students can flag a wrong or broken video; it is reviewed and fixed in backend/data/videos.json
-  const submitVideoReport = async (reason: 'wrong-topic' | 'wrong-chapter' | 'not-playing' | 'other') => {
-    if (!activeVideoOption) return;
-    const ok = await ApiService.reportVideo({
-      youtubeVideoId: activeVideoOption.youtubeVideoId,
-      grade: userGrade,
-      subjectId: activeSubject?.id,
-      chapterNumber: selectedChapterForVideo?.chapterNumber,
-      reason,
-      email: user?.email,
-    });
-    Alert.alert(
-      ok ? 'Thank you' : 'Could not send the report',
-      ok ? 'We will check this video and fix it.' : 'Please check your internet connection and try again.'
-    );
-  };
-
-  const handleReportVideo = () => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.confirm('Report this video as wrong or not working?')) submitVideoReport('other');
-      return;
-    }
-    Alert.alert('What is wrong with this video?', undefined, [
-      { text: 'Wrong topic', onPress: () => submitVideoReport('wrong-topic') },
-      { text: 'Wrong chapter', onPress: () => submitVideoReport('wrong-chapter') },
-      { text: 'Not playing', onPress: () => submitVideoReport('not-playing') },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
-
-  const handleLaunchExternalVideo = async (videoId: string, searchFallback?: string) => {
-    const webUrl = videoId
-      ? `https://www.youtube.com/watch?v=${videoId}`
-      : `https://www.youtube.com/results?search_query=${encodeURIComponent(searchFallback || 'GSEB Gujarati Medium')}`;
-    const appUrl = videoId ? `vnd.youtube://${videoId}` : webUrl;
-
-    if (Platform.OS === 'web') {
-      try {
-        if (typeof window !== 'undefined') {
-          window.open(webUrl, '_blank');
-          return;
-        }
-      } catch (_) {}
-    }
-
-    try {
-      const canOpen = await Linking.canOpenURL(appUrl);
-      if (canOpen) {
-        await Linking.openURL(appUrl);
-        return;
-      }
-    } catch (_) {}
-    try {
-      await Linking.openURL(webUrl);
-    } catch (_) {
-      try {
-        await WebBrowser.openBrowserAsync(webUrl);
-      } catch (_) {
-        Alert.alert(
-          'Could not open the video',
-          'Please check your internet connection and try again.',
-          [{ text: 'Try again', onPress: () => handleLaunchExternalVideo(videoId, searchFallback) }, { text: 'Close', style: 'cancel' }]
-        );
-      }
-    }
-  };
-
-  const handleStartExam = () => {
-    if (!selectedChapterForQuiz) return;
-    const cat = selectedChapterForQuiz.title;
-    setShowConfigModal(false);
-    router.push({
-      pathname: '/exam',
-      params: {
-        category: cat,
-        limit: selectedLimit.toString(),
-      },
-    });
-  };
+  const subjects = curriculum.subjects || [];
+  const subject = subjects.find((s) => s.id === selectedSubjectId) || subjects[0];
+  const chapters = subject?.chapters || [];
+  const doneInSubject = chapters.filter((c) => progress.completedIds.includes(c.id)).length;
+  const gradeDone = subjects.reduce((n, s) => n + s.chapters.filter((c) => progress.completedIds.includes(c.id)).length, 0);
+  const gradeTotal = subjects.reduce((n, s) => n + s.chapters.length, 0);
+  const gradePct = gradeTotal ? Math.round((gradeDone / gradeTotal) * 100) : 0;
 
   const isSearching = searchQuery.trim().length > 0;
-  const searchHits = isSearching ? searchChapters(activeSubjects, searchQuery) : [];
+  const hits = isSearching ? searchChapters(subjects, searchQuery) : [];
 
-  const jumpToSubject = (hit: ChapterSearchHit) => {
-    setSelectedSubjectId(hit.subject.id);
-    setSearchQuery('');
-  };
-
-  const handleContinue = () => {
-    if (!lastChapter) return;
-    const subject = activeSubjects.find((x) => x.id === lastChapter.subjectId);
-    const chap = subject?.chapters.find((c) => c.id === lastChapter.chapterId);
-    if (!subject || !chap) return;
-    setSelectedSubjectId(subject.id);
-    if (lastChapter.action === 'video') handleOpenVideoModal(chap);
-    else if (lastChapter.action === 'pdf') handleOpenPdf(chap.textbookPdfUrl || subject.officialTextbookPdf, chap);
-    else handleOpenNotes(chap);
-  };
+  const openChapter = (chap: SubjectChapter, action?: 'video' | 'pdf' | 'notes') =>
+    router.push({ pathname: '/chapter/[id]', params: { id: chap.id, grade: userGrade, ...(action ? { action } : {}) } });
 
   // Home links here with ?subject=<id> (textbook shelf) and &resume=<ts> (Resume button).
   const params = useLocalSearchParams<{ subject?: string; resume?: string }>();
-  // Apply ?subject= once per new value (adjusting state during render, per React docs).
-  const [appliedSubjectParam, setAppliedSubjectParam] = useState<string | undefined>(undefined);
-  if (params.subject !== appliedSubjectParam) {
-    setAppliedSubjectParam(params.subject);
-    if (params.subject && activeSubjects.some((x) => x.id === params.subject)) {
+  const [appliedSubject, setAppliedSubject] = useState<string | undefined>(undefined);
+  if (params.subject !== appliedSubject) {
+    setAppliedSubject(params.subject);
+    if (params.subject && subjects.some((s) => s.id === params.subject)) {
       setSelectedSubjectId(params.subject);
       setSearchQuery('');
+      setView('chapters');
     }
   }
   const handledResume = useRef<string | undefined>(undefined);
+  const last = progress.lastChapter;
   useEffect(() => {
-    if (!params.resume || handledResume.current === params.resume || !lastChapter) return;
+    if (!params.resume || handledResume.current === params.resume || !last) return;
     handledResume.current = params.resume;
-    handleContinue();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.resume, lastChapter]);
+    router.push({ pathname: '/chapter/[id]', params: { id: last.chapterId, grade: userGrade, action: last.action } });
+  }, [params.resume, last, router, userGrade]);
 
-  const subjectCover = activeSubject ? subjectTone(activeSubject.id).cover : colors.primary;
-  const completedInSubject = chapters.filter((c) => completedChapterIds.includes(c.id)).length;
-  const progressPercent = chapters.length > 0 ? Math.round((completedInSubject / chapters.length) * 100) : 0;
+  const chips: { key: View_; label: string }[] = [
+    { key: 'chapters', label: tr('Chapters', 'પ્રકરણ') },
+    { key: 'formulas', label: tr('Formulas', 'સૂત્રો') },
+    { key: 'imp', label: tr('Important questions', 'મહત્વના પ્રશ્નો') },
+    { key: 'papers', label: tr('Board papers', 'બોર્ડ પેપર') },
+  ];
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-      edges={['top']}
-    >
-      {/* Top Header */}
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerTextCol}>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.onSurface }]}>
-            {isSchoolMode ? `Class ${userGrade} courses` : 'Placement courses'}
+            {isSchoolMode ? tr(`Class ${userGrade} courses`, `ધોરણ ${userGrade} અભ્યાસ`) : tr('Placement courses', 'પ્લેસમેન્ટ અભ્યાસ')}
           </Text>
           <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode ? `${user?.board || 'CBSE'} · ${user?.medium || 'English'} medium` : 'Campus recruitment tracks'}
+            {isSchoolMode
+              ? `${user?.board || 'GSEB'} · ${user?.medium === 'English' ? tr('English medium', 'અંગ્રેજી માધ્યમ') : tr('Gujarati medium', 'ગુજરાતી માધ્યમ')}`
+              : tr('Campus recruitment tracks', 'કેમ્પસ ભરતી')}
           </Text>
         </View>
-
-        {isSchoolMode && (
-          <TouchableOpacity
-            onPress={toggleLanguage}
-            accessibilityRole="button"
-            accessibilityLabel={useGujarati ? 'Switch names to English' : 'Switch names to Gujarati'}
-            style={[styles.langToggle, { borderColor: colors.outlineVariant, backgroundColor: colors.surface }]}
-          >
-            <MaterialIcons name="translate" size={16} color={colors.primary} />
-            <Text style={[styles.langToggleText, { color: colors.primary }]}>{useGujarati ? 'ગુજ' : 'EN'}</Text>
-          </TouchableOpacity>
-        )}
-
-        <View style={[styles.headerProgressPill, { backgroundColor: colors.tertiaryContainer }]}>
+        <TouchableOpacity
+          onPress={toggleLang}
+          accessibilityRole="button"
+          accessibilityLabel={isGujarati ? 'Switch app to English' : 'એપ ગુજરાતીમાં બદલો'}
+          style={[styles.pill, { borderColor: colors.outlineVariant, backgroundColor: colors.surface }]}
+        >
+          <MaterialIcons name="translate" size={16} color={colors.primary} />
+          <Text style={[styles.pillText, { color: colors.primary }]}>{isGujarati ? 'ગુજ' : 'EN'}</Text>
+        </TouchableOpacity>
+        <View style={[styles.pill, { backgroundColor: colors.tertiaryContainer, borderColor: colors.tertiaryContainer }]} accessibilityLabel={tr(`${gradePct}% of chapters done`, `${gradePct}% પ્રકરણ પૂર્ણ`)}>
           <MaterialIcons name="check-circle" size={15} color={colors.tertiary} />
-          <Text style={[styles.headerProgressText, { color: colors.onTertiaryContainer }]}>{progressPercent}%</Text>
+          <Text style={[styles.pillText, { color: colors.onTertiaryContainer }]}>{gradePct}%</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {serverOnline === false && <ServerStatusBanner checking={checkingServer} onRetry={checkServer} />}
 
-        {/* One search box for every chapter of every subject (video + PDF in one tap) */}
         <View style={[styles.searchBox, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <MaterialIcons name="search" size={20} color={colors.onSurfaceVariant} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search any chapter or subject"
+            placeholder={tr('Search any chapter or subject', 'કોઈપણ પ્રકરણ કે વિષય શોધો')}
             placeholderTextColor={colors.onSurfaceVariant}
-            accessibilityLabel="Search chapters"
+            accessibilityLabel={tr('Search chapters', 'પ્રકરણ શોધો')}
             returnKeyType="search"
             autoCorrect={false}
             style={[styles.searchInput, { color: colors.onSurface }]}
           />
           {isSearching && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityRole="button" accessibilityLabel="Clear search" hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityRole="button" accessibilityLabel={tr('Clear search', 'શોધ સાફ કરો')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <MaterialIcons name="close" size={20} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           )}
         </View>
 
-        {isSearching && (
+        {isSearching ? (
           <ChapterSearchResults
             query={searchQuery}
-            hits={searchHits}
-            gujarati={isGSEB}
+            hits={hits}
             onClear={() => setSearchQuery('')}
-            onOpenSubject={jumpToSubject}
-            onWatch={(hit) => {
-              setSelectedSubjectId(hit.subject.id);
-              rememberChapter(hit.chapter, 'video', hit.subject);
-              handleOpenVideoModal(hit.chapter);
-            }}
-            onPdf={(hit) => handleOpenPdf(hit.chapter.textbookPdfUrl || hit.subject.officialTextbookPdf, hit.chapter)}
+            onOpenChapter={(hit) => openChapter(hit.chapter)}
+            onWatch={(hit) => openChapter(hit.chapter, 'video')}
           />
-        )}
-
-        {!isSearching && lastChapter && <ContinueLearningCard last={lastChapter} gujarati={isGSEB} onPress={handleContinue} />}
-
-        {!isSearching && (<>
-        {/* Horizontal Subject Switcher Chips */}
-        <View style={styles.subjectChipsSection}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.subjectChipsScroll}
-          >
-            {activeSubjects.map((sub) => {
-              const isSelected = selectedSubjectId === sub.id;
-              const displayName = isGSEB && sub.nameGujarati ? sub.nameGujarati : sub.name;
-              const iconName = (sub.id.includes('math') ? 'calculate' : sub.id.includes('sci') ? 'biotech' : sub.id.includes('soc') ? 'public' : sub.id.includes('guj') ? 'edit-note' : 'menu-book') as any;
-
-              return (
-                <TouchableOpacity
-                  key={sub.id}
-                  activeOpacity={0.75}
-                  style={[
-                    styles.subjectChip,
-                    {
-                      backgroundColor: isSelected
-                        ? subjectTone(sub.id).cover
-                        : colors.surface,
-                      borderColor: isSelected ? subjectTone(sub.id).cover : colors.outlineVariant,
-                    },
-                  ]}
-                  onPress={() => setSelectedSubjectId(sub.id)}
-                >
-                  <MaterialIcons
-                    name={iconName}
-                    size={16}
-                    color={isSelected ? '#ffffff' : subjectTone(sub.id).cover}
-                  />
-                  <Text
-                    style={[
-                      styles.subjectChipText,
-                      { color: isSelected ? '#ffffff' : colors.onSurface },
-                    ]}
-                  >
-                    {displayName}
-                  </Text>
-                  <View style={[styles.chipCountBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : colors.surfaceContainer }]}>
-                    <Text style={[styles.chipCountText, { color: isSelected ? '#ffffff' : colors.onSurfaceVariant }]}>
-                      {sub.chapters?.length || 0}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* 360° Learning Feature Pillar Tabs */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillarTabsSection}>
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'videos', label: 'Videos' },
-            { key: 'books', label: 'Textbooks' },
-            { key: 'formulas', label: 'Formulas' },
-            { key: 'imp', label: 'Imp Questions' },
-            { key: 'papers', label: 'Board Papers' },
-            { key: 'practice', label: 'Practice' },
-          ].map((tab) => {
-            const isSelected = activeFilterTab === tab.key;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[
-                  styles.pillarTabChip,
-                  {
-                    backgroundColor: isSelected
-                      ? colors.primary
-                      : colors.surface,
-                    borderColor: isSelected ? colors.primary : colors.outlineVariant,
-                  },
-                ]}
-                onPress={() => setActiveFilterTab(tab.key as any)}
-              >
-                <Text
-                  style={[
-                    styles.pillarTabText,
-                    { color: isSelected ? '#ffffff' : colors.onSurface },
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* Subject Card Banner with Progress Tracker & Official Textbook PDF Button */}
-        <View
-          style={[
-            styles.subjectHeroCard,
-            { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
-            MindSprintShadows.card,
-          ]}
-        >
-          <View style={styles.subjectHeroTop}>
-            <View style={[styles.subjectHeroIcon, { backgroundColor: subjectCover }]}>
-              <MaterialIcons name={(activeSubject ? subjectTone(activeSubject.id).icon : 'menu-book') as any} size={24} color="#ffffff" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.subjectHeroTitle, { color: colors.onSurface }]}>
-                {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} (${activeSubject.name})` : activeSubject?.name}
-              </Text>
-              <Text style={[styles.subjectHeroSub, { color: colors.onSurfaceVariant }]}>
-                {chapters.length} chapters · {completedInSubject} done
-              </Text>
-            </View>
-            <View style={[styles.subjectProgressBadge, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Text style={[styles.subjectProgressText, { color: colors.onSurface }]}>
-                {progressPercent}%
-              </Text>
-            </View>
-          </View>
-
-          {/* Official Textbook Download / E-Book Reader Action Button */}
-          {activeSubject?.officialTextbookPdf && (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={[styles.officialTextbookPdfBtn, { backgroundColor: colors.primaryFixed, borderColor: colors.primaryFixed }]}
-              onPress={() => handleOpenPdf(activeSubject.officialTextbookPdf)}
-            >
-              <MaterialIcons name="picture-as-pdf" size={18} color={colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.officialTextbookPdfTitle, { color: colors.primary }]}>
-                  {isGSEB
-                    ? `${activeSubject.textbookTitleGujarati || activeSubject.nameGujarati} – full textbook`
-                    : `${activeSubject.textbookTitle || activeSubject.name} – full textbook`}
-                </Text>
-                <Text style={[styles.officialTextbookPdfSub, { color: colors.onSurfaceVariant }]}>
-                  Official {user?.board === 'GSEB' ? 'GSEB' : 'board'} PDF
-                </Text>
-              </View>
-              <MaterialIcons name="open-in-new" size={18} color={colors.primary} />
-            </TouchableOpacity>
-          )}
-
-          {/* Progress Bar */}
-          <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceContainer }]}>
-            <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: colors.accent }]} />
-          </View>
-        </View>
-
-        {/* ===================================================================== */}
-        {/* DEDICATED VIEW RENDERING BASED ON SELECTED PILLAR TAB                 */}
-        {/* ===================================================================== */}
-
-        {/* VIEW 1: TEXTBOOKS 📚 (Complete In-Depth Concept Reader & Swadhyay Solutions) */}
-        {activeFilterTab === 'books' && (
-          <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              {isGSEB && activeSubject?.nameGujarati ? `${activeSubject.nameGujarati} – textbook chapters (${chapters.length})` : `${activeSubject?.name} – textbook chapters (${chapters.length})`}
-            </Text>
-            {chapters.map((chap, idx) => {
-              const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              return (
-                <View
-                  key={chap.id}
-                  style={[
-                    styles.bookViewCard,
-                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <View style={styles.bookCardHeader}>
-                    <View style={[styles.bookNumBadge, { backgroundColor: `${subjectCover}20` }]}>
-                      <Text style={[styles.bookNumText, { color: subjectCover }]}>{idx + 1}</Text>
-                    </View>
-                    <Text style={[styles.bookChapterTitle, { color: colors.onSurface }]}>
-                      {chapterTitle}
-                    </Text>
-                  </View>
-
-                  <Text style={[styles.bookSummaryText, { color: colors.onSurfaceVariant }]}>
-                    {(isGSEB && chap.summaryGujarati) ? chap.summaryGujarati : chap.summary}
-                  </Text>
-
-                    {/* Actions Row (Read Notes, Open Chapter PDF) */}
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                      <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.primaryFixed }]}
-                        onPress={() => handleOpenNotes(chap)}
-                      >
-                        <MaterialIcons name="menu-book" size={16} color={colors.primary} />
-                        <Text style={[styles.readFullNotesBtnText, { color: colors.primary }]}>
-                          Read Notes 📖
-                        </Text>
-                      </TouchableOpacity>
-
-                      {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
-                        <TouchableOpacity
-                          style={[styles.pdfQuickBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
-                          onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
-                        >
-                          <MaterialIcons name="picture-as-pdf" size={16} color="#C8372D" />
-                          <Text style={[styles.pdfQuickBtnText, { color: colors.primary, fontWeight: '700' }]}>PDF</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-
-                    {offlineSupported && (isPdfEligibleGrade || chap.textbookPdfUrl) && (
-                      <TouchableOpacity
-                        disabled={savingChapterId === chap.id}
-                        onPress={() => (savedChapterIds.includes(chap.id) ? handleOpenSaved(chap) : handleSaveOffline(chap))}
-                        accessibilityRole="button"
-                        accessibilityLabel={savedChapterIds.includes(chap.id) ? 'Open saved offline copy' : 'Save this chapter for offline reading'}
-                        style={[styles.offlineBtn, { borderColor: savedChapterIds.includes(chap.id) ? colors.tertiary : colors.outlineVariant, opacity: savingChapterId === chap.id ? 0.6 : 1 }]}
-                      >
-                        <MaterialIcons
-                          name={savedChapterIds.includes(chap.id) ? 'offline-pin' : 'download-for-offline'}
-                          size={18}
-                          color={savedChapterIds.includes(chap.id) ? colors.tertiary : colors.onSurfaceVariant}
-                        />
-                        <Text style={{ color: savedChapterIds.includes(chap.id) ? colors.tertiary : colors.onSurfaceVariant, fontWeight: '700', fontSize: 13 }}>
-                          {savingChapterId === chap.id ? 'Saving…' : savedChapterIds.includes(chap.id) ? 'Saved offline • Open' : 'Save for offline'}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* VIEW 2: VIDEOS 🎬 (Multi-Teacher Video Choices View) */}
-        {activeFilterTab === 'videos' && (
-          <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: colors.onSurface }]}>
-              Chapter videos
-            </Text>
-            {chapters.map((chap) => {
-              const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              const videoCount = chap.videos?.length || 1;
-
-              return (
-                <View
-                  key={chap.id}
-                  style={[
-                    styles.videoViewCard,
-                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <View style={styles.videoCardTop}>
-                    <MaterialIcons name="play-circle-filled" size={24} color="#C8372D" />
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.videoCardTitle, { color: colors.onSurface }]}>
-                        {chapterTitle}
-                      </Text>
-                      <Text style={[styles.videoCardSub, { color: colors.onSurfaceVariant }]}>
-                        {chap.videos && chap.videos.length > 0
-                          ? `${chap.videos[0].duration} • ${chap.videos[0].teacher}${videoCount > 1 ? ` • +${videoCount - 1} more` : ''}`
-                          : 'No video yet'}
-                        {completedChapterIds.includes(chap.id) ? '  ✓ Done' : ''}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Available video tags */}
-                  <View style={styles.videoTagsRow}>
-                    {(chap.videos || []).map((v) => (
-                      <View key={v.id} style={[styles.videoTagPill, { backgroundColor: colors.primaryFixed }]}>
-                        <Text style={[styles.videoTagPillText, { color: colors.primary }]}>
-                          🎥 {v.teacher} ({v.tag})
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                    <TouchableOpacity
-                      style={[styles.watchVideosActionBtn, { flex: 1.2 }]}
-                      onPress={() => handleOpenVideoModal(chap)}
-                    >
-                      <MaterialIcons name="smart-display" size={18} color="#ffffff" />
-                      <Text style={styles.watchVideosActionBtnText}>
-                        {chap.videos && chap.videos.length > 0 ? 'Watch Video' : 'Find a video'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
-                      <TouchableOpacity
-                        style={[styles.pdfQuickBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, paddingHorizontal: 12 }]}
-                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
-                      >
-                        <MaterialIcons name="picture-as-pdf" size={16} color="#C8372D" />
-                        <Text style={[styles.pdfQuickBtnText, { color: colors.primary, fontWeight: '700' }]}>PDF</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* VIEW 3: PRACTICE DRILLS 🎯 */}
-        {activeFilterTab === 'practice' && (
-          <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              Chapter practice tests
-            </Text>
-            {chapters.map((chap) => {
-              const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              return (
-                <View
-                  key={chap.id}
-                  style={[
-                    styles.practiceViewCard,
-                    { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <Text style={[styles.practiceCardTitle, { color: colors.onSurface }]}>
-                      {chapterTitle}
-                    </Text>
-                    <Text style={[styles.practiceCardSub, { color: colors.onSurfaceVariant }]}>
-                      {chap.questionCount || 15} Curated Questions
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={[styles.startQuizPillBtn, { backgroundColor: subjectCover }]}
-                    onPress={() => {
-                      setSelectedChapterForQuiz(chap);
-                      setShowConfigModal(true);
-                    }}
-                  >
-                    <MaterialIcons name="play-arrow" size={16} color="#ffffff" />
-                    <Text style={styles.startQuizPillBtnText}>Start Test</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* VIEW 4: FORMULAS & NOTES 📝 */}
-        {activeFilterTab === 'formulas' && (
-          <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: colors.onSurface }]}>
-              📝 All Chapter Formulas & Important Rules:
-            </Text>
-            {chapters.map((chap) => {
-              const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              const formulas = (isGSEB ? chap.keyFormulasGujarati : chap.keyFormulas) || chap.keyFormulas || [];
-
-              return (
-                <View
-                  key={chap.id}
-                  style={[
-                    styles.formulasViewCard,
-                    { backgroundColor: colors.surface, borderColor: colors.secondary },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <Text style={[styles.formulaChapterHeading, { color: colors.secondary }]}>
-                    📌 {chapterTitle}
-                  </Text>
-                  {formulas.length > 0 ? (
-                    formulas.map((f, fIdx) => (
-                      <View key={fIdx} style={styles.formulaItemRow}>
-                        <MaterialIcons name="check" size={14} color="#2F6FD6" />
-                        <Text style={[styles.formulaText, { color: colors.onSurface }]}>{f}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={[styles.noFormulaText, { color: colors.onSurfaceVariant }]}>
-                      {chap.summary}
-                    </Text>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* VIEW 4B: OFFICIAL SAMPLE & BOARD EXAM PAPERS 📄 */}
-        {activeFilterTab === 'papers' && (
-          <View style={styles.chaptersList}>
-            <Text style={[styles.viewSectionTitle, { color: colors.primary }]}>
-              Board & model exam papers
-            </Text>
-
-            {/* Real 80-Mark Board Exam Simulator Banner */}
-            <TouchableOpacity
-              activeOpacity={0.85}
-              style={[
-                styles.boardSimulatorHeroCard,
-                { backgroundColor: colors.heroSurface },
-                MindSprintShadows.card,
-              ]}
-              onPress={() => router.push('/board-exam-simulator' as any)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={[styles.boardSimIconBox, { backgroundColor: colors.secondary }]}>
-                  <MaterialIcons name="assignment" size={24} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.simBadge}>
-                    <Text style={styles.simBadgeText}>OFFICIAL PATTERN • 80 MARKS</Text>
-                  </View>
-                  <Text style={styles.boardSimTitle}>
-                    Full 80-Mark Board Exam Simulator
-                  </Text>
-                  <Text style={styles.boardSimSub}>
-                    3-Hour Countdown Timer • Section A-D • Step-wise Self-Evaluation Rubric
-                  </Text>
-                </View>
-                <MaterialIcons name="arrow-forward" size={22} color="#ffffff" />
-              </View>
-            </TouchableOpacity>
-            {samplePapers.length === 0 ? (
-              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: colors.surface }]}>
-                <MaterialIcons name="description" size={40} color={colors.onSurfaceVariant} />
-                <Text style={{ marginTop: 8, color: colors.onSurfaceVariant }}>
-                  No sample papers currently available for this grade.
-                </Text>
-              </View>
-            ) : (
-              samplePapers.map((paper) => (
-                <View
-                  key={paper.id}
-                  style={[
-                    styles.bookViewCard,
-                    { backgroundColor: colors.surface, borderColor: colors.primary },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <View style={{ backgroundColor: `${colors.primary}18`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                      <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 11 }}>
-                        {paper.badge || 'OFFICIAL PAPER'}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 12, color: colors.onSurfaceVariant, fontWeight: '600' }}>
-                      {paper.durationMinutes} min • {paper.totalMarks} marks
-                    </Text>
-                  </View>
-
-                  <Text style={[styles.bookChapterTitle, { color: colors.onSurface, fontSize: 16, marginBottom: 4 }]}>
-                    {isGSEB && paper.titleGujarati ? paper.titleGujarati : paper.title}
-                  </Text>
-
-                  <Text style={[styles.bookSummaryText, { color: colors.onSurfaceVariant, marginBottom: 12 }]}>
-                    {paper.subject} • {paper.year} • {paper.questionCount} Questions
-                  </Text>
-
-                  {/* Action Row */}
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                    {paper.officialPdfUrl && (
-                      <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.secondaryContainer }]}
-                        onPress={() => handleOpenPdf(paper.officialPdfUrl)}
-                      >
-                        <MaterialIcons name="picture-as-pdf" size={16} color={colors.primary} />
-                        <Text style={[styles.readFullNotesBtnText, { color: colors.primary }]}>
-                          Question PDF 📥
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-
-                    {paper.solutionPdfUrl && (
-                      <TouchableOpacity
-                        style={[styles.readFullNotesBtn, { flex: 1, backgroundColor: colors.tertiaryContainer }]}
-                        onPress={() => handleOpenPdf(paper.solutionPdfUrl)}
-                      >
-                        <MaterialIcons name="done-all" size={16} color="#12805C" />
-                        <Text style={[styles.readFullNotesBtnText, { color: colors.tertiary }]}>
-                          Solutions 💡
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity
-                      style={[styles.pdfQuickBtn, { backgroundColor: colors.primary, borderColor: colors.primary, paddingHorizontal: 12 }]}
-                      onPress={() => router.push(`/exam?limit=${Math.min(paper.questionCount || 25, 25)}&category=${encodeURIComponent(paper.subject)}` as any)}
-                    >
-                      <MaterialIcons name="play-arrow" size={16} color="#ffffff" />
-                      <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 12, marginLeft: 2 }}>
-                        Start
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
+        ) : (
+          <>
+            {last && (
+              <ContinueLearningCard
+                last={last}
+                onPress={() => router.push({ pathname: '/chapter/[id]', params: { id: last.chapterId, grade: userGrade, action: last.action } })}
+              />
             )}
-          </View>
-        )}
 
-        {/* VIEW 4C: FREQUENTLY ASKED 1M, 2M, 3M, 4M BOARD QUESTIONS ⭐ */}
-        {activeFilterTab === 'imp' && (
-          <View style={styles.chaptersList}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <Text style={[styles.viewSectionTitle, { color: colors.onSurface, marginBottom: 0 }]}>
-                ⭐ Frequently Asked Board Questions (1M-4M):
-              </Text>
-            </View>
-
-            {/* Marks Filter Pills (All, 1 Mark, 2 Marks, 3 Marks, 4 Marks) */}
-            <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-              {[
-                { marks: null, label: 'All Marks' },
-                { marks: 1, label: '1 Mark (VSA)' },
-                { marks: 2, label: '2 Marks (Short)' },
-                { marks: 3, label: '3 Marks (Medium)' },
-                { marks: 4, label: '4 Marks (Long/Theorem)' },
-              ].map((m) => {
-                const isSelected = selectedMarksFilter === m.marks;
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {subjects.map((sub) => {
+                const selected = sub.id === subject?.id;
+                const tone = subjectTone(sub.id);
                 return (
                   <TouchableOpacity
-                    key={m.label}
-                    onPress={() => setSelectedMarksFilter(m.marks)}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 16,
-                      borderWidth: 1,
-                      backgroundColor: isSelected ? colors.accent : colors.accentContainer,
-                      borderColor: isSelected ? colors.accent : colors.outlineVariant,
-                    }}
+                    key={sub.id}
+                    activeOpacity={0.75}
+                    onPress={() => setSelectedSubjectId(sub.id)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected }}
+                    style={[styles.subjectChip, { backgroundColor: selected ? tone.cover : colors.surface, borderColor: selected ? tone.cover : colors.outlineVariant }]}
                   >
-                    <Text style={{ fontSize: 11.5, fontWeight: '700', color: isSelected ? '#ffffff' : colors.onAccentContainer }}>
-                      {m.label}
+                    <MaterialIcons name={tone.icon as any} size={16} color={selected ? '#ffffff' : tone.cover} />
+                    <Text style={[styles.subjectChipText, { color: selected ? '#ffffff' : colors.onSurface }]}>
+                      {isGujarati && sub.nameGujarati ? sub.nameGujarati : sub.name}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
-            </View>
+            </ScrollView>
 
-            {importantQuestions.length === 0 ? (
-              <View style={[styles.bookViewCard, { padding: 24, alignItems: 'center', backgroundColor: colors.surface }]}>
-                <MaterialIcons name="star-outline" size={40} color={colors.onSurfaceVariant} />
-                <Text style={{ marginTop: 8, color: colors.onSurfaceVariant, textAlign: 'center' }}>
-                  {isGSEB
-                    ? 'આ વિષય માટે પસંદ કરેલ ગુણના પ્રશ્નો ઉપલબ્ધ નથી.'
-                    : 'No board questions found for the selected filter.'}
-                </Text>
-              </View>
-            ) : (
-              importantQuestions.map((q) => {
-                const isExpanded = expandedQuestionIds.includes(q.id);
-                const qText = isGSEB && q.questionTextGujarati ? q.questionTextGujarati : q.questionText;
-                const modelAns = isGSEB && q.modelAnswerGujarati ? q.modelAnswerGujarati : q.modelAnswer;
-                const chTitle = isGSEB && q.chapterTitleGujarati ? q.chapterTitleGujarati : q.chapterTitle;
-                const exTips = isGSEB && q.examinerTipsGujarati ? q.examinerTipsGujarati : q.examinerTips;
-
-                return (
-                  <View
-                    key={q.id}
-                    style={[
-                      styles.impQuestionCard,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: isExpanded ? colors.accent : colors.outlineVariant,
-                      },
-                      MindSprintShadows.card,
-                    ]}
-                  >
-                    {/* Top Meta Header: Marks badge, Chapter, Year frequency */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <View style={[styles.marksBadge, { backgroundColor: q.marks === 1 ? colors.secondary : q.marks === 2 ? colors.tertiary : q.marks === 3 ? colors.secondary : '#C8372D' }]}>
-                          <Text style={styles.marksBadgeText}>
-                            {q.marks} {q.marks === 1 ? 'MARK' : 'MARKS'}
-                          </Text>
-                        </View>
-                        <Text style={[styles.impChapText, { color: colors.onSurfaceVariant }]}>
-                          Ch {q.chapterNumber}: {chTitle}
-                        </Text>
-                      </View>
-
-                      {q.frequentlyAskedYears && q.frequentlyAskedYears.length > 0 && (
-                        <View style={[styles.frequencyPill, { backgroundColor: colors.accentContainer }]}>
-                          <MaterialIcons name="whatshot" size={13} color="#F4A30B" />
-                          <Text style={styles.frequencyPillText}>
-                            {q.frequentlyAskedYears.slice(0, 2).join(' • ')}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Question Text */}
-                    <Text style={[styles.impQuestionText, { color: colors.onSurface }]}>
-                      {qText}
-                    </Text>
-
-                    {/* Expand/Collapse Toggle Button */}
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[
-                        styles.toggleAnswerBtn,
-                        {
-                          backgroundColor: isExpanded
-                            ? (colors.accentContainer)
-                            : (colors.surfaceContainerLow),
-                          borderColor: isExpanded ? colors.accent : colors.outlineVariant,
-                        },
-                      ]}
-                      onPress={() => toggleExpandQuestion(q.id)}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <MaterialIcons
-                          name={isExpanded ? 'visibility-off' : 'verified'}
-                          size={16}
-                          color={isExpanded ? colors.accent : colors.primary}
-                        />
-                        <Text
-                          style={[
-                            styles.toggleAnswerBtnText,
-                            { color: isExpanded ? colors.onAccentContainer : colors.primary },
-                          ]}
-                        >
-                          {isExpanded
-                            ? 'Hide Model Answer & Marking Scheme ▲'
-                            : 'View Model Answer & Marking Scheme ▼'}
-                        </Text>
-                      </View>
-                      <MaterialIcons
-                        name={isExpanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-                        size={20}
-                        color={isExpanded ? colors.accent : colors.onSurfaceVariant}
-                      />
-                    </TouchableOpacity>
-
-                    {/* Expanded Content: Model Answer, Step-wise Marking, Examiner Tips */}
-                    {isExpanded && (
-                      <View style={[styles.expandedAnswerBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                        {/* Model Answer */}
-                        <View style={{ marginBottom: 12 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                            <MaterialIcons name="check-circle" size={16} color="#12805C" />
-                            <Text style={[styles.ansSectionHeader, { color: colors.tertiary }]}>
-                              Ideal Board Model Answer:
-                            </Text>
-                          </View>
-                          <Text style={[styles.modelAnsText, { color: colors.onSurface }]}>
-                            {modelAns}
-                          </Text>
-                        </View>
-
-                        {/* Step-by-Step Marking Breakdown */}
-                        {q.stepWiseMarking && q.stepWiseMarking.length > 0 && (
-                          <View style={{ marginBottom: 12 }}>
-                            <Text style={[styles.ansSectionHeader, { color: colors.primary, marginBottom: 6 }]}>
-                              📐 Step-Wise Marks Allocation:
-                            </Text>
-                            {q.stepWiseMarking.map((step) => {
-                              const stepText = isGSEB && step.textGujarati ? step.textGujarati : step.text;
-                              return (
-                                <View key={step.stepNumber} style={styles.stepMarkingRow}>
-                                  <View style={[styles.stepMarkBadge, { backgroundColor: `${colors.primary}20` }]}>
-                                    <Text style={[styles.stepMarkBadgeText, { color: colors.primary }]}>
-                                      +{step.marksAllocated}
-                                    </Text>
-                                  </View>
-                                  <Text style={[styles.stepDetailText, { color: colors.onSurface }]}>
-                                    {stepText}
-                                  </Text>
-                                </View>
-                              );
-                            })}
-                          </View>
-                        )}
-
-                        {/* Examiner Tip */}
-                        {exTips && (
-                          <View style={[styles.examinerTipCard, { backgroundColor: colors.accentContainer, borderColor: colors.outlineVariant }]}>
-                            <MaterialIcons name="lightbulb" size={16} color="#F4A30B" style={{ marginTop: 2 }} />
-                            <View style={{ flex: 1 }}>
-                              <Text style={[styles.examinerTipTitle, { color: colors.onAccentContainer }]}>
-                                Board Examiner Tip:
-                              </Text>
-                              <Text style={[styles.examinerTipBody, { color: colors.onAccentContainer }]}>
-                                {exTips}
-                              </Text>
-                            </View>
-                          </View>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                );
-              })
+            {subject && (
+              <SubjectHeader
+                subject={subject}
+                doneCount={doneInSubject}
+                textbookSaved={progress.savedTextbookIds.includes(subject.id)}
+                onTextbookSaved={(id) => progress.setSavedTextbookIds((p) => (p.includes(id) ? p : [...p, id]))}
+                onTextbookMissing={(id) => progress.setSavedTextbookIds((p) => p.filter((x) => x !== id))}
+              />
             )}
-          </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {chips.map((c) => {
+                const selected = view === c.key;
+                return (
+                  <TouchableOpacity
+                    key={c.key}
+                    onPress={() => setView(c.key)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected }}
+                    style={[styles.viewChip, { backgroundColor: selected ? colors.primary : colors.surface, borderColor: selected ? colors.primary : colors.outlineVariant }]}
+                  >
+                    <Text style={[styles.viewChipText, { color: selected ? colors.onPrimary : colors.onSurface }]}>{c.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {view === 'chapters' && (
+              <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                {chapters.map((chap, i) => (
+                  <ChapterRow
+                    key={chap.id}
+                    chapter={chap}
+                    isFirst={i === 0}
+                    done={progress.completedIds.includes(chap.id)}
+                    bookmarked={progress.bookmarkedIds.includes(chap.id)}
+                    savedOffline={progress.savedChapterIds.includes(chap.id)}
+                    onOpen={() => openChapter(chap)}
+                    onToggleBookmark={() => progress.toggleBookmark(chap.id)}
+                  />
+                ))}
+              </View>
+            )}
+            {view === 'formulas' && <FormulasView chapters={chapters} onOpenChapter={(c) => openChapter(c)} />}
+            {view === 'imp' && <ImportantQuestionsView grade={userGrade} subjectName={subject?.name} />}
+            {view === 'papers' && <BoardPapersView grade={userGrade} board={isSchoolMode ? 'GSEB' : user?.board || 'CBSE'} />}
+          </>
         )}
-
-        {/* VIEW 5: ALL MODULES (Default 360° View) */}
-        {activeFilterTab === 'all' && (
-          <View style={styles.chaptersList}>
-            {chapters.map((chap, index) => {
-              const isCompleted = completedChapterIds.includes(chap.id);
-              const chapterTitle = isGSEB && chap.titleGujarati ? `${chap.chapterNumber}. ${chap.titleGujarati}` : `${chap.chapterNumber}. ${chap.title}`;
-              const formulaCount = (isGSEB ? chap.keyFormulasGujarati?.length : chap.keyFormulas?.length) || chap.keyFormulas?.length || 0;
-
-              return (
-                <View
-                  key={chap.id}
-                  style={[
-                    styles.chapterCard,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: isCompleted ? colors.tertiary : colors.outlineVariant,
-                    },
-                    MindSprintShadows.card,
-                  ]}
-                >
-                  {/* Chapter Header */}
-                  <View style={styles.chapterHeader}>
-                    <TouchableOpacity
-                      onPress={() => toggleChapterComplete(chap.id)}
-                      style={[
-                        styles.completeCheckCircle,
-                        {
-                          backgroundColor: isCompleted
-                            ? colors.tertiary
-                            : colors.surfaceContainer,
-                        },
-                      ]}
-                    >
-                      {isCompleted ? (
-                        <MaterialIcons name="check" size={16} color="#ffffff" />
-                      ) : (
-                        <Text style={[styles.chapterNumText, { color: colors.onSurfaceVariant }]}>
-                          {index + 1}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.chapterTitle, { color: colors.onSurface }]}>
-                        {chapterTitle}
-                      </Text>
-                      <Text style={[styles.chapterSummary, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
-                        {(isGSEB && chap.summaryGujarati) ? chap.summaryGujarati : chap.summary}
-                      </Text>
-                    </View>
-
-                    {/* Bookmark Icon */}
-                    <TouchableOpacity
-                      onPress={() => toggleChapterBookmark(chap.id)}
-                      style={styles.bookmarkBtn}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <MaterialIcons
-                        name={bookmarkedChapterIds.includes(chap.id) ? 'bookmark' : 'bookmark-outline'}
-                        size={22}
-                        color={bookmarkedChapterIds.includes(chap.id) ? colors.primary : colors.outline}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Key Formulas Preview Pill (if available) */}
-                  {formulaCount > 0 && (
-                    <View style={[styles.formulaPillBox, { backgroundColor: colors.primaryFixed }]}>
-                      <MaterialIcons name="functions" size={14} color="#2F6FD6" />
-                      <Text style={[styles.formulaPillText, { color: colors.onSurface }]} numberOfLines={1}>
-                        {`Formulas (${formulaCount}): `}
-                        {((isGSEB && chap.keyFormulasGujarati?.[0]) || chap.keyFormulas?.[0])}
-                      </Text>
-                    </View>
-                  )}
-
-                  {/* Chapter actions: Watch is the main action; PDF, notes and quiz are secondary */}
-                  <View style={styles.actionPillarsRow}>
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      accessibilityRole="button"
-                      style={[styles.pillarBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                      onPress={() => handleOpenVideoModal(chap)}
-                    >
-                      <MaterialIcons name="play-arrow" size={18} color={colors.onPrimary} />
-                      <Text style={[styles.pillarBtnText, { color: colors.onPrimary }]}>
-                        {chap.videos?.[0]?.duration ? `Watch · ${chap.videos[0].duration}` : 'Find video'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {(isPdfEligibleGrade || chap.textbookPdfUrl) && (
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        accessibilityRole="button"
-                        style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
-                        onPress={() => handleOpenPdf(chap.textbookPdfUrl || activeSubject?.officialTextbookPdf, chap)}
-                      >
-                        <MaterialIcons name="picture-as-pdf" size={17} color={colors.primary} />
-                        <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Open PDF</Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      accessibilityRole="button"
-                      style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
-                      onPress={() => handleOpenNotes(chap)}
-                    >
-                      <MaterialIcons name="auto-stories" size={17} color={colors.primary} />
-                      <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Read notes</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      accessibilityRole="button"
-                      style={[styles.pillarBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
-                      onPress={() => {
-                        setSelectedChapterForQuiz(chap);
-                        setShowConfigModal(true);
-                      }}
-                    >
-                      <MaterialIcons name="quiz" size={17} color={colors.primary} />
-                      <Text style={[styles.pillarBtnText, { color: colors.primary }]}>Take quiz</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-        </>)}
       </ScrollView>
-
-      {/* ========================================================================= */}
-      {/* MULTI-TEACHER / MULTI-VIDEO PLAYER MODAL WITH ALTERNATIVE CHOICES       */}
-      {/* ========================================================================= */}
-      <Modal
-        visible={!!selectedChapterForVideo}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSelectedChapterForVideo(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.videoModalCard, { backgroundColor: colors.surfaceContainerLowest }]}>
-            {/* Modal Header */}
-            <View style={styles.modalHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.modalTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                  {isGSEB && selectedChapterForVideo?.titleGujarati ? selectedChapterForVideo.titleGujarati : selectedChapterForVideo?.title}
-                </Text>
-                <Text style={[styles.modalSubtitle, { color: colors.onSurfaceVariant }]}>
-                  Choose your preferred teacher & explanation style
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setSelectedChapterForVideo(null)}>
-                <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Embedded YouTube Player with Web iframe & Native Player */}
-            {activeVideoOption && (
-              <View style={styles.embeddedPlayerBox}>
-                {Platform.OS === 'web' ? (
-                  <iframe
-                    key={activeVideoOption.youtubeVideoId}
-                    src={`https://www.youtube-nocookie.com/embed/${activeVideoOption.youtubeVideoId}?rel=0&modestbranding=1&enablejsapi=1`}
-                    width="100%"
-                    height={VIDEO_HEIGHT}
-                    style={{ border: 'none', borderRadius: 14 }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                ) : (
-                  <YoutubePlayer
-                    key={activeVideoOption.youtubeVideoId}
-                    height={VIDEO_HEIGHT}
-                    play={true}
-                    videoId={activeVideoOption.youtubeVideoId}
-                    initialPlayerParams={{
-                      controls: true,
-                      modestbranding: true,
-                      rel: false,
-                    }}
-                  />
-                )}
-              </View>
-            )}
-
-            {/* Now Playing Bar with direct YouTube Launch button */}
-            {activeVideoOption && (
-              <View style={[styles.videoPlayerActionBar, { flexDirection: 'column', alignItems: 'stretch', gap: 8 }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.nowPlayingTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                      {isGSEB && activeVideoOption.titleGujarati ? activeVideoOption.titleGujarati : activeVideoOption.title}
-                    </Text>
-                    <Text style={[styles.nowPlayingSub, { color: colors.onSurfaceVariant }]}>
-                      👨‍🏫 {activeVideoOption.teacher} • {activeVideoOption.tag} • {activeVideoOption.duration}
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={[styles.openYtDirectBtn, { backgroundColor: '#C8372D', paddingHorizontal: 12, paddingVertical: 8 }]}
-                    onPress={() =>
-                      handleLaunchExternalVideo(
-                        activeVideoOption.youtubeVideoId,
-                        `${selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title} ધોરણ ${userGrade} ${activeSubject?.nameGujarati}`
-                      )
-                    }
-                  >
-                    <MaterialIcons name="smart-display" size={16} color="#ffffff" />
-                    <Text style={[styles.openYtDirectBtnText, { fontWeight: '700' }]}>YouTube ↗</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleReportVideo}
-                  accessibilityRole="button"
-                  accessibilityLabel="Report a wrong or broken video"
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingHorizontal: 10 }}
-                >
-                  <MaterialIcons name="flag" size={14} color={colors.onSurfaceVariant} />
-                  <Text style={{ fontSize: 12, color: colors.onSurfaceVariant, fontWeight: '600' }}>Wrong or not playing? Report this video</Text>
-                </TouchableOpacity>
-
-                {/* Direct Search Option if the user wants alternate teachers */}
-                <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 6,
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    backgroundColor: colors.secondaryContainer,
-                  }}
-                  onPress={() => {
-                    const chNum = selectedChapterForVideo?.chapterNumber ? `પ્રકરણ ${selectedChapterForVideo.chapterNumber} ` : '';
-                    const q = `ધોરણ ${userGrade} ${activeSubject?.nameGujarati || ''} ${chNum}${selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title || ''} GSEB ગુજરાતી માધ્યમ`;
-                    handleLaunchExternalVideo('', q);
-                  }}
-                >
-                  <MaterialIcons name="search" size={14} color={colors.primary} />
-                  <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>
-                    🔍 Search all "{selectedChapterForVideo?.titleGujarati || selectedChapterForVideo?.title}" video lessons on YouTube
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Quick Textbook PDF Bar for current chapter (Classes 8 to 12 as requested) */}
-            {(isPdfEligibleGrade || selectedChapterForVideo?.textbookPdfUrl) && (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={[
-                  styles.videoOptionCard,
-                  {
-                    backgroundColor: colors.errorContainer,
-                    borderColor: '#C8372D',
-                    borderWidth: 1,
-                    marginVertical: 4,
-                  },
-                ]}
-                onPress={() => handleOpenPdf(selectedChapterForVideo?.textbookPdfUrl || activeSubject?.officialTextbookPdf, selectedChapterForVideo ?? undefined)}
-              >
-                <View style={[styles.videoOptionIcon, { backgroundColor: '#C8372D' }]}>
-                  <MaterialIcons name="picture-as-pdf" size={18} color="#ffffff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.videoOptionTitle, { color: '#C8372D', fontWeight: '700' }]}>
-                    {isGSEB ? '📖 આ પ્રકરણનું અધિકૃત પાઠ્યપુસ્તક PDF વાંચો' : '📖 Read Official Chapter Textbook PDF'}
-                  </Text>
-                  <Text style={[styles.videoTeacherName, { color: colors.onSurfaceVariant }]}>
-                    {isGSEB ? 'NCERT / GSEB ડિજિટલ પુસ્તક • ઓરિજિનલ સિલેબસ' : 'NCERT / GSEB Official Material & Diagrams'}
-                  </Text>
-                </View>
-                <MaterialIcons name="open-in-new" size={18} color="#C8372D" />
-              </TouchableOpacity>
-            )}
-
-            {/* Multiple Video Selection Options List */}
-            <Text style={[styles.alternativeVideosHeading, { color: colors.primary }]}>
-              🎥 Available Video Lessons (Tap to switch):
-            </Text>
-
-            <ScrollView style={{ maxHeight: 220 }} showsVerticalScrollIndicator={false}>
-              {(selectedChapterForVideo?.videos || []).map((vid) => {
-                const isSelected = activeVideoOption?.id === vid.id;
-                const vidTitle = isGSEB && vid.titleGujarati ? vid.titleGujarati : vid.title;
-
-                return (
-                  <TouchableOpacity
-                    key={vid.id}
-                    activeOpacity={0.8}
-                    style={[
-                      styles.videoOptionCard,
-                      {
-                        backgroundColor: isSelected
-                          ? colors.primaryFixed
-                          : colors.surfaceContainerLow,
-                        borderColor: isSelected ? colors.primary : colors.outlineVariant,
-                        borderWidth: isSelected ? 1.5 : 1,
-                      },
-                    ]}
-                    onPress={() => setActiveVideoOption(vid)}
-                  >
-                    <View style={[styles.videoOptionIcon, { backgroundColor: isSelected ? colors.primary : colors.surfaceContainer }]}>
-                      <MaterialIcons name={isSelected ? 'play-arrow' : 'video-library'} size={18} color={isSelected ? '#ffffff' : colors.onSurfaceVariant} />
-                    </View>
-
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={[styles.videoOptionTitle, { color: isSelected ? colors.primary : colors.onSurface }]} numberOfLines={2}>
-                        {vidTitle}
-                      </Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={[styles.videoTeacherName, { color: colors.onSurfaceVariant }]}>
-                          👨‍🏫 {vid.teacher}
-                        </Text>
-                        <Text style={[styles.videoTagBadge, { color: colors.primary }]}>
-                          • {vid.tag}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={() => handleLaunchExternalVideo(vid.youtubeVideoId)}
-                      style={styles.openYtIconBtn}
-                    >
-                      <MaterialIcons name="open-in-new" size={18} color={colors.primary} />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* ========================================================================= */}
-      {/* TEXTBOOK CONCEPT & FORMULA READER MODAL (NO FORCED QUIZ!)                */}
-      {/* ========================================================================= */}
-      <Modal
-        visible={!!selectedChapterForRead}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSelectedChapterForRead(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                <MaterialIcons name="menu-book" size={24} color={colors.primary} />
-                <Text style={[styles.modalTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                  {isGSEB && selectedChapterForRead?.titleGujarati
-                    ? selectedChapterForRead.titleGujarati
-                    : selectedChapterForRead?.title}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setSelectedChapterForRead(null)}>
-                <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420, marginVertical: 10 }}>
-              {/* Summary Section */}
-              <Text style={[styles.chapterReadHeading, { color: colors.primary }]}>
-                📌 Chapter Summary & Key Concepts:
-              </Text>
-              <Text style={[styles.chapterReadBody, { color: colors.onSurface }]}>
-                {(isGSEB && selectedChapterForRead?.summaryGujarati)
-                  ? selectedChapterForRead.summaryGujarati
-                  : selectedChapterForRead?.summary}
-              </Text>
-
-              {/* Key Formulas Vault */}
-              {((isGSEB ? selectedChapterForRead?.keyFormulasGujarati : selectedChapterForRead?.keyFormulas) || selectedChapterForRead?.keyFormulas || []).length > 0 && (
-                <View style={[styles.formulasVaultCard, { backgroundColor: colors.primaryFixed, borderColor: colors.secondary }]}>
-                  <Text style={[styles.formulasVaultTitle, { color: colors.secondary }]}>
-                    ⚡ Key Formulas & Rules:
-                  </Text>
-                  {((isGSEB ? selectedChapterForRead?.keyFormulasGujarati : selectedChapterForRead?.keyFormulas) || selectedChapterForRead?.keyFormulas || []).map((formula, fIdx) => (
-                    <View key={fIdx} style={styles.formulaItemRow}>
-                      <MaterialIcons name="label-important" size={14} color="#2F6FD6" />
-                      <Text style={[styles.formulaItemText, { color: colors.onSurface }]}>{formula}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Textbook Swadhyay Solutions */}
-              {(selectedChapterForRead?.exerciseSolutions || []).length > 0 && (
-                <View style={[styles.swadhyayCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                  <Text style={[styles.swadhyayHeading, { color: colors.primary }]}>
-                    📝 Textbook Exercise Solutions:
-                  </Text>
-                  {selectedChapterForRead?.exerciseSolutions?.map((ex, exIdx) => (
-                    <View key={exIdx} style={styles.swadhyayItem}>
-                      <Text style={[styles.swadhyayQuestion, { color: colors.onSurface }]}>
-                        Q{exIdx + 1}. {(isGSEB && ex.questionGujarati) ? ex.questionGujarati : ex.question}
-                      </Text>
-                      <Text style={[styles.swadhyayAnswer, { color: colors.onSurfaceVariant }]}>
-                        Ans. {(isGSEB && ex.answerGujarati) ? ex.answerGujarati : ex.answer}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Concepts List */}
-              {(selectedChapterForRead?.concepts || []).map((concept, cIdx) => (
-                <View key={cIdx} style={[styles.conceptCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                  <Text style={[styles.conceptHeading, { color: colors.primary }]}>
-                    {isGSEB && concept.headingGujarati ? concept.headingGujarati : concept.heading}
-                  </Text>
-                  <Text style={[styles.conceptText, { color: colors.onSurface }]}>
-                    {isGSEB && concept.explanationGujarati ? concept.explanationGujarati : concept.explanation}
-                  </Text>
-                </View>
-              ))}
-
-              {/* Tap-to-Translate Micro-Glossary Section */}
-              <View style={[styles.glossaryPillsCard, { backgroundColor: colors.tertiaryContainer, borderColor: colors.tertiary }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <MaterialIcons name="translate" size={16} color="#12805C" />
-                  <Text style={[styles.glossaryPillsTitle, { color: colors.tertiary }]}>
-                    Interactive Micro-Glossary (Tap for English/Gujarati terms):
-                  </Text>
-                </View>
-                <View style={styles.glossaryRow}>
-                  {['photosynthesis', 'chlorophyll', 'circuit', 'resistance', 'primenumber', 'gravity'].map((termKey) => (
-                    <TouchableOpacity
-                      key={termKey}
-                      style={[styles.termChip, { backgroundColor: colors.tertiaryContainer }]}
-                      onPress={() => setActiveGlossaryTerm(termKey)}
-                    >
-                      <Text style={[styles.termChipText, { color: colors.onTertiaryContainer }]}>
-                        🔍 {termKey}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={[styles.notesReadDoneBox, { backgroundColor: colors.tertiaryContainer }]}>
-                <MaterialIcons name="check-circle" size={18} color="#12805C" />
-                <Text style={[styles.notesReadDoneText, { color: colors.tertiary }]}>
-                  You have completed reading this chapter’s concept notes!
-                </Text>
-              </View>
-            </ScrollView>
-
-            {/* Modal Actions (Close Notes OR Practice Quiz) */}
-            <View style={styles.readModalActionsRow}>
-              <TouchableOpacity
-                style={[styles.closeReadNotesBtn, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}
-                onPress={() => setSelectedChapterForRead(null)}
-              >
-                <Text style={[styles.closeReadNotesBtnText, { color: colors.onSurface }]}>
-                  Done Reading (Close)
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.optionalQuizBtn, { backgroundColor: colors.primary }]}
-                onPress={() => {
-                  const chap = selectedChapterForRead;
-                  setSelectedChapterForRead(null);
-                  if (chap) {
-                    router.push(`/exam?limit=10&category=${encodeURIComponent(chap.title)}`);
-                  }
-                }}
-              >
-                <MaterialIcons name="quiz" size={16} color="#ffffff" />
-                <Text style={styles.optionalQuizBtnText}>
-                  Take Quiz
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Practice Configurator Modal */}
-      <Modal
-        visible={showConfigModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowConfigModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View
-            style={[
-              styles.modalCard,
-              { backgroundColor: colors.surfaceContainerLowest },
-              MindSprintShadows.card,
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.modalTitle, { color: colors.onSurface }]}>
-                  {isGSEB && selectedChapterForQuiz?.titleGujarati ? selectedChapterForQuiz.titleGujarati : selectedChapterForQuiz?.title}
-                </Text>
-                <Text style={[styles.modalSubtitle, { color: colors.onSurfaceVariant }]}>
-                  Configure practice quiz session
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setShowConfigModal(false)}>
-                <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Question Count Selector */}
-            <Text style={[styles.configLabel, { color: colors.onSurface }]}>
-              Number of Questions:
-            </Text>
-            <View style={styles.limitRow}>
-              {[5, 10, 25].map((limit) => {
-                const isSelected = selectedLimit === limit;
-                return (
-                  <TouchableOpacity
-                    key={limit}
-                    style={[
-                      styles.limitChip,
-                      {
-                        backgroundColor: isSelected ? colors.primary : colors.surfaceContainer,
-                        borderColor: isSelected ? colors.primary : colors.outlineVariant,
-                      },
-                    ]}
-                    onPress={() => setSelectedLimit(limit)}
-                  >
-                    <Text
-                      style={[
-                        styles.limitChipText,
-                        { color: isSelected ? '#ffffff' : colors.onSurface },
-                      ]}
-                    >
-                      {limit} Qs
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Start Exam Action Button */}
-            <TouchableOpacity
-              style={[styles.launchExamBtn, { backgroundColor: colors.primary }, MindSprintShadows.glow]}
-              onPress={handleStartExam}
-            >
-              <Text style={styles.launchExamBtnText}>
-                Start Practice
-              </Text>
-              <MaterialIcons name="play-arrow" size={20} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Interactive Micro-Glossary Tooltip Modal */}
-      <GlossaryTooltip
-        visible={!!activeGlossaryTerm}
-        termKeyOrText={activeGlossaryTerm || ''}
-        onClose={() => setActiveGlossaryTerm(null)}
-      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  headerIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontFamily: MindSprintFonts.heading,
-    fontSize: 22,
-    lineHeight: 28,
-  },
-  headerSub: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  langToggleText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
-  headerTextCol: {
-    flex: 1,
-    minWidth: 0,
-  },
-  langToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    minHeight: 36,
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    minHeight: 46,
-  },
+  headerTitle: { fontFamily: MindSprintFonts.heading, fontSize: 22, lineHeight: 28 },
+  headerSub: { fontSize: 13, fontWeight: '500' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 36, paddingHorizontal: 11, borderRadius: 18, borderWidth: 1 },
+  pillText: { fontFamily: MindSprintFonts.label, fontSize: 14 },
+  scroll: { padding: 16, gap: 14, paddingBottom: 40 },
+  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, minHeight: 48 },
   searchInput: { flex: 1, fontSize: 15, paddingVertical: 8 },
-  offlineBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 10,
-    minHeight: 40,
-    marginTop: 8,
-  },
-  headerProgressPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    minHeight: 36,
-    borderRadius: 18,
-  },
-  headerProgressText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
-  scrollContainer: {
-    padding: 16,
-    gap: 14,
-    paddingBottom: 36,
-  },
-  subjectChipsSection: {
-    marginVertical: 2,
-  },
-  subjectChipsScroll: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  subjectChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    minHeight: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  subjectChipText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14.5,
-  },
-  chipCountBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  chipCountText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  pillarTabsSection: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingVertical: 2,
-  },
-  pillarTabChip: {
-    paddingHorizontal: 14,
-    minHeight: 36,
-    justifyContent: 'center',
-    borderRadius: 18,
-    borderWidth: 1,
-  },
-  pillarTabText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
-  subjectHeroCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 12,
-  },
-  subjectHeroTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  subjectHeroIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  subjectHeroTitle: {
-    fontFamily: MindSprintFonts.heading,
-    fontSize: 19,
-    lineHeight: 25,
-  },
-  subjectHeroSub: {
-    fontSize: 13,
-    marginTop: 1,
-  },
-  subjectProgressBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  subjectProgressText: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  officialTextbookPdfBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
-  },
-  officialTextbookPdfTitle: {
-    fontFamily: MindSprintFonts.title,
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  officialTextbookPdfSub: {
-    fontSize: 11,
-    marginTop: 1,
-  },
-  progressBarTrack: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  viewSectionTitle: {
-    fontFamily: MindSprintFonts.heading,
-    fontSize: 19,
-    lineHeight: 25,
-    marginBottom: 2,
-  },
-  chaptersList: {
-    gap: 12,
-  },
-  // Book View Styles
-  bookViewCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 10,
-  },
-  bookCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  bookNumBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bookNumText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  bookChapterTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    flex: 1,
-  },
-  bookSummaryText: {
-    fontSize: 12.5,
-    lineHeight: 18,
-  },
-  readFullNotesBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 9,
-    borderRadius: 10,
-  },
-  readFullNotesBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  pdfQuickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  pdfQuickBtnText: {
-    color: '#C8372D',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  // Video View Styles
-  videoViewCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 10,
-  },
-  videoCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  videoCardTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
-  },
-  videoCardSub: {
-    fontSize: 11,
-    marginTop: 1,
-  },
-  videoTagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  videoTagPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  videoTagPillText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-  },
-  watchVideosActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#C8372D',
-    paddingVertical: 9,
-    borderRadius: 10,
-    gap: 6,
-  },
-  watchVideosActionBtnText: {
-    color: '#ffffff',
-    fontSize: 12.5,
-    fontWeight: '700',
-  },
-  // Practice View Styles
-  practiceViewCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 10,
-  },
-  practiceCardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  practiceCardSub: {
-    fontSize: 11.5,
-  },
-  startQuizPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  startQuizPillBtnText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  // Formulas View Styles
-  formulasViewCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    padding: 14,
-    gap: 8,
-  },
-  formulaChapterHeading: {
-    fontSize: 14,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  formulaItemRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-  },
-  formulaItemText: {
-    fontSize: 12,
-    fontWeight: '600',
-    flex: 1,
-  },
-  formulaText: {
-    fontSize: 12,
-    fontWeight: '600',
-    flex: 1,
-  },
-  noFormulaText: {
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  // Chapter Card Styles (Default View)
-  chapterCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 12,
-  },
-  chapterHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  completeCheckCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  chapterNumText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  chapterTitle: {
-    fontFamily: MindSprintFonts.title,
-    fontSize: 17,
-    lineHeight: 23,
-  },
-  chapterSummary: {
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 2,
-  },
-  bookmarkBtn: {
-    padding: 2,
-    marginTop: 1,
-    alignSelf: 'flex-start',
-  },
-  formulaPillBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  formulaPillText: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    flex: 1,
-  },
-  // 2×2 grid so every chapter card has the same tidy shape (no lone wrapped button)
-  actionPillarsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
-  },
-  pillarBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    flexGrow: 1,
-    flexBasis: '45%',
-    minHeight: 40,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  pillarBtnText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
-  videoPlayerActionBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-    gap: 10,
-  },
-  nowPlayingTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  nowPlayingSub: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  openYtDirectBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#C8372D',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  openYtDirectBtnText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  videoModalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    gap: 14,
-    maxHeight: '90%',
-  },
-  modalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    gap: 14,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  modalTitle: {
-    fontSize: 16.5,
-    fontWeight: '800',
-  },
-  modalSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  embeddedPlayerBox: {
-    width: '100%',
-    backgroundColor: '#000000',
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  alternativeVideosHeading: {
-    fontSize: 13,
-    fontWeight: '800',
-    marginTop: 4,
-  },
-  videoOptionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 8,
-    gap: 10,
-  },
-  videoOptionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  videoOptionTitle: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    lineHeight: 17,
-  },
-  videoTeacherName: {
-    fontSize: 11,
-    fontWeight: '500',
-  },
-  videoTagBadge: {
-    fontSize: 10.5,
-    fontWeight: '700',
-  },
-  openYtIconBtn: {
-    padding: 6,
-  },
-  chapterReadHeading: {
-    fontSize: 13.5,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  chapterReadBody: {
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  formulasVaultCard: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-    gap: 6,
-  },
-  formulasVaultTitle: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  swadhyayCard: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-    gap: 8,
-  },
-  swadhyayHeading: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  swadhyayItem: {
-    gap: 3,
-    paddingVertical: 4,
-  },
-  swadhyayQuestion: {
-    fontSize: 12.5,
-    fontWeight: '700',
-  },
-  swadhyayAnswer: {
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  conceptCard: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
-    gap: 4,
-  },
-  conceptHeading: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  conceptText: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  notesReadDoneBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 4,
-  },
-  notesReadDoneText: {
-    fontSize: 12,
-    fontWeight: '700',
-    flex: 1,
-  },
-  readModalActionsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 8,
-  },
-  closeReadNotesBtn: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  closeReadNotesBtnText: {
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  optionalQuizBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  optionalQuizBtnText: {
-    color: '#ffffff',
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  configLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 4,
-  },
-  limitRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  limitChip: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  limitChipText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  launchExamBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 14,
-    marginTop: 8,
-  },
-  launchExamBtnText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  // Important Board Questions Styles
-  impQuestionCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    padding: 16,
-    gap: 12,
-  },
-  marksBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  marksBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  impChapText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  frequencyPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  frequencyPillText: {
-    color: '#8A5A00',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  impQuestionText: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    lineHeight: 21,
-  },
-  toggleAnswerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  toggleAnswerBtnText: {
-    fontSize: 12.5,
-    fontWeight: '700',
-  },
-  expandedAnswerBox: {
-    marginTop: 4,
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 8,
-  },
-  ansSectionHeader: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  modelAnsText: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  stepMarkingRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginTop: 4,
-  },
-  stepMarkBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginTop: 1,
-  },
-  stepMarkBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  stepDetailText: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    flex: 1,
-  },
-  examinerTipCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginTop: 4,
-  },
-  examinerTipTitle: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  examinerTipBody: {
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: '500',
-  },
-  boardSimulatorHeroCard: {
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
-  },
-  boardSimIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  simBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  simBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '900',
-  },
-  boardSimTitle: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  boardSimSub: {
-    color: '#C9D5F5',
-    fontSize: 11,
-    marginTop: 2,
-    lineHeight: 15,
-  },
-  glossaryPillsCard: {
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    gap: 8,
-    marginBottom: 10,
-  },
-  glossaryPillsTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  glossaryRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  termChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  termChipText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
+  chipRow: { gap: 8, paddingVertical: 2 },
+  subjectChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, minHeight: 40, borderRadius: 20, borderWidth: 1 },
+  subjectChipText: { fontFamily: MindSprintFonts.label, fontSize: 14.5 },
+  viewChip: { paddingHorizontal: 14, minHeight: 36, justifyContent: 'center', borderRadius: 18, borderWidth: 1 },
+  viewChipText: { fontFamily: MindSprintFonts.label, fontSize: 14 },
+  list: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
 });

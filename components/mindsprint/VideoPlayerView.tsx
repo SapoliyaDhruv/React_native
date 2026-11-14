@@ -21,6 +21,7 @@ import { useAuth } from '../../context/AuthContext';
 import { VideoLecture, VideoComment } from '@/constants/videoData';
 import { ApiService, API_BASE_URL } from '@/services/api';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface VideoPlayerViewProps {
   lecture: VideoLecture;
@@ -42,7 +43,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   const { user } = useAuth();
   const playerRef = useRef<any>(null);
 
-  const isGujarati = user?.grade !== 'college' && user?.medium === 'Gujarati';
+  const { tr, isGujarati } = useLanguage();
 
   const displayTitle = (isGujarati && lecture.titleGujarati) ? lecture.titleGujarati : lecture.title;
   const displayDescription = (isGujarati && lecture.descriptionGujarati) ? lecture.descriptionGujarati : lecture.description;
@@ -94,13 +95,13 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
   const onStateChange = useCallback((state: string) => {
     if (state === 'ended') {
       setPlaying(false);
-      Alert.alert('Lecture Completed! 🎉', `You finished "${displayTitle}"!`);
+      Alert.alert(tr('Video finished', 'વિડિયો પૂર્ણ'), tr(`You finished "${displayTitle}".`, `તમે "${displayTitle}" પૂર્ણ કર્યો.`));
     } else if (state === 'playing') {
       setPlaying(true);
     } else if (state === 'paused') {
       setPlaying(false);
     }
-  }, [displayTitle, isGujarati]);
+  }, [displayTitle, tr]);
 
   const handleLaunchVideo = async (startSec: number = 0) => {
     const timeParam = startSec > 0 ? `&t=${startSec}s` : '';
@@ -113,7 +114,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
           window.open(webUrl, '_blank');
           return;
         }
-      } catch (_) {}
+      } catch {}
     }
 
     try {
@@ -122,22 +123,22 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         await Linking.openURL(appUrl);
         return;
       }
-    } catch (_) {}
+    } catch {}
 
     try {
       await Linking.openURL(webUrl);
-    } catch (_) {
+    } catch {
       try {
         await WebBrowser.openBrowserAsync(webUrl);
       } catch (err) {
-        Alert.alert('Open Video', `Please visit:\n${webUrl}`);
+        Alert.alert(tr('Open video', 'વિડિયો ખોલો'), webUrl);
       }
     }
   };
 
   const handleOpenPdf = async (url?: string) => {
     if (!url) {
-      Alert.alert('Study Material', 'Reference PDF will be available shortly.');
+      Alert.alert(tr('PDF not available yet', 'PDF હજુ ઉપલબ્ધ નથી'), tr('Open the chapter from Courses to read its textbook PDF.', 'પાઠ્યપુસ્તક PDF માટે અભ્યાસમાંથી પ્રકરણ ખોલો.'));
       return;
     }
     let fullUrl = url;
@@ -151,7 +152,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
         toolbarColor: colors.primary,
       });
-    } catch (_) {
+    } catch {
       try {
         await Linking.openURL(fullUrl);
       } catch (err) {
@@ -181,7 +182,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
     } catch (e) {
       console.warn('Failed to save personal note:', e);
     }
-    Alert.alert('Note Saved 📝', 'Your lesson note has been recorded and safely saved!');
+    Alert.alert(tr('Note saved', 'નોંધ સાચવી'), tr('Your note is saved on this phone.', 'તમારી નોંધ આ ફોનમાં સચવાઈ ગઈ.'));
   };
 
   const handleDeleteNote = async (indexToDelete: number) => {
@@ -236,7 +237,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
         console.warn('Failed to persist comment locally:', e);
       }
 
-      Alert.alert('Discussion Posted 💬', 'Your comment has been shared with fellow students!');
+      Alert.alert(tr('Comment posted', 'ટિપ્પણી મોકલી'), tr('Other students can now see your comment.', 'હવે બીજા વિદ્યાર્થીઓ તમારી ટિપ્પણી જોઈ શકશે.'));
     } catch (err) {
       setSubmittingComment(false);
       const fallbackComment: VideoComment = {
@@ -254,9 +255,9 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 
       try {
         await AsyncStorage.setItem(commentsStorageKey, JSON.stringify(updatedComments));
-      } catch (_) {}
+      } catch {}
 
-      Alert.alert('Note', 'Comment posted and saved locally.');
+      Alert.alert(tr('Comment saved', 'ટિપ્પણી સાચવી'), tr('It will be shared when the server is reachable.', 'સર્વર મળશે ત્યારે શેર થશે.'));
     }
   };
 
@@ -266,15 +267,15 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       const updated = localComments.map((c) => (c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c));
       setLocalComments(updated);
       await AsyncStorage.setItem(commentsStorageKey, JSON.stringify(updated));
-    } catch (_) {}
+    } catch {}
   };
 
   const displayComments = localComments.length > 0 ? localComments : lecture.comments || [];
 
   const TABS = [
-    { key: 'overview' as const, label: 'Overview', icon: 'info-outline' as const },
-    { key: 'notes' as const, label: 'Notes', icon: 'sticky-note-2' as const, count: lecture.timeStampedNotes.length + savedNotes.length },
-    { key: 'discussion' as const, label: 'Discussion', icon: 'chat-bubble-outline' as const, count: displayComments.length },
+    { key: 'overview' as const, label: tr('Overview', 'વિગત'), icon: 'info-outline' as const },
+    { key: 'notes' as const, label: tr('Notes', 'નોંધ'), icon: 'sticky-note-2' as const, count: lecture.timeStampedNotes.length + savedNotes.length },
+    { key: 'discussion' as const, label: tr('Discussion', 'ચર્ચા'), icon: 'chat-bubble-outline' as const, count: displayComments.length },
   ];
 
   return (
@@ -325,7 +326,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
       >
         <View style={styles.speedLabelRow}>
           <MaterialIcons name="speed" size={15} color={colors.primary} />
-          <Text style={[styles.speedLabel, { color: colors.onSurfaceVariant }]}>Speed:</Text>
+          <Text style={[styles.speedLabel, { color: colors.onSurfaceVariant }]}>{tr('Speed', 'ઝડપ')}</Text>
         </View>
         <View style={styles.speedChipsRow}>
           {[0.75, 1.0, 1.25, 1.5, 2.0].map((rate) => {
@@ -473,10 +474,10 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.ytCardTitle, { color: colors.primary }]}>
-                    Watch on YouTube
+                    {tr('Watch on YouTube', 'YouTube પર જુઓ')}
                   </Text>
                   <Text style={[styles.ytCardSub, { color: colors.onSurfaceVariant }]}>
-                    {isGujarati ? 'Full HD stream • GSEB textbook support' : 'Full HD stream • Supports the creator'}
+                    {tr('Opens in the YouTube app', 'YouTube એપમાં ખૂલશે')}
                   </Text>
                 </View>
                 <MaterialIcons name="arrow-forward-ios" size={14} color={colors.primary} />
@@ -498,10 +499,10 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.ytCardTitle, { color: colors.primary }]}>
-                      {isGujarati ? 'ઓફિશિયલ પાઠ્યપુસ્તક / નોટ્સ PDF' : 'Official NCERT / GSEB Textbook PDF'}
+                      {tr('Chapter textbook PDF', 'પ્રકરણનું પાઠ્યપુસ્તક PDF')}
                     </Text>
                     <Text style={[styles.ytCardSub, { color: colors.onSurfaceVariant }]}>
-                      {isGujarati ? 'પ્રકરણ આધારિત ડિજિટલ પુસ્તક • ઑફલાઇન સપોર્ટ' : 'Read official textbook chapter material & diagrams'}
+                      {tr('Official GSEB textbook', 'અધિકૃત GSEB પાઠ્યપુસ્તક')}
                     </Text>
                   </View>
                   <MaterialIcons name="open-in-new" size={16} color={colors.primary} />
@@ -594,7 +595,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
               }]}>
                 <TextInput
                   style={[styles.commentInput, { color: colors.onSurface }]}
-                  placeholder="Ask a question or share exam tips..."
+                  placeholder={tr('Ask a question about this lesson', 'આ પાઠ વિશે પ્રશ્ન પૂછો')}
                   placeholderTextColor={colors.outline}
                   multiline
                   value={newCommentText}
@@ -602,7 +603,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 />
                 <View style={styles.commentActionRow}>
                   <Text style={[styles.postingAsText, { color: colors.outline }]}>
-                    {`Posting as ${user?.name || 'Student'}`}
+                    {tr(`Posting as ${user?.name || 'Student'}`, `${user?.name || 'વિદ્યાર્થી'} તરીકે`)}
                   </Text>
                   <TouchableOpacity
                     style={[styles.postBtn, { backgroundColor: newCommentText.trim() ? colors.primary : colors.surfaceContainer }]}
@@ -615,7 +616,7 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                       <>
                         <MaterialIcons name="send" size={14} color={newCommentText.trim() ? '#ffffff' : colors.outline} />
                         <Text style={[styles.postBtnText, { color: newCommentText.trim() ? '#ffffff' : colors.outline }]}>
-                          Post
+                          {tr('Post', 'મોકલો')}
                         </Text>
                       </>
                     )}
@@ -623,7 +624,15 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
                 </View>
               </View>
 
-              {/* Comments Stream */}
+              {/* Comments Stream (empty until a student asks the first question) */}
+              {displayComments.length === 0 && (
+                <View style={styles.emptyDiscussion}>
+                  <MaterialIcons name="forum" size={28} color={colors.outline} />
+                  <Text style={[styles.emptyDiscussionText, { color: colors.onSurfaceVariant }]}>
+                    {tr('No questions yet. Ask the first one.', 'હજુ કોઈ પ્રશ્ન નથી. પહેલો પ્રશ્ન તમે પૂછો.')}
+                  </Text>
+                </View>
+              )}
               {displayComments.map((cmt) => {
                 const initials = cmt.author
                   .split(' ')
@@ -676,6 +685,8 @@ export const VideoPlayerView: React.FC<VideoPlayerViewProps> = ({
 };
 
 const styles = StyleSheet.create({
+  emptyDiscussion: { alignItems: 'center', gap: 6, paddingVertical: 20 },
+  emptyDiscussionText: { fontSize: 14, textAlign: 'center' },
   container: {
     flex: 1,
   },

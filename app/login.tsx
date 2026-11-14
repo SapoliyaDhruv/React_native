@@ -16,10 +16,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { AcademicGrade } from '@/constants/academicData';
-import { ApiService } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri } from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -28,6 +27,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const styles = React.useMemo(() => makeStyles(colors), [colors]);
+  const { tr, lang, setLang } = useLanguage();
 
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [name, setName] = useState('');
@@ -45,25 +45,27 @@ export default function LoginScreen() {
       setLoading(false);
 
       if (res.error) {
-        Alert.alert('Google Sign-In Failed', res.error);
+        Alert.alert(tr('Google sign-in did not work', 'Google સાઇન ઇન થયું નહીં'), res.error);
         return;
       }
-      Alert.alert('Welcome to MindSprint! 🎓', 'Signed in successfully with your Google account.');
       router.replace('/(tabs)');
-    } catch (err: any) {
+    } catch {
       setLoading(false);
-      Alert.alert('Sign-In Error', err?.message || 'Could not complete Google Sign-In.');
+      Alert.alert(
+        tr('Google sign-in did not work', 'Google સાઇન ઇન થયું નહીં'),
+        tr('Try again, or sign in with your email and password.', 'ફરી પ્રયાસ કરો, અથવા ઇમેઇલ અને પાસવર્ડથી સાઇન ઇન કરો.')
+      );
     }
   };
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Required Fields', 'Please enter your email and password.');
+      Alert.alert(tr('Enter email and password', 'ઇમેઇલ અને પાસવર્ડ લખો'), tr('Both are needed to sign in.', 'સાઇન ઇન માટે બંને જરૂરી છે.'));
       return;
     }
 
     if (!isLoginMode && !name) {
-      Alert.alert('Required Fields', 'Please enter your full name.');
+      Alert.alert(tr('Enter your name', 'તમારું નામ લખો'), tr('Your name appears on your profile and reports.', 'તમારું નામ પ્રોફાઇલ અને અહેવાલમાં દેખાશે.'));
       return;
     }
 
@@ -74,7 +76,7 @@ export default function LoginScreen() {
         const res = await authLogin(email, password);
         setLoading(false);
         if (res.error) {
-          Alert.alert('Login Failed', res.error);
+          Alert.alert(tr('Could not sign in', 'સાઇન ઇન થઈ શક્યું નહીં'), res.error);
         } else {
           router.replace('/(tabs)');
         }
@@ -84,15 +86,18 @@ export default function LoginScreen() {
         const res = await authRegister(name, email, password, selectedGrade, targetBoard, targetMedium);
         setLoading(false);
         if (res.error) {
-          Alert.alert('Registration Failed', res.error);
+          Alert.alert(tr('Could not create account', 'એકાઉન્ટ બની શક્યું નહીં'), res.error);
         } else {
-          Alert.alert('Account Created!', `Welcome to MindSprint, ${name}!`);
+          Alert.alert(tr('Account created', 'એકાઉન્ટ બની ગયું'), tr(`Welcome to MindSprint, ${name}.`, `MindSprint માં સ્વાગત છે, ${name}.`));
           router.replace('/(tabs)');
         }
       }
-    } catch (err: any) {
+    } catch {
       setLoading(false);
-      Alert.alert('Error', err.message || 'An unexpected error occurred.');
+      Alert.alert(
+        tr('Something went wrong', 'કંઈક ખોટું થયું'),
+        tr('Check your internet connection and try again.', 'ઇન્ટરનેટ કનેક્શન તપાસીને ફરી પ્રયાસ કરો.')
+      );
     }
   };
 
@@ -136,12 +141,12 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     if (Platform.OS !== 'web') {
       Alert.alert(
-        'Google Sign-In on Phone 📱',
-        'Google OAuth security policy blocks "localhost" redirects on mobile phones. To test Google Sign-In with your new credentials, press "w" in your terminal to open on Web.\n\nTo test on your phone right now, you can sign in with Email/Password or Continue as Guest.',
+        tr('Google sign-in is not ready on phones yet', 'ફોન પર Google સાઇન ઇન હજુ તૈયાર નથી'),
+        tr('Sign in with your email and password, or continue as a guest.', 'ઇમેઇલ અને પાસવર્ડથી સાઇન ઇન કરો, અથવા મહેમાન તરીકે આગળ વધો.'),
         [
-          { text: 'Continue as Guest', onPress: () => handleGuestLogin() },
-          { text: 'Try Anyway', onPress: () => launchGoogleOAuth() },
-          { text: 'Cancel', style: 'cancel' },
+          { text: tr('Continue as guest', 'મહેમાન તરીકે આગળ વધો'), onPress: () => handleGuestLogin() },
+          { text: tr('Try anyway', 'છતાં પ્રયાસ કરો'), onPress: () => launchGoogleOAuth() },
+          { text: tr('Cancel', 'રદ કરો'), style: 'cancel' },
         ]
       );
       return;
@@ -154,14 +159,28 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {/* Brand area */}
         <View style={styles.brandBox}>
+          {/* Language choice before sign-in */}
+          <View style={styles.langSwitch} accessibilityRole="radiogroup">
+            {([['gu', 'ગુજરાતી'], ['en', 'English']] as const).map(([code, label]) => (
+              <TouchableOpacity
+                key={code}
+                onPress={() => setLang(code)}
+                style={[styles.langBtn, lang === code && styles.langBtnActive]}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: lang === code }}
+              >
+                <Text style={[styles.langBtnText, lang === code && styles.langBtnTextActive]}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
           <View style={styles.brandMark}>
             <MaterialIcons name="auto-stories" size={30} color={colors.onAccent} />
           </View>
           <Text style={styles.appName}>MindSprint</Text>
           <Text style={styles.appTagline}>
             {isLoginMode
-              ? 'Videos, textbooks and tests for every chapter, in one place.'
-              : 'Create an account to save your progress on any phone.'}
+              ? tr('Videos, textbooks and tests for every chapter, in one place.', 'દરેક પ્રકરણના વિડિયો, પાઠ્યપુસ્તક અને ટેસ્ટ, એક જ જગ્યાએ.')
+              : tr('Create an account to save your progress on any phone.', 'કોઈ પણ ફોન પર પ્રગતિ સાચવવા એકાઉન્ટ બનાવો.')}
           </Text>
         </View>
 
@@ -174,7 +193,7 @@ export default function LoginScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: isLoginMode }}
             >
-              <Text style={[styles.tabText, isLoginMode && styles.tabTextActive]}>Sign in</Text>
+              <Text style={[styles.tabText, isLoginMode && styles.tabTextActive]}>{tr('Sign in', 'સાઇન ઇન')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setIsLoginMode(false)}
@@ -182,22 +201,22 @@ export default function LoginScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: !isLoginMode }}
             >
-              <Text style={[styles.tabText, !isLoginMode && styles.tabTextActive]}>Create account</Text>
+              <Text style={[styles.tabText, !isLoginMode && styles.tabTextActive]}>{tr('Create account', 'એકાઉન્ટ બનાવો')}</Text>
             </TouchableOpacity>
           </View>
 
           {!isLoginMode && (
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full name</Text>
+              <Text style={styles.inputLabel}>{tr('Full name', 'પૂરું નામ')}</Text>
               <View style={styles.inputWrapper}>
                 <MaterialIcons name="person-outline" size={20} color={colors.outline} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Your name"
+                  placeholder={tr('Your name', 'તમારું નામ')}
                   placeholderTextColor={colors.outline}
                   value={name}
                   onChangeText={setName}
-                  accessibilityLabel="Full name"
+                  accessibilityLabel={tr('Full name', 'પૂરું નામ')}
                   autoComplete="name"
                 />
               </View>
@@ -205,7 +224,7 @@ export default function LoginScreen() {
           )}
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>{tr('Email', 'ઇમેઇલ')}</Text>
             <View style={styles.inputWrapper}>
               <MaterialIcons name="mail-outline" size={20} color={colors.outline} />
               <TextInput
@@ -217,30 +236,30 @@ export default function LoginScreen() {
                 autoComplete="email"
                 value={email}
                 onChangeText={setEmail}
-                accessibilityLabel="Email"
+                accessibilityLabel={tr('Email', 'ઇમેઇલ')}
               />
             </View>
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={styles.inputLabel}>{tr('Password', 'પાસવર્ડ')}</Text>
             <View style={styles.inputWrapper}>
               <MaterialIcons name="lock-outline" size={20} color={colors.outline} />
               <TextInput
                 style={styles.input}
-                placeholder="At least 6 characters"
+                placeholder={tr('At least 6 characters', 'ઓછામાં ઓછા 6 અક્ષર')}
                 placeholderTextColor={colors.outline}
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
-                accessibilityLabel="Password"
+                accessibilityLabel={tr('Password', 'પાસવર્ડ')}
               />
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setShowPassword((prev) => !prev)}
                 style={styles.eyeBtn}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                accessibilityLabel={showPassword ? tr('Hide password', 'પાસવર્ડ છુપાવો') : tr('Show password', 'પાસવર્ડ બતાવો')}
               >
                 <MaterialIcons name={showPassword ? 'visibility' : 'visibility-off'} size={20} color={colors.outline} />
               </TouchableOpacity>
@@ -249,7 +268,7 @@ export default function LoginScreen() {
 
           {!isLoginMode && (
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>I am studying in</Text>
+              <Text style={styles.inputLabel}>{tr('I am studying in', 'હું અભ્યાસ કરું છું')}</Text>
               <View style={styles.stageToggleRow}>
                 <TouchableOpacity
                   style={[styles.stageChip, selectedGrade !== 'college' && styles.stageChipActive]}
@@ -257,8 +276,8 @@ export default function LoginScreen() {
                   accessibilityState={{ selected: selectedGrade !== 'college' }}
                 >
                   <MaterialIcons name="school" size={20} color={selectedGrade !== 'college' ? colors.primary : colors.onSurfaceVariant} />
-                  <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>School</Text>
-                  <Text style={styles.stageChipSub}>Class 7 to 12</Text>
+                  <Text style={[styles.stageChipText, selectedGrade !== 'college' && styles.stageChipTextActive]}>{tr('School', 'શાળા')}</Text>
+                  <Text style={styles.stageChipSub}>{tr('Class 7 to 12', 'ધોરણ 7 થી 12')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.stageChip, selectedGrade === 'college' && styles.stageChipActive]}
@@ -266,21 +285,21 @@ export default function LoginScreen() {
                   accessibilityState={{ selected: selectedGrade === 'college' }}
                 >
                   <MaterialIcons name="work-outline" size={20} color={selectedGrade === 'college' ? colors.primary : colors.onSurfaceVariant} />
-                  <Text style={[styles.stageChipText, selectedGrade === 'college' && styles.stageChipTextActive]}>College</Text>
-                  <Text style={styles.stageChipSub}>Placement prep</Text>
+                  <Text style={[styles.stageChipText, selectedGrade === 'college' && styles.stageChipTextActive]}>{tr('College', 'કૉલેજ')}</Text>
+                  <Text style={styles.stageChipSub}>{tr('Placement prep', 'પ્લેસમેન્ટ તૈયારી')}</Text>
                 </TouchableOpacity>
               </View>
 
               {selectedGrade !== 'college' && (
                 <View style={{ marginTop: 14 }}>
-                  <Text style={styles.inputLabel}>Class (GSEB, Gujarati medium)</Text>
+                  <Text style={styles.inputLabel}>{tr('Class (GSEB, Gujarati medium)', 'ધોરણ (GSEB, ગુજરાતી માધ્યમ)')}</Text>
                   <View style={styles.gradePillRow}>
                     {(['7', '8', '9', '10', '11', '12'] as AcademicGrade[]).map((g) => (
                       <TouchableOpacity
                         key={g}
                         style={[styles.gradePill, selectedGrade === g && styles.gradePillActive]}
                         onPress={() => setSelectedGrade(g)}
-                        accessibilityLabel={`Class ${g}`}
+                        accessibilityLabel={tr(`Class ${g}`, `ધોરણ ${g}`)}
                         accessibilityState={{ selected: selectedGrade === g }}
                       >
                         <Text style={[styles.gradePillText, selectedGrade === g && styles.gradePillTextActive]}>ધોરણ {g}</Text>
@@ -296,13 +315,13 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color={colors.onAccent} />
             ) : (
-              <Text style={styles.submitBtnText}>{isLoginMode ? 'Sign in' : 'Create account'}</Text>
+              <Text style={styles.submitBtnText}>{isLoginMode ? tr('Sign in', 'સાઇન ઇન') : tr('Create account', 'એકાઉન્ટ બનાવો')}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerText}>{tr('or', 'અથવા')}</Text>
             <View style={styles.dividerLine} />
           </View>
 
@@ -310,13 +329,13 @@ export default function LoginScreen() {
             <View style={styles.googleIconCircle}>
               <Text style={styles.googleGText}>G</Text>
             </View>
-            <Text style={styles.googleBtnText}>Continue with Google</Text>
+            <Text style={styles.googleBtnText}>{tr('Continue with Google', 'Google થી આગળ વધો')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.guestBtn} onPress={handleGuestLogin} accessibilityRole="button">
-            <Text style={styles.guestBtnText}>Continue as guest</Text>
+            <Text style={styles.guestBtnText}>{tr('Continue as guest', 'મહેમાન તરીકે આગળ વધો')}</Text>
           </TouchableOpacity>
-          <Text style={styles.guestNote}>Guests can try everything; progress stays on this phone only.</Text>
+          <Text style={styles.guestNote}>{tr('Guests can try everything; progress stays on this phone only.', 'મહેમાન બધું વાપરી શકે; પ્રગતિ ફક્ત આ ફોનમાં રહેશે.')}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -335,6 +354,11 @@ const makeStyles = (c: typeof MindSprintColors) =>
       borderBottomLeftRadius: 28,
       borderBottomRightRadius: 28,
     },
+    langSwitch: { flexDirection: 'row', alignSelf: 'flex-end', gap: 4, padding: 3, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.12)', marginBottom: 12 },
+    langBtn: { minHeight: 34, paddingHorizontal: 14, borderRadius: 17, justifyContent: 'center' },
+    langBtnActive: { backgroundColor: c.onHeroSurface },
+    langBtnText: { fontFamily: MindSprintFonts.label, fontSize: 14, color: c.onHeroSurfaceVariant },
+    langBtnTextActive: { color: c.heroSurface },
     brandMark: {
       width: 56,
       height: 56,

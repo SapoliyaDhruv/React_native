@@ -14,12 +14,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ApiService } from '@/services/api';
 import { Question } from '@/constants/mindsprintData';
 
 export default function ExamReviewScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const { resultId } = useLocalSearchParams<{ resultId: string }>();
 
   const { user } = useAuth();
@@ -106,8 +108,8 @@ export default function ExamReviewScreen() {
       edges={['top']}
     >
       <ScreenHeader
-        title="Answers and explanations"
-        subtitle={`${questions.length} questions`}
+        title={tr('Answers and explanations', 'જવાબ અને સમજૂતી')}
+        subtitle={tr(`${questions.length} questions`, `${questions.length} પ્રશ્નો`)}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>

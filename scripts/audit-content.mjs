@@ -60,6 +60,20 @@ for (const l of lectures) {
   if (!c && l.subjectId) warnings.push(`lecture ${l.id}: no matching chapter`);
 }
 
+// Offline length check from the stored duration ("9m", "1h 49m"): catches YouTube
+// Shorts or clips added as full-chapter videos, even in PR checks.
+const MIN_VIDEO_SECONDS = 300;
+const parseDuration = (d) => {
+  const m = /^(?:(\d+)h)?\s*(?:(\d+)m)?$/.exec(String(d || '').trim());
+  return m && (m[1] || m[2]) ? (Number(m[1] || 0) * 60 + Number(m[2] || 0)) * 60 : null;
+};
+for (const [g, grade] of Object.entries(curriculum)) {
+  for (const s of grade.subjects) for (const c of s.chapters) for (const v of c.videos || []) {
+    const sec = parseDuration(v.duration);
+    if (sec !== null && sec < MIN_VIDEO_SECONDS) err(`${c.id}: video ${v.youtubeVideoId} is only ${v.duration} (minimum ${MIN_VIDEO_SECONDS / 60} min)`);
+  }
+}
+
 async function pool(items, size, fn) {
   const out = []; let i = 0;
   await Promise.all(Array.from({ length: size }, async () => { while (i < items.length) { const n = i++; out[n] = await fn(items[n]); } }));
@@ -90,7 +104,28 @@ if (online) {
     if (status === 200) continue;
     (typeof status === 'number' ? err : (m) => warnings.push(m))(`link ${u}: ${status}`);
   }
-  console.log(`Online: checked ${ids.length} videos and ${urls.length} external links.`);
+  // Real length from the watch page (stored durations can drift or be wrong).
+  const chapterIds = [...videoUse.keys()];
+  const lengths = await pool(chapterIds, 8, async (id) => {
+    try {
+      const r = await fetch(`https://www.youtube.com/watch?v=${id}`, {
+        headers: { 'user-agent': 'Mozilla/5.0', 'accept-language': 'en', cookie: 'CONSENT=YES+1' },
+        signal: AbortSignal.timeout(45000),
+      });
+      const html = await r.text();
+      const len = /"lengthSeconds":"(\d+)"/.exec(html)?.[1];
+      const embed = /"playableInEmbed":(true|false)/.exec(html)?.[1];
+      return [id, len ? Number(len) : null, embed];
+    } catch (e) { return [id, `network error (${e.cause?.code || e.message})`, null]; }
+  });
+  for (const [id, len, embed] of lengths) {
+    const used = (videoUse.get(id) || []).join(', ');
+    if (typeof len === 'string') warnings.push(`video ${id}: length not checked, ${len}`);
+    else if (len === null) warnings.push(`video ${id}: length not found on watch page`);
+    else if (len < MIN_VIDEO_SECONDS) err(`video ${id}: only ${len}s long (used by ${used})`);
+    if (embed === 'false') err(`video ${id}: embedding disabled (used by ${used})`);
+  }
+  console.log(`Online: checked ${ids.length} videos (${chapterIds.length} lengths) and ${urls.length} external links.`);
 }
 
 console.log(`Checked ${chapterCount} chapters, ${videoUse.size} distinct videos, ${lectures.length} video lectures.`);

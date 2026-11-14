@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export type DayItem = {
   day: string;
@@ -20,35 +21,17 @@ export interface StreakWidgetProps {
 }
 
 export const StreakWidget: React.FC<StreakWidgetProps> = ({
-  streakCount = 1,
+  streakCount = 0,
   recentActivity = [],
 }) => {
   const { colors, isDarkMode } = useTheme();
-  const [flamePulse] = useState(() => new Animated.Value(1));
-
-  useEffect(() => {
-    const pulseAnim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(flamePulse, {
-          toValue: 1.18,
-          duration: 650,
-          useNativeDriver: true,
-        }),
-        Animated.timing(flamePulse, {
-          toValue: 1,
-          duration: 650,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulseAnim.start();
-
-    return () => pulseAnim.stop();
-  }, [flamePulse]);
+  const { tr, isGujarati } = useLanguage();
 
   // Dynamically compute the current week (Monday to Sunday) based on real date
   const daysData: DayItem[] = useMemo(() => {
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dayNames = isGujarati
+      ? ['સોમ', 'મંગળ', 'બુધ', 'ગુરુ', 'શુક્ર', 'શનિ', 'રવિ']
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const now = new Date();
     // Monday-based index: 0 = Mon, 1 = Tue, 2 = Wed, 3 = Thu, 4 = Fri, 5 = Sat, 6 = Sun
     const currentDayOfWeek = (now.getDay() + 6) % 7;
@@ -99,18 +82,18 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({
         status,
       };
     });
-  }, [streakCount, recentActivity]);
+  }, [streakCount, recentActivity, isGujarati]);
 
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <Text style={[styles.title, { color: colors.onSurface }]}>Your streak</Text>
-        <View style={styles.flamePill}>
-          <Animated.View style={{ transform: [{ scale: flamePulse }] }}>
-            <MaterialIcons name="local-fire-department" size={20} color="#F4A30B" />
-          </Animated.View>
-          <Text style={styles.flameText}>
-            {streakCount > 1 ? `${streakCount} day streak` : '1 day streak'}
+        <Text style={[styles.title, { color: colors.onSurface }]}>{tr('Your streak', 'તમારી સ્ટ્રીક')}</Text>
+        <View style={[styles.flamePill, { backgroundColor: streakCount > 0 ? colors.accentContainer : colors.surfaceContainerLow }]}>
+          <MaterialIcons name="local-fire-department" size={20} color={streakCount > 0 ? colors.accent : colors.outline} />
+          <Text style={[styles.flameText, { color: streakCount > 0 ? colors.onAccentContainer : colors.onSurfaceVariant }]}>
+            {streakCount > 0
+              ? tr(`${streakCount} day streak`, `${streakCount} દિવસ સતત`)
+              : tr('Start your streak today', 'આજે તમારી સ્ટ્રીક શરૂ કરો')}
           </Text>
         </View>
       </View>
@@ -131,11 +114,9 @@ export const StreakWidget: React.FC<StreakWidgetProps> = ({
                   MindSprintShadows.glow,
                 ]}
               >
-                <Text style={styles.activeDayText}>{item.day}</Text>
-                <Animated.View style={{ transform: [{ scale: flamePulse }] }}>
-                  <MaterialIcons name="local-fire-department" size={24} color="#ffffff" />
-                </Animated.View>
-                <Text style={styles.activeDateSubText}>{item.dateNum}</Text>
+                <Text style={[styles.activeDayText, { color: colors.onPrimary }]}>{item.day}</Text>
+                <MaterialIcons name="local-fire-department" size={24} color={colors.onPrimary} />
+                <Text style={[styles.activeDateSubText, { color: colors.onPrimary }]}>{item.dateNum}</Text>
                 <View style={styles.activeDot} />
               </View>
             );

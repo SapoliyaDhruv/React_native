@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +16,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { MindSprintShadows } from "@/constants/mindsprintTheme";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { notify } from "@/components/common/dialogs";
 import { ApiService } from "@/services/api";
 import {
   ACADEMIC_CURRICULUM,
@@ -144,6 +145,7 @@ function typeIcon(t: string): keyof typeof MaterialIcons.glyphMap {
 
 export default function FlashcardsScreen() {
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || "college";
@@ -151,7 +153,6 @@ export default function FlashcardsScreen() {
   const isGSEB = isSchoolMode && user?.medium === "Gujarati";
 
   const [allCards, setAllCards] = useState<FlashcardItem[]>([]);
-  const [cards, setCards] = useState<FlashcardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -159,8 +160,8 @@ export default function FlashcardsScreen() {
   const [masteredIds, setMasteredIds] = useState<string[]>([]);
   const [skippedIds, setSkippedIds] = useState<string[]>([]);
 
-  const flipAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const [flipAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(0));
 
   const storageKey = `@mindsprint_flashcard_mastered_${userGrade}_${user?.email || "guest"}`;
   const skippedKey = `@mindsprint_flashcard_skipped_${userGrade}_${user?.email || "guest"}`;
@@ -195,7 +196,6 @@ export default function FlashcardsScreen() {
         if (isSchoolMode) {
           const built = buildSchoolFlashcards(userGrade, isGSEB);
           setAllCards(built);
-          setCards(built);
         } else {
           const data = await ApiService.getFlashcards("All");
           const mapped: FlashcardItem[] = (data || []).map((d: any) => ({
@@ -208,7 +208,6 @@ export default function FlashcardsScreen() {
             color: "#1D3A8A",
           }));
           setAllCards(mapped);
-          setCards(mapped);
         }
       } catch (e) {
         console.warn("Flashcard load error:", e);
@@ -221,16 +220,15 @@ export default function FlashcardsScreen() {
     loadCards();
   }, [userGrade, isSchoolMode, isGSEB]);
 
-  useEffect(() => {
-    if (selectedFilter === "All") {
-      setCards(allCards);
-    } else {
-      setCards(allCards.filter((c) => c.subject === selectedFilter));
-    }
+  // Cards shown = all cards filtered by subject (derived, not stored separately).
+  const cards = selectedFilter === "All" ? allCards : allCards.filter((c) => c.subject === selectedFilter);
+
+  const handleSelectFilter = (key: string) => {
+    setSelectedFilter(key);
     setCurrentIndex(0);
     setIsFlipped(false);
     flipAnim.setValue(0);
-  }, [selectedFilter, allCards]);
+  };
 
   const currentCard = cards[currentIndex];
   const isMastered = currentCard ? masteredIds.includes(currentCard.id) : false;
@@ -275,7 +273,7 @@ export default function FlashcardsScreen() {
       ? masteredIds.filter((id) => id !== currentCard.id)
       : [...masteredIds, currentCard.id];
     if (!isMastered && updated.length === cards.length) {
-      Alert.alert("All cards learned", "You have learned every card in this deck.");
+      notify(tr('All cards learned', 'બધા કાર્ડ શીખી લીધા'), tr('You have learned every card in this deck.', 'આ ડેકના બધા કાર્ડ તમે શીખી લીધા છે.'));
     }
     setMasteredIds(updated);
     try { await AsyncStorage.setItem(storageKey, JSON.stringify(updated)); } catch (_) {}
@@ -302,8 +300,8 @@ export default function FlashcardsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["top"]}>
       <ScreenHeader
-        title="Flashcards"
-        subtitle={`${cards.length} cards · ${masteredCount} learned`}
+        title={tr('Flashcards', 'ફ્લેશકાર્ડ')}
+        subtitle={tr(`${cards.length} cards · ${masteredCount} learned`, `${cards.length} કાર્ડ · ${masteredCount} શીખ્યા`)}
         right={
           <View style={[styles.progressPill, { backgroundColor: colors.tertiaryContainer }]}>
             <MaterialIcons name="check-circle" size={14} color={colors.tertiary} />
@@ -323,7 +321,7 @@ export default function FlashcardsScreen() {
           {filterList.map((f) => {
             const isSel = selectedFilter === f.key;
             return (
-              <TouchableOpacity key={f.key} style={[styles.filterChip, { backgroundColor: isSel ? f.color : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest, borderColor: isSel ? f.color : colors.outlineVariant }]} onPress={() => setSelectedFilter(f.key)}>
+              <TouchableOpacity key={f.key} style={[styles.filterChip, { backgroundColor: isSel ? f.color : isDarkMode ? colors.surfaceContainerLow : colors.surfaceContainerLowest, borderColor: isSel ? f.color : colors.outlineVariant }]} onPress={() => handleSelectFilter(f.key)}>
                 <Text style={[styles.filterChipText, { color: isSel ? "#ffffff" : colors.onSurface }]}>{f.label}</Text>
               </TouchableOpacity>
             );

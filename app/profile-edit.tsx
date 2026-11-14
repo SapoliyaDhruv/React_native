@@ -17,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ApiService } from '@/services/api';
 
 const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍💻', '👨‍🚀', '🦁', '⚡', '🎯', '🦉', '🚀'];
@@ -24,14 +25,15 @@ const AVATAR_PRESETS = ['🧑‍🎓', '👩‍🎓', '👩‍🔬', '🧑‍�
 export default function ProfileEditScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const styles = React.useMemo(() => makeStyles(colors), [colors]);
   const { user, logout, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || '');
   const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatarUrl || '');
-  const [targetCompany, setTargetCompany] = useState(user?.targetCompany || 'TCS NQT');
-  const [institute, setInstitute] = useState(user?.college || 'Gujarat Technological University');
-  const [targetYear, setTargetYear] = useState(user?.graduationYear || '2026');
+  const [targetCompany, setTargetCompany] = useState(user?.targetCompany && user.targetCompany !== 'All Companies' ? user.targetCompany : '');
+  const [institute, setInstitute] = useState(user?.college || '');
+  const [targetYear, setTargetYear] = useState(user?.graduationYear || '');
   const [saving, setSaving] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
@@ -39,7 +41,10 @@ export default function ProfileEditScreen() {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Permission Needed', 'Please allow gallery access to select a profile picture.');
+        Alert.alert(
+          tr('Allow photo access', 'ફોટો જોવાની પરવાનગી આપો'),
+          tr('To choose a profile picture, allow MindSprint to open your photos in Settings.', 'પ્રોફાઇલ ફોટો પસંદ કરવા, Settings માં MindSprint ને ફોટો ખોલવાની પરવાનગી આપો.')
+        );
         return;
       }
       const res = await ImagePicker.launchImageLibraryAsync({
@@ -62,7 +67,10 @@ export default function ProfileEditScreen() {
     try {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Permission Needed', 'Please allow camera access to take a profile photo.');
+        Alert.alert(
+          tr('Allow camera access', 'કૅમેરાની પરવાનગી આપો'),
+          tr('To take a profile photo, allow MindSprint to use the camera in Settings.', 'પ્રોફાઇલ ફોટો લેવા, Settings માં MindSprint ને કૅમેરા વાપરવાની પરવાનગી આપો.')
+        );
         return;
       }
       const res = await ImagePicker.launchCameraAsync({
@@ -83,7 +91,7 @@ export default function ProfileEditScreen() {
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert('Required', 'Please enter your full name');
+      Alert.alert(tr('Enter your name', 'તમારું નામ લખો'), tr('Your name appears on your profile and reports.', 'તમારું નામ પ્રોફાઇલ અને અહેવાલમાં દેખાશે.'));
       return;
     }
 
@@ -105,10 +113,13 @@ export default function ProfileEditScreen() {
         graduationYear: targetYear,
       });
 
-      Alert.alert('Profile saved', 'Your changes are saved.');
+      Alert.alert(tr('Profile saved', 'પ્રોફાઇલ સચવાઈ'), tr('Your changes are saved.', 'તમારા ફેરફારો સચવાઈ ગયા.'));
       router.back();
-    } catch (e) {
-      Alert.alert('Saved Locally', 'Your profile details have been saved.');
+    } catch {
+      Alert.alert(
+        tr('Saved on this phone', 'આ ફોનમાં સચવાયું'),
+        tr('Your changes are saved here and will sync when the server is reachable.', 'ફેરફારો અહીં સચવાયા છે અને સર્વર મળે ત્યારે સિંક થશે.')
+      );
       router.back();
     } finally {
       setSaving(false);
@@ -117,12 +128,15 @@ export default function ProfileEditScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account & Data? ⚠️',
-      'This will permanently delete your account, study streaks, and mock exam records from MindSprint servers in compliance with Apple & Google privacy standards. This action cannot be undone.',
+      tr('Delete your account?', 'તમારું એકાઉન્ટ ડિલીટ કરવું છે?'),
+      tr(
+        'This permanently deletes your account, streaks and test results. It cannot be undone.',
+        'આથી તમારું એકાઉન્ટ, સ્ટ્રીક અને ટેસ્ટનાં પરિણામો કાયમ માટે ડિલીટ થશે. આ પાછું લાવી શકાશે નહીં.'
+      ),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: tr('Keep my account', 'એકાઉન્ટ રાખો'), style: 'cancel' },
         {
-          text: 'Delete Permanently',
+          text: tr('Delete account', 'એકાઉન્ટ ડિલીટ કરો'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -133,7 +147,7 @@ export default function ProfileEditScreen() {
               console.warn('Delete account error:', e);
             }
             await logout();
-            Alert.alert('Account Deleted', 'Your data has been erased. We hope to see you again!');
+            Alert.alert(tr('Account deleted', 'એકાઉન્ટ ડિલીટ થયું'), tr('Your data has been removed.', 'તમારો ડેટા દૂર કરવામાં આવ્યો છે.'));
             router.replace('/(tabs)/profile' as any);
           },
         },
@@ -171,16 +185,16 @@ export default function ProfileEditScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityLabel="Go back">
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityLabel={tr('Go back', 'પાછા જાઓ')}>
           <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit profile</Text>
+        <Text style={styles.headerTitle}>{tr('Edit profile', 'પ્રોફાઇલ બદલો')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Photo */}
         <View style={styles.avatarSection}>
-          <TouchableOpacity activeOpacity={0.85} style={styles.avatarWrapper} onPress={handlePickFromGallery} accessibilityLabel="Choose a photo">
+          <TouchableOpacity activeOpacity={0.85} style={styles.avatarWrapper} onPress={handlePickFromGallery} accessibilityLabel={tr('Choose a photo', 'ફોટો પસંદ કરો')}>
             {isEmoji ? (
               <View style={[styles.avatar, styles.emojiAvatarBox]}>
                 <Text style={styles.emojiAvatarText}>{avatarUrl}</Text>
@@ -199,11 +213,11 @@ export default function ProfileEditScreen() {
           <View style={styles.avatarActionBtnsRow}>
             <TouchableOpacity style={styles.smallActionBtn} onPress={handlePickFromGallery}>
               <MaterialIcons name="photo-library" size={18} color={colors.primary} />
-              <Text style={styles.smallActionBtnText}>Choose photo</Text>
+              <Text style={styles.smallActionBtnText}>{tr('Choose photo', 'ફોટો પસંદ કરો')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.smallActionBtn} onPress={handleTakePhoto}>
               <MaterialIcons name="photo-camera" size={18} color={colors.primary} />
-              <Text style={styles.smallActionBtnText}>Take photo</Text>
+              <Text style={styles.smallActionBtnText}>{tr('Take photo', 'ફોટો લો')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -225,12 +239,12 @@ export default function ProfileEditScreen() {
         </View>
 
         {/* About you */}
-        <Text style={styles.sectionHeading}>About you</Text>
+        <Text style={styles.sectionHeading}>{tr('About you', 'તમારા વિશે')}</Text>
         <View style={styles.card}>
-          {field('Full name', name, setName, 'Your name', { autoComplete: 'name' })}
-          {field('Email', user?.email || 'student@mindsprint.edu', null, undefined, undefined, 'Your sign-in email can’t be changed here.')}
-          {field(isSchool ? 'School' : 'College or institute', institute, setInstitute, isSchool ? 'Your school name' : 'Your college name')}
-          {field('Goal', targetCompany, setTargetCompany, isSchool ? 'e.g. 90% in board exam' : 'e.g. TCS Digital, Amazon SDE')}
+          {field(tr('Full name', 'પૂરું નામ'), name, setName, tr('Your name', 'તમારું નામ'), { autoComplete: 'name' })}
+          {field(tr('Email', 'ઇમેઇલ'), user?.email || '', null, undefined, undefined, tr('Your sign-in email can’t be changed here.', 'સાઇન ઇન ઇમેઇલ અહીં બદલી શકાતો નથી.'))}
+          {field(isSchool ? tr('School', 'શાળા') : tr('College or institute', 'કૉલેજ કે સંસ્થા'), institute, setInstitute, isSchool ? tr('Your school name', 'તમારી શાળાનું નામ') : tr('Your college name', 'તમારી કૉલેજનું નામ'))}
+          {field(tr('Goal', 'લક્ષ્ય'), targetCompany, setTargetCompany, isSchool ? tr('e.g. 90% in board exam', 'દા.ત. બોર્ડમાં 90%') : tr('e.g. TCS Digital, Amazon SDE', 'દા.ત. TCS Digital, Amazon SDE'))}
           {field(isSchool ? 'Exam year' : 'Graduation year', targetYear, setTargetYear, '2027', { keyboardType: 'numeric' })}
         </View>
 
@@ -241,28 +255,28 @@ export default function ProfileEditScreen() {
           disabled={saving}
           accessibilityRole="button"
         >
-          <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save changes'}</Text>
+          <Text style={styles.saveBtnText}>{saving ? tr('Saving…', 'સચવાય છે…') : tr('Save changes', 'ફેરફારો સાચવો')}</Text>
         </TouchableOpacity>
 
         {/* Account */}
-        <Text style={styles.sectionHeading}>Account and privacy</Text>
+        <Text style={styles.sectionHeading}>{tr('Account and privacy', 'એકાઉન્ટ અને ગોપનીયતા')}</Text>
         <View style={[styles.card, { paddingVertical: 0, gap: 0 }]}>
           <TouchableOpacity style={styles.legalRow} onPress={() => setShowPrivacyModal(true)}>
             <MaterialIcons name="privacy-tip" size={22} color={colors.primary} />
-            <Text style={styles.legalRowText}>Privacy policy</Text>
+            <Text style={styles.legalRowText}>{tr('Privacy policy', 'ગોપનીયતા નીતિ')}</Text>
             <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.legalRow, styles.rowDivider]}
-            onPress={() => Alert.alert('Terms of Service', 'MindSprint is an educational platform. Content is curated under NCERT & open placement guidelines.')}
+            onPress={() => Alert.alert(tr('Terms of service', 'સેવાની શરતો'), tr('MindSprint is a study app. Videos and textbooks link to their original publishers.', 'MindSprint અભ્યાસ ઍપ છે. વિડિયો અને પાઠ્યપુસ્તકો તેમના મૂળ પ્રકાશકો સાથે જોડાયેલાં છે.'))}
           >
             <MaterialIcons name="description" size={22} color={colors.primary} />
-            <Text style={styles.legalRowText}>Terms of service</Text>
+            <Text style={styles.legalRowText}>{tr('Terms of service', 'સેવાની શરતો')}</Text>
             <MaterialIcons name="chevron-right" size={22} color={colors.outline} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.legalRow, styles.rowDivider]} onPress={handleDeleteAccount}>
             <MaterialIcons name="delete-outline" size={22} color={colors.error} />
-            <Text style={[styles.legalRowText, { color: colors.error }]}>Delete account and data</Text>
+            <Text style={[styles.legalRowText, { color: colors.error }]}>{tr('Delete account and data', 'એકાઉન્ટ અને ડેટા ડિલીટ કરો')}</Text>
             <MaterialIcons name="chevron-right" size={22} color={colors.error} />
           </TouchableOpacity>
         </View>
@@ -272,20 +286,21 @@ export default function ProfileEditScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Privacy policy</Text>
-              <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.backBtn} accessibilityLabel="Close">
+              <Text style={styles.modalTitle}>{tr('Privacy policy', 'ગોપનીયતા નીતિ')}</Text>
+              <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={styles.backBtn} accessibilityLabel={tr('Close', 'બંધ કરો')}>
                 <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
               </TouchableOpacity>
             </View>
             <ScrollView style={{ maxHeight: 350, marginVertical: 10 }} showsVerticalScrollIndicator={false}>
               <Text style={styles.privacyText}>
-                1. Data Collection: MindSprint stores your study progress, mock test accuracy, and formula bookmarks securely to provide personalized AI recommendations.{'\n\n'}
-                2. Privacy Standards: We comply with global data regulations (GDPR, Apple App Store Guidelines 5.1.1, Google Play Data Safety). We do NOT sell your data to third parties.{'\n\n'}
-                3. Right to Erasure: You have the permanent right to delete your account and all associated test scores at any time via the &quot;Delete account&quot; button.
+                {tr(
+                  'What we store: your name, email, study progress, test scores and bookmarks, so the app can show your progress and suggest what to study.\n\nWe do not sell your data.\n\nYou can delete your account and all your test results at any time with "Delete account and data".',
+                  'અમે શું સાચવીએ છીએ: તમારું નામ, ઇમેઇલ, અભ્યાસની પ્રગતિ, ટેસ્ટના ગુણ અને સાચવેલું, જેથી ઍપ તમારી પ્રગતિ બતાવી શકે અને શું ભણવું તે સૂચવી શકે.\n\nઅમે તમારો ડેટા વેચતા નથી.\n\n"એકાઉન્ટ અને ડેટા ડિલીટ કરો" થી તમે ગમે ત્યારે એકાઉન્ટ અને બધાં પરિણામો ડિલીટ કરી શકો છો.'
+                )}
               </Text>
             </ScrollView>
             <TouchableOpacity style={styles.closeModalBtn} onPress={() => setShowPrivacyModal(false)}>
-              <Text style={styles.closeModalBtnText}>Close</Text>
+              <Text style={styles.closeModalBtnText}>{tr('Close', 'બંધ કરો')}</Text>
             </TouchableOpacity>
           </View>
         </View>

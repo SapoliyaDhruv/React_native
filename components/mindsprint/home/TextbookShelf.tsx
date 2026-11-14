@@ -5,6 +5,7 @@ import type { AcademicSubject } from '@/constants/academicData';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { subjectTone } from '@/constants/subjectTones';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Props {
   subjects: AcademicSubject[];
@@ -13,6 +14,10 @@ interface Props {
   onOpen: (subject: AcademicSubject) => void;
 }
 
+// Shrink the cover title when a single word would not fit the cover width.
+const isLongName = (name: string) =>
+  name.length > 14 || name.split(/\s+/).some((w) => w.length > 9);
+
 /**
  * The Home screen's signature element: each subject is a textbook cover on a
  * shelf. The spine on the left and the progress ribbon at the bottom make it
@@ -20,6 +25,7 @@ interface Props {
  */
 export const TextbookShelf: React.FC<Props> = ({ subjects, gujarati, completedIds, onOpen }) => {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
 
   return (
     <View>
@@ -38,14 +44,14 @@ export const TextbookShelf: React.FC<Props> = ({ subjects, gujarati, completedId
               activeOpacity={0.85}
               onPress={() => onOpen(sub)}
               accessibilityRole="button"
-              accessibilityLabel={`${sub.name}, ${total} chapters, ${done} done`}
+              accessibilityLabel={tr(`${sub.name}, ${total} chapters, ${done} done`, `${name}, ${total} પ્રકરણ, ${done} પૂરાં`)}
               style={[styles.book, { backgroundColor: tone.cover }]}
             >
               <View style={[styles.spine, { backgroundColor: tone.spine }]} />
               <View style={styles.cover}>
                 <MaterialIcons name={tone.icon as any} size={22} color="rgba(255,255,255,0.85)" />
                 <View style={{ flex: 1 }} />
-                <Text style={[styles.name, name.length > 11 && styles.nameLong]} numberOfLines={3}>
+                <Text style={[styles.name, isLongName(name) && styles.nameLong]} numberOfLines={3}>
                   {name}
                 </Text>
                 {secondary ? (
@@ -54,7 +60,7 @@ export const TextbookShelf: React.FC<Props> = ({ subjects, gujarati, completedId
                   </Text>
                 ) : null}
                 <Text style={styles.meta}>
-                  {done > 0 ? `${done}/${total} done` : `${total} chapters`}
+                  {done > 0 ? tr(`${done}/${total} done`, `${done}/${total} પૂરાં`) : tr(`${total} chapters`, `${total} પ્રકરણ`)}
                 </Text>
               </View>
               <View style={styles.ribbonTrack}>

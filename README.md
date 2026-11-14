@@ -15,13 +15,50 @@ Edit the JSON, never a copy.
 Check the content before you ship it:
 
 ```bash
-npm run audit:content          # fast structure checks (runs on every PR)
-npm run audit:content:online   # also checks every YouTube video and external PDF link
+npm run audit:content          # fast structure checks incl. no video under 5 minutes (runs on every PR)
+npm run audit:content:online   # also checks every YouTube video (live, embeddable, real length) and external link
 ```
 
 A GitHub Action runs the online check every Monday, so videos that disappear are caught early.
 Students can report a wrong or broken video from the player; reports are stored in MongoDB
 (or in `backend/data/video-reports.jsonl` when the database is offline).
+
+## Deploy (backend + Android app)
+
+The app works offline for course content, but sign-in, saved progress and rankings need the backend and a database. These steps need your own accounts; the config files are already in the repo.
+
+### 1. Database: MongoDB Atlas
+1. Create a free cluster at https://www.mongodb.com/atlas.
+2. *Database Access*: add a user with a strong password.
+3. *Network Access*: allow `0.0.0.0/0` (Render's IPs change).
+4. *Connect → Drivers*: copy the connection string, e.g. `mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/mindsprint`.
+
+### 2. Backend: Render
+1. On https://render.com choose *New → Blueprint* and select this repository. `render.yaml` creates the `mindsprint-backend` web service (root `backend/`, `node server.js`, health check `/api/health`).
+2. Fill the secret values when asked: `MONGO_URI` (from step 1), `GOOGLE_CLIENT_ID_WEB` (step 4), optionally `GEMINI_API_KEY`. `JWT_SECRET` is generated automatically; in production the server refuses to start without one.
+3. After the deploy, open `https://<your-service>.onrender.com/api/health`; it should return `{"status":"OK"}`. Courses, videos and papers are seeded into the database on first start.
+
+### 3. Point the app at the backend
+Set `EXPO_PUBLIC_API_URL` to `https://<your-service>.onrender.com/api`:
+- for builds: edit the `preview` / `production` profiles in `eas.json` (they default to `https://mindsprint-backend.onrender.com/api`);
+- for local testing against the deployed server: put it in `.env`.
+
+A non-local `EXPO_PUBLIC_API_URL` always wins; without it the app talks to the dev machine running `node backend/server.js` on port 5000.
+
+### 4. Google sign-in on Android
+1. In Google Cloud Console → *APIs & Services → Credentials*, create OAuth client IDs:
+   - **Web application**: use its ID for `GOOGLE_CLIENT_ID_WEB` (backend) and `EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB` (app). Android sign-in returns tokens for this audience.
+   - **Android**: package name `com.mindsprint.app`, SHA-1 from `eas credentials -p android` (the build keystore). Put the ID in `EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID`.
+2. Native Google sign-in needs a development or release build; it does not work inside Expo Go.
+
+### 5. Build an installable APK
+```bash
+npm install -g eas-cli
+eas login
+eas init                                   # links the project to your Expo account (adds the projectId)
+eas build -p android --profile preview     # shareable .apk
+eas build -p android --profile production  # .aab for the Play Store
+```
 
 ## Get started
 

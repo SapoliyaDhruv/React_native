@@ -14,6 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ApiService } from '@/services/api';
 import { ACADEMIC_CURRICULUM, AcademicGrade } from '@/constants/academicData';
 
@@ -21,13 +22,14 @@ interface SubjectMasteryItem {
   name: string;
   accuracy: number;
   totalAttempted: number;
-  status: 'Mastered' | 'Moderate' | 'Needs Practice';
+  status: 'Mastered' | 'Moderate' | 'Needs Practice' | 'Not started';
   color: string;
 }
 
 export default function MasteryAnalyticsScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || 'college';
@@ -59,7 +61,6 @@ export default function MasteryAnalyticsScreen() {
         if (user?.email) {
           apiStats = await ApiService.getDashboardStats(user.email, userGrade);
         }
-        const weakMap = apiStats?.weakCategoriesMap || {};
         if (apiStats?.avgScore) setOverallMastery(Math.round(apiStats.avgScore));
 
         if (isSchoolMode) {
@@ -76,7 +77,6 @@ export default function MasteryAnalyticsScreen() {
             doneChaps  += done;
 
             // Count mastered flashcards for this subject
-            const flashPrefix = sub.chapters[0]?.id.split('-')[0] + '-' + sub.chapters[0]?.id.split('-')[1];
             const subFlash = masteredFlashIds.filter((id) => sub.chapters.some((c) => id.startsWith(c.id))).length;
             const totalSubFlash = sub.chapters.reduce((acc, c) => {
               return acc + (c.keyFormulas?.length || 0) + (c.exerciseSolutions?.length || 0) + 1;
@@ -85,14 +85,17 @@ export default function MasteryAnalyticsScreen() {
             // Accuracy: blend of chapter completion + flashcard mastery + api quiz accuracy
             const chapAccuracy  = subChapIds.length > 0 ? Math.round((done / subChapIds.length) * 100) : 0;
             const flashAccuracy = totalSubFlash > 0 ? Math.round((subFlash / totalSubFlash) * 100) : 0;
-            const quizAccuracy  = weakMap[sub.name] ? 45 : (apiStats?.avgScore || 0);
+            // Only real test averages count; no invented per-subject scores.
+            const quizAccuracy  = apiStats?.avgScore || 0;
             const blended = Math.max(
               chapAccuracy,
               Math.round((chapAccuracy * 0.5) + (flashAccuracy * 0.3) + (quizAccuracy * 0.2))
             );
 
-            const status: 'Mastered' | 'Moderate' | 'Needs Practice' =
-              blended >= 80 ? 'Mastered' : blended >= 50 ? 'Moderate' : 'Needs Practice';
+            const started = done > 0 || subFlash > 0 || (apiStats?.totalTests || 0) > 0;
+            const status: SubjectMasteryItem['status'] = !started
+              ? 'Not started'
+              : blended >= 80 ? 'Mastered' : blended >= 50 ? 'Moderate' : 'Needs Practice';
 
             return {
               name: isGSEB ? (sub.nameGujarati || sub.name) : sub.name,
@@ -140,15 +143,12 @@ export default function MasteryAnalyticsScreen() {
               const sum = catTests.reduce((acc: number, t: any) => acc + (t.scorePercentage || 0), 0);
               accuracy = Math.round(sum / catTests.length);
               totalAttempted = catTests.length;
-            } else if (recent.length > 0) {
-              // If user took mixed/general exams
-              const isWeak = weakMap[cat.name] || (recent[0]?.weakCategories || []).includes(cat.name);
-              accuracy = isWeak ? Math.max(30, avgSc - 20) : Math.min(100, avgSc);
-              totalAttempted = Math.round(recent.length / categories.length) || 1;
             }
+            // Topics with no tests stay "Not started"; we never estimate a score.
 
-            const status: 'Mastered' | 'Moderate' | 'Needs Practice' =
-              accuracy >= 75 ? 'Mastered' : accuracy >= 50 ? 'Moderate' : 'Needs Practice';
+            const status: SubjectMasteryItem['status'] = totalAttempted === 0
+              ? 'Not started'
+              : accuracy >= 75 ? 'Mastered' : accuracy >= 50 ? 'Moderate' : 'Needs Practice';
 
             return {
               name: cat.name,
@@ -171,13 +171,24 @@ export default function MasteryAnalyticsScreen() {
     loadMastery();
   }, [user?.email, userGrade, isSchoolMode, isGSEB]);
 
-  const weakestTopic = masteryData.find((m) => m.status === 'Needs Practice') || masteryData[1] || masteryData[0];
+  const weakestTopic =
+    masteryData.find((m) => m.status === 'Needs Practice') ||
+    masteryData.find((m) => m.status === 'Not started') ||
+    masteryData[0];
+  const statusLabel = (st: SubjectMasteryItem['status']) =>
+    st === 'Mastered'
+      ? tr('Strong', 'મજબૂત')
+      : st === 'Moderate'
+      ? tr('Getting there', 'સુધારો થઈ રહ્યો છે')
+      : st === 'Needs Practice'
+      ? tr('Needs practice', 'પ્રેક્ટિસ જરૂરી')
+      : tr('Not started', 'શરૂ નથી કર્યું');
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="My strengths"
-        subtitle={isSchoolMode ? `Class ${userGrade} · ${completedChapters}/${totalChapters} chapters done` : 'Placement topics'}
+        title={tr('My strengths', 'મારી તાકાત')}
+        subtitle={isSchoolMode ? tr(`Class ${userGrade} · ${completedChapters}/${totalChapters} chapters done`, `ધોરણ ${userGrade} · ${totalChapters} માંથી ${completedChapters} પ્રકરણ પૂરા`) : tr('Placement topics', 'પ્લેસમેન્ટ વિષયો')}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -186,13 +197,17 @@ export default function MasteryAnalyticsScreen() {
           <View style={styles.heroTopRow}>
             <View>
           <Text style={styles.heroBadgeText}>
-            Overall
+            {tr('Overall', 'કુલ')}
           </Text>
-          <Text style={styles.heroTitle}>{overallMastery}% mastered</Text>
+          <Text style={styles.heroTitle}>
+            {overallMastery > 0 || completedChapters > 0
+              ? tr(`${overallMastery}% mastered`, `${overallMastery}% મજબૂત`)
+              : tr('Not started yet', 'હજુ શરૂ નથી કર્યું')}
+          </Text>
           <Text style={styles.heroSub}>
             {isSchoolMode
-              ? `${completedChapters} of ${totalChapters} chapters completed`
-              : 'Calculated across all your recent test responses'}
+              ? tr(`${completedChapters} of ${totalChapters} chapters completed`, `${totalChapters} માંથી ${completedChapters} પ્રકરણ પૂરા`)
+              : tr('Based on the tests you have taken', 'તમે આપેલા ટેસ્ટ પરથી')}
           </Text>
             </View>
             <View style={[styles.dialCircle, { borderColor: '#12805C' }]}>
@@ -218,13 +233,15 @@ export default function MasteryAnalyticsScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rxHeading, { color: colors.onSurfaceVariant }]}>
-                  Practise this today
+                  {weakestTopic.status === 'Not started' ? tr('Start with this', 'અહીંથી શરૂ કરો') : tr('Practise this today', 'આજે આ પ્રેક્ટિસ કરો')}
                 </Text>
                 <Text style={[styles.rxTitle, { color: colors.onSurface }]}>
                   {weakestTopic.name}
                 </Text>
                 <Text style={[styles.rxSub, { color: colors.onSurfaceVariant }]}>
-                  Current accuracy {weakestTopic.accuracy}%
+                  {weakestTopic.status === 'Not started'
+                    ? tr('No tests taken yet', 'હજુ કોઈ ટેસ્ટ નથી આપ્યો')
+                    : tr(`Current accuracy ${weakestTopic.accuracy}%`, `હાલની ચોકસાઈ ${weakestTopic.accuracy}%`)}
                 </Text>
               </View>
             </View>
@@ -235,14 +252,14 @@ export default function MasteryAnalyticsScreen() {
               onPress={() => router.push(`/exam?limit=10&category=${encodeURIComponent(weakestTopic.name)}`)}
             >
               <MaterialIcons name="play-arrow" size={20} color={colors.onAccent} />
-              <Text style={[styles.rxQuizBtnText, { color: colors.onAccent }]}>Practise 10 questions</Text>
+              <Text style={[styles.rxQuizBtnText, { color: colors.onAccent }]}>{tr('Practise 10 questions', '10 પ્રશ્નો પ્રેક્ટિસ કરો')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Topic-by-Topic Mastery Breakdown */}
         <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-          By subject
+          {tr('By subject', 'વિષય પ્રમાણે')}
         </Text>
 
         <View style={{ gap: 12 }}>
@@ -261,7 +278,7 @@ export default function MasteryAnalyticsScreen() {
               <View style={styles.topicHeaderRow}>
                 <Text style={[styles.topicName, { color: colors.onSurface }]}>{item.name}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: `${item.color}20` }]}>
-                  <Text style={[styles.statusBadgeText, { color: item.color }]}>{item.status}</Text>
+                  <Text style={[styles.statusBadgeText, { color: item.color }]}>{statusLabel(item.status)}</Text>
                 </View>
               </View>
 
@@ -270,14 +287,14 @@ export default function MasteryAnalyticsScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <MaterialIcons name="menu-book" size={13} color={colors.onSurfaceVariant} />
                   <Text style={[{ fontSize: 11, color: colors.onSurfaceVariant }]}>
-                    {(item as any).chaptersDone}/{(item as any).chaptersTotal} Chapters done
-                    {(item as any).flashMastered > 0 ? `  •  ${(item as any).flashMastered} flashcards mastered` : ''}
+                    {tr(`${(item as any).chaptersDone}/${(item as any).chaptersTotal} chapters done`, `${(item as any).chaptersTotal} માંથી ${(item as any).chaptersDone} પ્રકરણ પૂરા`)}
+                    {(item as any).flashMastered > 0 ? tr(` · ${(item as any).flashMastered} flashcards learned`, ` · ${(item as any).flashMastered} ફ્લેશકાર્ડ શીખ્યા`) : ''}
                   </Text>
                 </View>
               )}
 
               {/* Progress Bar */}
-              <View style={[styles.progressBarBg, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}>
+              <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer }]}>
                 <View
                   style={[
                     styles.progressBarFill,
@@ -291,13 +308,14 @@ export default function MasteryAnalyticsScreen() {
 
               <View style={styles.topicFooterRow}>
                 <Text style={[styles.accuracyText, { color: item.color }]}>
-                  {item.accuracy}% mastered
+                  {tr(`${item.accuracy}% mastered`, `${item.accuracy}% મજબૂત`)}
                 </Text>
-                <Text style={[styles.attemptedText, { color: colors.onSurfaceVariant }]}>
-                  {isSchoolMode
-                    ? `${item.totalAttempted} chapters done`
-                    : `${item.totalAttempted} questions solved`}
-                </Text>
+                {/* School cards already show chapters done above; college shows tests taken. */}
+                {!isSchoolMode && (
+                  <Text style={[styles.attemptedText, { color: colors.onSurfaceVariant }]}>
+                    {tr(`${item.totalAttempted} tests`, `${item.totalAttempted} ટેસ્ટ`)}
+                  </Text>
+                )}
               </View>
             </View>
           ))}

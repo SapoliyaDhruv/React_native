@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
+import { subjectTone } from '@/constants/subjectTones';
 import type { AcademicSubject, SubjectChapter } from '@/constants/academicData';
 
 export type ChapterSearchHit = { subject: AcademicSubject; chapter: SubjectChapter };
@@ -9,10 +12,8 @@ export type ChapterSearchHit = { subject: AcademicSubject; chapter: SubjectChapt
 interface Props {
   query: string;
   hits: ChapterSearchHit[];
-  gujarati: boolean;
+  onOpenChapter: (hit: ChapterSearchHit) => void;
   onWatch: (hit: ChapterSearchHit) => void;
-  onPdf: (hit: ChapterSearchHit) => void;
-  onOpenSubject: (hit: ChapterSearchHit) => void;
   onClear: () => void;
 }
 
@@ -31,76 +32,86 @@ export function searchChapters(subjects: AcademicSubject[], query: string): Chap
   return hits;
 }
 
-export const ChapterSearchResults: React.FC<Props> = ({ query, hits, gujarati, onWatch, onPdf, onOpenSubject, onClear }) => {
+/** Search results across every subject: tap a result to open its chapter page, or play its video. */
+export const ChapterSearchResults: React.FC<Props> = ({ query, hits, onOpenChapter, onWatch, onClear }) => {
   const { colors } = useTheme();
-  const cardBg = colors.surface;
+  const { tr, isGujarati } = useLanguage();
 
   if (hits.length === 0) {
     return (
       <View style={styles.empty}>
         <MaterialIcons name="search-off" size={36} color={colors.onSurfaceVariant} />
-        <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>No chapters match “{query}”</Text>
+        <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
+          {tr(`No chapters match “${query}”`, `“${query}” માટે કોઈ પ્રકરણ મળ્યું નહીં`)}
+        </Text>
         <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-          Try a shorter word, a chapter number, or the subject name.
+          {tr('Try a shorter word, a chapter number, or the subject name.', 'ટૂંકો શબ્દ, પ્રકરણ નંબર કે વિષયનું નામ લખો.')}
         </Text>
         <TouchableOpacity onPress={onClear} accessibilityRole="button" style={[styles.clearBtn, { borderColor: colors.primary }]}>
-          <Text style={{ color: colors.primary, fontWeight: '700' }}>Clear search</Text>
+          <Text style={[styles.clearText, { color: colors.primary }]}>{tr('Clear search', 'શોધ સાફ કરો')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={{ paddingHorizontal: 16, gap: 10 }}>
+    <View style={{ gap: 10 }}>
       <Text style={[styles.count, { color: colors.onSurfaceVariant }]}>
-        {hits.length} chapter{hits.length === 1 ? '' : 's'} found
+        {tr(`${hits.length} chapter${hits.length === 1 ? '' : 's'} found`, `${hits.length} પ્રકરણ મળ્યાં`)}
       </Text>
-      {hits.map((hit) => {
-        const { subject, chapter } = hit;
-        const title = gujarati && chapter.titleGujarati ? chapter.titleGujarati : chapter.title;
-        const subjectName = gujarati && subject.nameGujarati ? subject.nameGujarati : subject.name;
-        const video = chapter.videos?.[0];
-        return (
-          <View key={`${subject.id}-${chapter.id}`} style={[styles.card, { backgroundColor: cardBg, borderColor: colors.outlineVariant }]}>
-            <TouchableOpacity activeOpacity={0.8} onPress={() => onOpenSubject(hit)} accessibilityRole="button" accessibilityLabel={`Open ${subjectName}`}>
-              <Text style={[styles.subject, { color: subject.color }]}>{subjectName}</Text>
-              <Text style={[styles.title, { color: colors.onSurface }]}>
-                {chapter.chapterNumber}. {title}
-              </Text>
-              {video ? (
-                <Text style={[styles.meta, { color: colors.onSurfaceVariant }]}>
-                  🎬 {video.duration} · {video.teacher}
+      <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+        {hits.map((hit, i) => {
+          const { subject, chapter } = hit;
+          const title = isGujarati && chapter.titleGujarati ? chapter.titleGujarati : chapter.title;
+          const subjectName = isGujarati && subject.nameGujarati ? subject.nameGujarati : subject.name;
+          const video = chapter.videos?.[0];
+          return (
+            <View
+              key={`${subject.id}-${chapter.id}`}
+              style={[styles.row, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.outlineVariant }]}
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => onOpenChapter(hit)}
+                accessibilityRole="button"
+                accessibilityLabel={`${subjectName}, ${tr('chapter', 'પ્રકરણ')} ${chapter.chapterNumber}, ${title}`}
+                style={{ flex: 1, minWidth: 0, paddingVertical: 4 }}
+              >
+                <Text style={[styles.subject, { color: subjectTone(subject.id).cover }]} numberOfLines={1}>{subjectName}</Text>
+                <Text style={[styles.title, { color: colors.onSurface }]} numberOfLines={2}>
+                  {chapter.chapterNumber}. {title}
                 </Text>
+              </TouchableOpacity>
+              {video ? (
+                <TouchableOpacity
+                  onPress={() => onWatch(hit)}
+                  accessibilityRole="button"
+                  accessibilityLabel={tr('Watch video', 'વિડિયો જુઓ')}
+                  style={[styles.watch, { backgroundColor: colors.primary }]}
+                >
+                  <MaterialIcons name="play-arrow" size={18} color={colors.onPrimary} />
+                  <Text style={[styles.watchText, { color: colors.onPrimary }]}>{video.duration}</Text>
+                </TouchableOpacity>
               ) : null}
-            </TouchableOpacity>
-            <View style={styles.actions}>
-              <TouchableOpacity onPress={() => onWatch(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: colors.primary }]}>
-                <MaterialIcons name="smart-display" size={18} color="#ffffff" />
-                <Text style={styles.btnText}>Watch</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => onPdf(hit)} accessibilityRole="button" style={[styles.btn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.outlineVariant }]}>
-                <MaterialIcons name="picture-as-pdf" size={18} color="#C8372D" />
-                <Text style={[styles.btnText, { color: colors.primary }]}>Open PDF</Text>
-              </TouchableOpacity>
             </View>
-          </View>
-        );
-      })}
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  count: { fontSize: 12, fontWeight: '600' },
-  card: { borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
-  subject: { fontSize: 12, fontWeight: '700' },
-  title: { fontSize: 15, fontWeight: '700', marginTop: 2 },
-  meta: { fontSize: 12, marginTop: 4 },
-  actions: { flexDirection: 'row', gap: 8 },
-  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, borderRadius: 10 },
-  btnText: { color: '#ffffff', fontWeight: '700', fontSize: 14 },
+  count: { fontSize: 13, fontWeight: '600' },
+  list: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 64, paddingHorizontal: 14, paddingVertical: 10 },
+  subject: { fontFamily: MindSprintFonts.label, fontSize: 12.5 },
+  title: { fontFamily: MindSprintFonts.title, fontSize: 15.5, lineHeight: 21 },
+  watch: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 36, paddingHorizontal: 10, borderRadius: 18 },
+  watchText: { fontFamily: MindSprintFonts.label, fontSize: 13 },
   empty: { alignItems: 'center', padding: 32, gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', textAlign: 'center' },
-  emptyText: { fontSize: 13, textAlign: 'center' },
-  clearBtn: { marginTop: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center' },
+  emptyTitle: { fontFamily: MindSprintFonts.title, fontSize: 16, textAlign: 'center' },
+  emptyText: { fontSize: 13.5, textAlign: 'center' },
+  clearBtn: { marginTop: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center' },
+  clearText: { fontFamily: MindSprintFonts.label, fontSize: 15 },
 });

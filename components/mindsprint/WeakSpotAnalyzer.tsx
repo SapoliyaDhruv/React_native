@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { Question } from '../../constants/mindsprintData';
 
 interface WeakSpotAnalyzerProps {
@@ -17,12 +17,8 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
   userAnswers,
 }) => {
   const router = useRouter();
-  const { colors, isDarkMode } = useTheme();
-  const { user } = useAuth();
-
-  const userGrade = user?.grade || 'college';
-  const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const { colors } = useTheme();
+  const { tr } = useLanguage();
 
   // Group performance by category
   const categoryStats: Record<string, { correct: number; total: number }> = {};
@@ -55,15 +51,15 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? 'rgba(147,172,255,0.2)' : 'rgba(29,58,138,0.1)' }]}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.primaryFixed }]}>
           <MaterialIcons name="psychology" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-            AI Topic Accuracy & Skill Breakdown
+            {tr('Score by topic', 'વિષય પ્રમાણે ગુણ')}
           </Text>
           <Text style={[styles.sectionSub, { color: colors.onSurfaceVariant }]}>
-            Diagnostic breakdown of your strengths & focus areas
+            {tr('Where you did well and what to practise', 'ક્યાં સારું કર્યું અને શું પ્રેક્ટિસ કરવી')}
           </Text>
         </View>
       </View>
@@ -82,16 +78,16 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
         {categoryList.map((item, idx) => {
           let barColor = colors.primary;
           let badgeColor = colors.primary;
-          let badgeText = 'Average';
+          let badgeText = tr('Okay', 'ઠીક');
 
           if (item.isStrong) {
-            barColor = '#12805C';
-            badgeColor = '#12805C';
-            badgeText = 'Mastered';
+            barColor = colors.tertiary;
+            badgeColor = colors.tertiary;
+            badgeText = tr('Strong', 'મજબૂત');
           } else if (item.isWeak) {
-            barColor = '#C8372D';
-            badgeColor = '#C8372D';
-            badgeText = 'Needs Practice';
+            barColor = colors.error;
+            badgeColor = colors.error;
+            badgeText = tr('Needs practice', 'પ્રેક્ટિસ જરૂરી');
           }
 
           return (
@@ -114,7 +110,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 </View>
               </View>
 
-              <View style={[styles.trackBar, { backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#EEF2F8' }]}>
+              <View style={[styles.trackBar, { backgroundColor: colors.surfaceContainer }]}>
                 <View
                   style={[
                     styles.fillBar,
@@ -133,7 +129,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
           <View style={styles.recommendHeader}>
             <MaterialIcons name="auto-fix-high" size={20} color={colors.primary} />
             <Text style={[styles.recommendTitle, { color: colors.primary }]}>
-              What to practise next
+              {tr('What to practise next', 'હવે શું પ્રેક્ટિસ કરવી')}
             </Text>
           </View>
 
@@ -144,20 +140,23 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 styles.weakItemCard,
                 {
                   backgroundColor: colors.surfaceContainerLowest,
-                  borderColor: isDarkMode ? 'rgba(200, 55, 45, 0.4)' : '#F5C6C0',
+                  borderColor: colors.outlineVariant,
                 },
                 MindSprintShadows.card,
               ]}
             >
               <View style={styles.weakTextContent}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <MaterialIcons name="warning-amber" size={18} color="#C8372D" />
+                  <MaterialIcons name="flag" size={18} color={colors.error} />
                   <Text style={[styles.weakAlertTitle, { color: colors.onSurface }]}>
-                    {`Focus Area: ${weak.category}`}
+                    {weak.category}
                   </Text>
                 </View>
                 <Text style={[styles.weakSubText, { color: colors.onSurfaceVariant }]}>
-                  {`Current accuracy is ${weak.percent}%. Review key formulas and concept masterclasses to boost your score.`}
+                  {tr(
+                    `You got ${weak.correct} of ${weak.total} right. Watch the lesson, then try the flashcards.`,
+                    `તમારા ${weak.total} માંથી ${weak.correct} સાચા. પહેલા વિડિયો જુઓ, પછી ફ્લેશકાર્ડ કરો.`
+                  )}
                 </Text>
               </View>
 
@@ -167,9 +166,9 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                   style={[styles.actionBtn, { backgroundColor: colors.primary }]}
                   onPress={() => router.push('/(tabs)/video')}
                 >
-                  <MaterialIcons name="play-circle-filled" size={16} color="#ffffff" />
-                  <Text style={styles.actionBtnText}>
-                    Watch lesson
+                  <MaterialIcons name="play-circle-filled" size={16} color={colors.onPrimary} />
+                  <Text style={[styles.actionBtnText, { color: colors.onPrimary }]}>
+                    {tr('Watch lesson', 'વિડિયો જુઓ')}
                   </Text>
                 </TouchableOpacity>
 
@@ -179,7 +178,7 @@ export const WeakSpotAnalyzer: React.FC<WeakSpotAnalyzerProps> = ({
                 >
                   <MaterialIcons name="style" size={16} color={colors.primary} />
                   <Text style={[styles.secondaryActionBtnText, { color: colors.primary }]}>
-                    Flashcards
+                    {tr('Flashcards', 'ફ્લેશકાર્ડ')}
                   </Text>
                 </TouchableOpacity>
               </View>

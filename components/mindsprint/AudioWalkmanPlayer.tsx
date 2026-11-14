@@ -45,27 +45,12 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
   const [selectedLang, setSelectedLang] = useState<'gu' | 'en'>('gu');
   const progressTimerRef = useRef<any>(null);
 
-  useEffect(() => {
+  // Follow a new starting track from the parent (adjust state during render, not in an effect).
+  const [prevInitialIndex, setPrevInitialIndex] = useState<number>(initialTrackIndex);
+  if (initialTrackIndex !== prevInitialIndex) {
+    setPrevInitialIndex(initialTrackIndex);
     setCurrentIndex(initialTrackIndex);
-  }, [initialTrackIndex]);
-
-  // Auto-play when opened or track changed
-  useEffect(() => {
-    if (visible && tracks.length > 0) {
-      const timer = setTimeout(() => {
-        speakCurrentTrack();
-      }, 400);
-      return () => clearTimeout(timer);
-    } else {
-      stopSpeech();
-    }
-  }, [visible, currentIndex, selectedLang]);
-
-  useEffect(() => {
-    return () => {
-      stopSpeech();
-    };
-  }, []);
+  }
 
   const currentTrack = tracks[currentIndex] || tracks[0];
 
@@ -205,6 +190,26 @@ export const AudioWalkmanPlayer: React.FC<AudioWalkmanPlayerProps> = ({
       });
     }
   };
+
+  // Auto-play when opened or track changed
+  useEffect(() => {
+    if (visible && tracks.length > 0) {
+      const timer = setTimeout(() => {
+        speakCurrentTrack();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+    // Closed: stop speaking (deferred so state isn't set synchronously inside the effect).
+    const stopTimer = setTimeout(stopSpeech, 0);
+    return () => clearTimeout(stopTimer);
+  }, [visible, currentIndex, selectedLang]);
+
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+    };
+  }, []);
+
 
   const handleTogglePlay = () => {
     if (isPlaying) {

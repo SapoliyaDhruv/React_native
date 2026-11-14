@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 
 interface QuestionNavigatorModalProps {
@@ -29,12 +30,12 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
   currentIndex,
   userAnswers,
   flaggedIndices,
-  questionsList,
   onSelectQuestion,
   onClose,
   onSubmitExam,
 }) => {
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const { tr } = useLanguage();
 
   const answeredCount = Object.keys(userAnswers).length;
   const flaggedCount = flaggedIndices.length;
@@ -54,59 +55,59 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <MaterialIcons name="grid-view" size={22} color={colors.primary} />
               <Text style={[styles.headerTitle, { color: colors.onSurface }]}>
-                All questions
+                {tr('All questions', 'બધા પ્રશ્નો')}
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityRole="button" accessibilityLabel={tr('Close', 'બંધ કરો')}>
               <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
 
           {/* Status Counter Summary */}
-          <View style={[styles.summaryRow, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB' }]}>
+          <View style={[styles.summaryRow, { backgroundColor: colors.surfaceContainerLow }]}>
             <View style={styles.statItem}>
-              <View style={[styles.dot, { backgroundColor: '#12805C' }]} />
+              <View style={[styles.dot, { backgroundColor: colors.tertiary }]} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{answeredCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Answered</Text>
+              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{tr('Answered', 'જવાબ આપ્યા')}</Text>
             </View>
 
             <View style={styles.statItem}>
-              <View style={[styles.dot, { backgroundColor: '#F4A30B' }]} />
+              <View style={[styles.dot, { backgroundColor: colors.accent }]} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{flaggedCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Marked</Text>
+              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{tr('Marked', 'નિશાની')}</Text>
             </View>
 
             <View style={styles.statItem}>
               <View style={[styles.dot, { backgroundColor: colors.outline }]} />
               <Text style={[styles.statNum, { color: colors.onSurface }]}>{unvisitedCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Unvisited</Text>
+              <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{tr('Not answered', 'બાકી')}</Text>
             </View>
           </View>
 
           {/* Question Grid */}
           <Text style={[styles.gridTitle, { color: colors.onSurfaceVariant }]}>
-            Tap a number to jump directly:
+            {tr('Tap a number to go to that question', 'પ્રશ્ન પર જવા નંબર દબાવો')}
           </Text>
 
           <ScrollView contentContainerStyle={styles.gridContainer} showsVerticalScrollIndicator={false}>
             {Array.from({ length: totalQuestions }).map((_, idx) => {
-              const questionId = questionsList[idx]?.id;
-              const isAnswered = questionId ? userAnswers[questionId] !== undefined : userAnswers[idx] !== undefined;
+              // Answers are keyed by question position (see app/exam.tsx).
+              const isAnswered = userAnswers[idx] !== undefined;
               const isFlagged = flaggedIndices.includes(idx);
               const isCurrent = idx === currentIndex;
 
-              let bg = isDarkMode ? colors.surfaceContainerLowest : '#ffffff';
+              let bg = colors.surface;
               let borderColor = colors.outlineVariant;
               let textColor = colors.onSurface;
 
               if (isAnswered) {
-                bg = '#12805C';
-                borderColor = '#12805C';
-                textColor = '#ffffff';
+                bg = colors.tertiary;
+                borderColor = colors.tertiary;
+                textColor = colors.onTertiary;
               } else if (isFlagged) {
-                bg = '#F4A30B';
-                borderColor = '#F4A30B';
-                textColor = '#ffffff';
+                bg = colors.accent;
+                borderColor = colors.accent;
+                textColor = colors.onAccent;
               }
 
               return (
@@ -119,19 +120,21 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
                     isCurrent && { borderWidth: 2.5 },
                     MindSprintShadows.card,
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={tr(`Question ${idx + 1}`, `પ્રશ્ન ${idx + 1}`)}
                   onPress={() => {
                     onSelectQuestion(idx);
                     onClose();
                   }}
                 >
-                  <Text style={[styles.badgeNum, { color: isAnswered || isFlagged ? '#ffffff' : textColor }]}>
+                  <Text style={[styles.badgeNum, { color: textColor }]}>
                     {idx + 1}
                   </Text>
                   {isFlagged && (
                     <MaterialIcons
                       name="flag"
                       size={10}
-                      color="#ffffff"
+                      color={textColor}
                       style={styles.flagIcon}
                     />
                   )}
@@ -143,21 +146,21 @@ export const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({
           {/* Modal Actions */}
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
             <TouchableOpacity
-              style={[styles.resumeBtn, { flex: 1, backgroundColor: isDarkMode ? colors.surfaceContainerHigh : '#DCE2EE' }]}
+              style={[styles.resumeBtn, { flex: 1, backgroundColor: colors.surfaceContainer }]}
               onPress={onClose}
             >
-              <Text style={[styles.resumeBtnText, { color: colors.onSurface }]}>Resume Exam</Text>
+              <Text style={[styles.resumeBtnText, { color: colors.onSurface }]}>{tr('Back to question', 'પ્રશ્ન પર પાછા')}</Text>
             </TouchableOpacity>
 
             {onSubmitExam && (
               <TouchableOpacity
-                style={[styles.resumeBtn, { flex: 1.2, backgroundColor: '#12805C' }]}
+                style={[styles.resumeBtn, { flex: 1.2, backgroundColor: colors.primary }]}
                 onPress={() => {
                   onClose();
                   onSubmitExam();
                 }}
               >
-                <Text style={styles.resumeBtnText}>Submit Exam 🏁</Text>
+                <Text style={[styles.resumeBtnText, { color: colors.onPrimary }]}>{tr('Submit test', 'ટેસ્ટ સબમિટ કરો')}</Text>
               </TouchableOpacity>
             )}
           </View>

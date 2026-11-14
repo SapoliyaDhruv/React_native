@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { confirmAction } from '@/components/common/dialogs';
 import { IMPORTANT_QUESTIONS_DATA, ImportantQuestion } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 
@@ -47,17 +48,39 @@ export default function BoardExamSimulatorScreen() {
   const isSchoolMode = userGrade !== 'college';
   const isGSEB = isSchoolMode;
 
-  const availableSubjects = useMemo(() => {
+  const { tr } = useLanguage();
+
+  // `value` is what the API / question filter expects; `label` is what students see.
+  const availableSubjects = useMemo<{ value: string; label: string }[]>(() => {
     if (!isSchoolMode) {
-      return ['All Topics', 'Quantitative Aptitude', 'Data Structures & Algorithms', 'Web Development', 'Computer Networks'];
+      return [
+        { value: 'All Topics', label: tr('All topics', 'બધા વિષયો') },
+        { value: 'Quantitative Aptitude', label: tr('Aptitude', 'એપ્ટિટ્યુડ') },
+        { value: 'Data Structures & Algorithms', label: tr('Data structures', 'ડેટા સ્ટ્રક્ચર') },
+        { value: 'Web Development', label: tr('Web development', 'વેબ ડેવલપમેન્ટ') },
+        { value: 'Computer Networks', label: tr('Computer networks', 'કમ્પ્યુટર નેટવર્ક') },
+      ];
     }
     if (['11', '12'].includes(userGrade)) {
-      return ['All Subjects', 'Physics (ભૌતિકવિજ્ઞાન)', 'Chemistry (રસાયણવિજ્ઞાન)', 'Mathematics (ગણિત)', 'Biology (જીવવિજ્ઞાન)'];
+      return [
+        { value: 'All Subjects', label: tr('All subjects', 'બધા વિષયો') },
+        { value: 'Physics (ભૌતિકવિજ્ઞાન)', label: tr('Physics', 'ભૌતિક વિજ્ઞાન') },
+        { value: 'Chemistry (રસાયણવિજ્ઞાન)', label: tr('Chemistry', 'રસાયણ વિજ્ઞાન') },
+        { value: 'Mathematics (ગણિત)', label: tr('Maths', 'ગણિત') },
+        { value: 'Biology (જીવવિજ્ઞાન)', label: tr('Biology', 'જીવ વિજ્ઞાન') },
+      ];
     }
-    return ['All Subjects', 'Mathematics', 'Science', 'Social Science', 'English', 'Gujarati'];
-  }, [isSchoolMode, userGrade]);
+    return [
+      { value: 'All Subjects', label: tr('All subjects', 'બધા વિષયો') },
+      { value: 'Mathematics', label: tr('Maths', 'ગણિત') },
+      { value: 'Science', label: tr('Science', 'વિજ્ઞાન') },
+      { value: 'Social Science', label: tr('Social science', 'સામાજિક વિજ્ઞાન') },
+      { value: 'English', label: tr('English', 'અંગ્રેજી') },
+      { value: 'Gujarati', label: tr('Gujarati', 'ગુજરાતી') },
+    ];
+  }, [isSchoolMode, userGrade, tr]);
 
-  const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
+  const [selectedSubject, setSelectedSubject] = useState<string>(isSchoolMode ? 'All Subjects' : 'All Topics');
   const [selectedSection, setSelectedSection] = useState<'All' | 'A' | 'B' | 'C' | 'D'>('All');
   const [loading, setLoading] = useState<boolean>(true);
   const [fetchedQuestions, setFetchedQuestions] = useState<ImportantQuestion[]>([]);
@@ -184,20 +207,17 @@ export default function BoardExamSimulatorScreen() {
     setEvalMarks({});
   };
 
+  // When time runs out the paper is submitted automatically (no confirmation needed).
+  const timeUp = timeLeft === 0;
+  const submitted = isSubmitted || timeUp;
+
   useEffect(() => {
-    if (isSubmitted || isTimerPaused) return;
+    if (submitted || isTimerPaused) return;
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmitPaper();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimeLeft((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [isSubmitted, isTimerPaused]);
+  }, [submitted, isTimerPaused]);
 
   const formatTime = (secs: number) => {
     const hours = Math.floor(secs / 3600);
@@ -217,18 +237,16 @@ export default function BoardExamSimulatorScreen() {
   };
 
   const handleSubmitPaper = () => {
-    Alert.alert(
-      'Submit paper?',
-      'Are you sure you want to finish the exam and enter the Self-Evaluation Step-by-Step Scoring Rubric?',
-      [
-        { text: 'Continue Writing', style: 'cancel' },
-        {
-          text: 'Submit & Evaluate',
-          style: 'default',
-          onPress: () => setIsSubmitted(true),
-        },
-      ]
-    );
+    confirmAction({
+      title: tr('Submit paper?', 'પેપર સબમિટ કરવું છે?'),
+      message: tr(
+        'Next you will check your answers against the model answers and give yourself marks.',
+        'હવે તમે મોડેલ જવાબ સાથે તમારા જવાબ સરખાવીને જાતે ગુણ આપશો.'
+      ),
+      confirmText: tr('Submit paper', 'પેપર સબમિટ કરો'),
+      cancelText: tr('Keep writing', 'લખતા રહો'),
+      onConfirm: () => setIsSubmitted(true),
+    });
   };
 
   const currentQ = paperQuestions[activeQIndex] || paperQuestions[0] || {
@@ -262,24 +280,20 @@ export default function BoardExamSimulatorScreen() {
   const percentage = totalMaxMarks > 0 ? Math.round((studentAwardedScore / totalMaxMarks) * 100) : 0;
 
   const handleSafeExit = () => {
-    Alert.alert(
-      'Leave this paper?',
-      'Are you sure you want to quit the exam simulation? Your current paper draft will be discarded.',
-      [
-        { text: 'Continue Writing', style: 'cancel' },
-        {
-          text: 'Quit & Exit',
-          style: 'destructive',
-          onPress: () => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/(tabs)');
-            }
-          },
-        },
-      ]
-    );
+    confirmAction({
+      title: tr('Leave this paper?', 'પેપર છોડવું છે?'),
+      message: tr('Your answers on this paper will be lost.', 'આ પેપરના તમારા જવાબ સાચવાશે નહીં.'),
+      confirmText: tr('Leave paper', 'પેપર છોડો'),
+      cancelText: tr('Keep writing', 'લખતા રહો'),
+      destructive: true,
+      onConfirm: () => {
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/(tabs)');
+        }
+      },
+    });
   };
 
   const handleFinishAndSave = async () => {
@@ -310,8 +324,8 @@ export default function BoardExamSimulatorScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Board exam"
-        subtitle={isSchoolMode ? `Class ${userGrade} · 80 marks` : "80 marks"}
+        title={tr('Board exam', 'બોર્ડ પરીક્ષા')}
+        subtitle={isSchoolMode ? tr(`Class ${userGrade} · 80 marks`, `ધોરણ ${userGrade} · 80 ગુણ`) : tr('80 marks', '80 ગુણ')}
         leadingIcon="close"
         onBack={handleSafeExit}
         right={
@@ -323,13 +337,13 @@ export default function BoardExamSimulatorScreen() {
               <MaterialIcons name="timer" size={16} color={timeLeft < 600 ? colors.error : colors.onSurfaceVariant} />
               <Text style={[styles.timerText, { color: timeLeft < 600 ? colors.error : colors.onSurface }]}>{formatTime(timeLeft)}</Text>
             </View>
-            {!isSubmitted && (
+            {!submitted && (
               <TouchableOpacity
                 onPress={handleSubmitPaper}
                 style={[styles.headerSubmitBtn, { backgroundColor: colors.accent }]}
                 accessibilityRole="button"
               >
-                <Text style={[styles.headerSubmitBtnText, { color: colors.onAccent }]}>Submit</Text>
+                <Text style={[styles.headerSubmitBtnText, { color: colors.onAccent }]}>{tr('Submit', 'સબમિટ')}</Text>
               </TouchableOpacity>
             )}
           </>
@@ -343,12 +357,12 @@ export default function BoardExamSimulatorScreen() {
             Preparing your 80-mark paper…
           </Text>
         </View>
-      ) : !isSubmitted ? (
+      ) : !submitted ? (
         /* ACTIVE EXAM INTERFACE */
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           {/* Subject / Paper Selector Chips */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subjectChipScroll}>
-            {availableSubjects.map((sub) => {
+            {availableSubjects.map(({ value: sub, label }) => {
               const isSelected = selectedSubject === sub;
               return (
                 <TouchableOpacity
@@ -363,7 +377,7 @@ export default function BoardExamSimulatorScreen() {
                   onPress={() => handleSelectSubject(sub)}
                 >
                   <Text style={[styles.subjectChipText, { color: isSelected ? colors.onPrimary : colors.onSurface }]}>
-                    {sub}
+                    {label}
                   </Text>
                 </TouchableOpacity>
               );
@@ -397,7 +411,7 @@ export default function BoardExamSimulatorScreen() {
                   }}
                 >
                   <Text style={[styles.secFilterText, { color: isSecSelected ? colors.onPrimary : colors.onSurface }]}>
-                    {sec === 'All' ? 'All Sections' : `Section ${sec}`} ({count})
+                    {sec === 'All' ? tr('All sections', 'બધા વિભાગ') : tr(`Section ${sec}`, `વિભાગ ${sec}`)} ({count})
                   </Text>
                 </TouchableOpacity>
               );
@@ -454,7 +468,7 @@ export default function BoardExamSimulatorScreen() {
                 <Text style={[styles.sectionBadgeText, { color: colors.primary }]}>Section {currentQ.section}</Text>
               </View>
               <Text style={[styles.marksText, { color: colors.onSurfaceVariant }]}>
-                {currentQ.marks} {currentQ.marks === 1 ? 'mark' : 'marks'}
+                {currentQ.marks} {currentQ.marks === 1 ? tr('mark', 'ગુણ') : tr('marks', 'ગુણ')}
               </Text>
               <View style={{ flex: 1 }} />
               <TouchableOpacity
@@ -477,7 +491,7 @@ export default function BoardExamSimulatorScreen() {
                     { color: markedForReview.includes(currentQ.id) ? colors.onAccentContainer : colors.onSurfaceVariant },
                   ]}
                 >
-                  {markedForReview.includes(currentQ.id) ? 'Marked' : 'Mark for review'}
+                  {markedForReview.includes(currentQ.id) ? tr('Marked', 'નિશાની કરી') : tr('Mark for review', 'રિવ્યૂ માટે નિશાની')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -523,7 +537,7 @@ export default function BoardExamSimulatorScreen() {
               /* Written Scratchpad for Theory / Numericals */
               <View style={styles.theoryBox}>
                 <Text style={[styles.scratchpadLabel, { color: colors.onSurfaceVariant }]}>
-                  Your answer (rough work is fine)
+                  {tr('Your answer (rough work is fine)', 'તમારો જવાબ (રફ કામ ચાલશે)')}
                 </Text>
                 <TextInput
                   style={[
@@ -534,7 +548,7 @@ export default function BoardExamSimulatorScreen() {
                       color: colors.onSurface,
                     },
                   ]}
-                  placeholder="Type your mathematical steps, formula used, or theoretical explanation here..."
+                  placeholder={tr('Write your steps, formula or explanation here', 'તમારા પગલાં, સૂત્ર કે સમજૂતી અહીં લખો')}
                   placeholderTextColor={colors.outline}
                   multiline
                   numberOfLines={5}
@@ -556,7 +570,7 @@ export default function BoardExamSimulatorScreen() {
               onPress={() => setActiveQIndex((prev) => Math.max(0, prev - 1))}
             >
               <MaterialIcons name="chevron-left" size={20} color={colors.onSurface} />
-              <Text style={[styles.navBtnText, { color: colors.onSurface }]}>Previous</Text>
+              <Text style={[styles.navBtnText, { color: colors.onSurface }]}>{tr('Previous', 'પાછળ')}</Text>
             </TouchableOpacity>
 
             {activeQIndex < paperQuestions.length - 1 ? (
@@ -564,7 +578,7 @@ export default function BoardExamSimulatorScreen() {
                 style={[styles.navBtn, { backgroundColor: colors.primary }]}
                 onPress={() => setActiveQIndex((prev) => Math.min(paperQuestions.length - 1, prev + 1))}
               >
-                <Text style={[styles.navBtnText, { color: colors.onPrimary }]}>Next</Text>
+                <Text style={[styles.navBtnText, { color: colors.onPrimary }]}>{tr('Next', 'આગળ')}</Text>
                 <MaterialIcons name="chevron-right" size={20} color={colors.onPrimary} />
               </TouchableOpacity>
             ) : (
@@ -612,7 +626,7 @@ export default function BoardExamSimulatorScreen() {
               >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={[styles.evalQTitle, { color: colors.primary }]}>
-                    Q{idx + 1} (Section {q.section} • {q.marks}M)
+                    {tr(`Q${idx + 1} · Section ${q.section} · ${q.marks} marks`, `પ્રશ્ન ${idx + 1} · વિભાગ ${q.section} · ${q.marks} ગુણ`)}
                   </Text>
                   {isMcq && (
                     <Text style={{ color: mcqCorrect ? '#12805C' : '#C8372D', fontWeight: '800', fontSize: 12 }}>

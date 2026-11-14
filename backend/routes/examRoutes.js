@@ -7068,11 +7068,9 @@ router.get('/user/weak-spots', async (req, res) => {
     const userEmail = req.query.userEmail;
     const grade = req.query.grade || 'college';
 
+    // No database or no user: no data. weakTopics stays empty (never invented).
     if (mongoose.connection.readyState !== 1 || !userEmail) {
-      return res.json({
-        weakTopics: grade === 'college' ? ['Quantitative Aptitude', 'Data Structures & Algorithms'] : ['Mathematics', 'Science'],
-        totalTests: 0,
-      });
+      return res.json({ weakTopics: [], totalTests: 0, source: 'none' });
     }
 
     const query = { userEmail };
@@ -7084,11 +7082,7 @@ router.get('/user/weak-spots', async (req, res) => {
 
     const results = await ExamResult.find(query).sort({ createdAt: -1 });
     if (!results || results.length === 0) {
-      return res.json({
-        weakTopics: grade === 'college' ? ['Quantitative Aptitude', 'Data Structures & Algorithms'] : ['Mathematics', 'Science'],
-        topicAccuracy: {},
-        totalTests: 0,
-      });
+      return res.json({ weakTopics: [], topicAccuracy: {}, totalTests: 0 });
     }
 
     const categoryStats = {};
@@ -7106,16 +7100,13 @@ router.get('/user/weak-spots', async (req, res) => {
       .slice(0, 3);
 
     res.json({
-      weakTopics: weakTopics.length > 0 ? weakTopics : (grade === 'college' ? ['Quantitative Aptitude', 'Logical Reasoning'] : ['Mathematics', 'Science']),
+      weakTopics,
       totalTests: results.length,
       categoryStats,
     });
   } catch (error) {
     console.error('Error computing weak spots:', error);
-    res.json({
-      weakTopics: ['Quantitative Aptitude', 'Data Structures & Algorithms'],
-      totalTests: 0,
-    });
+    res.status(500).json({ weakTopics: [], totalTests: 0, error: 'Could not compute weak topics' });
   }
 });
 
@@ -7186,6 +7177,11 @@ router.post('/exams/submit', async (req, res) => {
   try {
     const { userEmail, scorePercentage, correctCount, totalQuestions, userAnswers, weakCategories, questionIds, grade, board, category } = req.body;
 
+    if (mongoose.connection.readyState !== 1) {
+      // The app keeps its own on-device copy; tell it plainly the server didn't store this.
+      return res.status(503).json({ error: 'Database offline: result not saved on the server', offline: true });
+    }
+
     const result = new ExamResult({
       userEmail: userEmail || 'guest@mindsprint.edu',
       grade: grade || 'college',
@@ -7222,16 +7218,18 @@ router.get('/user/dashboard-stats', async (req, res) => {
     const grade = req.query.grade || 'college';
 
     if (mongoose.connection.readyState !== 1 || !userEmail) {
+      // No database or no user: report "no data" (zeros), never a fake streak or badge.
       return res.json({
         userEmail: userEmail || 'guest',
         grade,
-        streakCount: 1,
+        streakCount: 0,
         totalTests: 0,
         avgScore: 0,
         totalQuestionsAnswered: 0,
         recentActivity: [],
         weakCategoriesMap: {},
-        unlockedBadges: ['first_step'],
+        unlockedBadges: [],
+        source: 'none',
       });
     }
 
@@ -7246,7 +7244,7 @@ router.get('/user/dashboard-stats', async (req, res) => {
 
     const results = await ExamResult.find(resultsQuery).sort({ createdAt: -1 });
 
-    let streakCount = user ? user.streakCount || 1 : 1;
+    let streakCount = user ? user.streakCount || 0 : 0;
     if (user) {
       const now = new Date();
       const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : new Date(0);
@@ -7412,40 +7410,6 @@ router.get('/user/leaderboard', async (req, res) => {
       }
     }
 
-    // 4. Grade-specific cohort benchmarks to ensure leaderboard always feels populated & lively
-    const schoolPeers = [
-      { id: 'lb-sch-1', name: 'Aarav Patel', points: 1480, streak: 14, accuracy: 96, avatar: '🥇', college: `Class ${grade} • St. Xavier's High` },
-      { id: 'lb-sch-2', name: 'Priya Sharma', points: 1390, streak: 12, accuracy: 94, avatar: '🥈', college: `Class ${grade} • DPS Vadodara` },
-      { id: 'lb-sch-3', name: 'Rohan Mehta', points: 1280, streak: 10, accuracy: 91, avatar: '🥉', college: `Class ${grade} • C.N. Vidyalaya` },
-      { id: 'lb-sch-4', name: 'Ananya Desai', points: 1140, streak: 8, accuracy: 88, avatar: '⭐', college: `Class ${grade} • Navrachana` },
-      { id: 'lb-sch-5', name: 'Kavya Joshi', points: 1010, streak: 7, accuracy: 85, avatar: '🌟', college: `Class ${grade} • Sharda Mandir` },
-      { id: 'lb-sch-6', name: 'Devendra Shah', points: 920, streak: 6, accuracy: 82, avatar: '🎯', college: `Class ${grade} • Podar International` },
-    ];
-
-    const higherSecPeers = [
-      { id: 'lb-hsc-1', name: 'Aarav Patel', points: 1520, streak: 15, accuracy: 97, avatar: '🥇', college: `Class ${grade} Science • GSHSEB` },
-      { id: 'lb-hsc-2', name: 'Priya Sharma', points: 1410, streak: 13, accuracy: 95, avatar: '🥈', college: `Class ${grade} PCM • CBSE` },
-      { id: 'lb-hsc-3', name: 'Rohan Mehta', points: 1300, streak: 11, accuracy: 92, avatar: '🥉', college: `Class ${grade} Science • Rajkot` },
-      { id: 'lb-hsc-4', name: 'Ananya Desai', points: 1170, streak: 9, accuracy: 89, avatar: '⭐', college: `Class ${grade} PCB • Vadodara` },
-      { id: 'lb-hsc-5', name: 'Kavya Joshi', points: 1040, streak: 7, accuracy: 86, avatar: '🌟', college: `Class ${grade} Science • Bhavnagar` },
-      { id: 'lb-hsc-6', name: 'Devendra Shah', points: 950, streak: 6, accuracy: 83, avatar: '🎯', college: `Class ${grade} Maths • Gandhinagar` },
-    ];
-
-    const collegePeers = [
-      { id: 'lb-col-1', name: 'Aarav Patel', points: 1560, streak: 14, accuracy: 96, avatar: '🥇', college: 'LDCE Ahmedabad' },
-      { id: 'lb-col-2', name: 'Priya Sharma', points: 1420, streak: 12, accuracy: 94, avatar: '🥈', college: 'VGEC Chandkheda' },
-      { id: 'lb-col-3', name: 'Rohan Mehta', points: 1310, streak: 10, accuracy: 91, avatar: '🥉', college: 'DA-IICT Gandhinagar' },
-      { id: 'lb-col-4', name: 'Ananya Desai', points: 1180, streak: 8, accuracy: 88, avatar: '⭐', college: 'Nirma University' },
-      { id: 'lb-col-5', name: 'Kavya Joshi', points: 1050, streak: 7, accuracy: 85, avatar: '🌟', college: 'MSU Baroda' },
-      { id: 'lb-col-6', name: 'Devendra Shah', points: 960, streak: 6, accuracy: 82, avatar: '🎯', college: 'BVM Anand' },
-    ];
-
-    const benchmarkCohort = ['11', '12'].includes(grade)
-      ? higherSecPeers
-      : isSchool
-      ? schoolPeers
-      : collegePeers;
-
     // 5. Transform real aggregated users into leaderboard rows
     const avatars = ['🥇', '🥈', '🥉', '⭐', '🌟', '🎯', '🚀', '🔥', '💎', '🏆'];
     const realLeaderboardRows = aggregatedUsers.map((item, idx) => {
@@ -7462,27 +7426,16 @@ router.get('/user/leaderboard', async (req, res) => {
         email: item.userEmail,
         name: displayName,
         points: Math.max(item.points, 10),
-        streak: userDoc?.streakCount || 1,
-        accuracy: item.accuracy || 75,
+        streak: userDoc?.streakCount || 0,
+        accuracy: item.accuracy || 0,
         avatar: avatars[idx % avatars.length],
         college: collegeOrSchool,
         isRealUser: true,
       };
     });
 
-    // 6. Combine real users and benchmark peers
-    const combinedMap = new Map();
-    // Real users take precedence
-    realLeaderboardRows.forEach((r) => combinedMap.set(r.email, r));
-    // Fill remaining benchmark cohort
-    benchmarkCohort.forEach((b) => {
-      if (!combinedMap.has(b.name)) {
-        combinedMap.set(b.name, b);
-      }
-    });
-
-    // Sort by points descending
-    const combinedLeaderboard = Array.from(combinedMap.values()).sort((a, b) => b.points - a.points);
+    // 6. Real students only — the board is empty until people take tests.
+    const combinedLeaderboard = realLeaderboardRows.sort((a, b) => b.points - a.points);
 
     // Re-assign 1-based ranks
     const finalLeaderboard = combinedLeaderboard.slice(0, 15).map((row, idx) => ({
@@ -7500,7 +7453,7 @@ router.get('/user/leaderboard', async (req, res) => {
         rank: finalLeaderboard[requestingUserIndex].rank,
         name: requestingUserDoc?.name || (userEmail ? userEmail.split('@')[0] : 'You'),
         points: finalLeaderboard[requestingUserIndex].points,
-        streak: requestingUserDoc?.streakCount || 1,
+        streak: requestingUserDoc?.streakCount || 0,
         accuracy: finalLeaderboard[requestingUserIndex].accuracy,
       };
     } else {
@@ -7509,13 +7462,13 @@ router.get('/user/leaderboard', async (req, res) => {
       const accuracy = userInAgg ? userInAgg.accuracy : 0;
       const rank = points > 0
         ? finalLeaderboard.filter((r) => r.points > points).length + 1
-        : finalLeaderboard.length + 1;
+        : null; // not ranked until they've taken a test
 
       userRankData = {
         rank,
         name: requestingUserDoc?.name || (userEmail ? userEmail.split('@')[0] : 'You'),
         points,
-        streak: requestingUserDoc?.streakCount || 1,
+        streak: requestingUserDoc?.streakCount || 0,
         accuracy,
       };
     }
@@ -7525,6 +7478,7 @@ router.get('/user/leaderboard', async (req, res) => {
       subject: subject || 'All',
       leaderboard: finalLeaderboard,
       userRank: userRankData,
+      offline: mongoose.connection.readyState !== 1,
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);

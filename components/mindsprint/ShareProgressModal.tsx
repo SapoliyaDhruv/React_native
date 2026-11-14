@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
+  Share,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ShareProgressModalProps {
   visible: boolean;
@@ -34,61 +36,75 @@ export const ShareProgressModal: React.FC<ShareProgressModalProps> = ({
   const { colors } = useTheme();
   const styles = React.useMemo(() => makeStyles(colors), [colors]);
   const { user } = useAuth();
+  const { tr } = useLanguage();
 
-  const studentName = user?.name || 'Student';
+  const studentName = user?.name || tr('Student', 'વિદ્યાર્થી');
   const grade = user?.grade || '10';
   const board = user?.board || 'GSEB';
-  const medium = user?.medium || 'Gujarati';
+  const isGujaratiMedium = (user?.medium || 'Gujarati') === 'Gujarati';
 
-  const shareText = `🎓 *MindSprint Study Progress Report* 🎓
-👤 Student: *${studentName}*
-📚 ${grade === 'college' ? '*College placements*' : `Standard: *Class ${grade} (${board} • ${medium} Medium)*`}
-🔥 Daily Study Streak: *${streakDays} Days*
-📖 Chapters Mastered: *${chaptersCompleted}*
-✍️ Questions Solved: *${questionsSolved}*
-⭐ Overall Curriculum Mastery: *${masteryPercentage}%*
+  const stageLine =
+    grade === 'college'
+      ? tr('College · Campus placements', 'કૉલેજ · કૅમ્પસ પ્લેસમેન્ટ')
+      : tr(
+          `Class ${grade} · ${board} · ${isGujaratiMedium ? 'Gujarati' : 'English'} medium`,
+          `ધોરણ ${grade} · ${board} · ${isGujaratiMedium ? 'ગુજરાતી' : 'અંગ્રેજી'} માધ્યમ`
+        );
 
-_Consistent daily revision brings top board exam ranks! Keep it up!_ 🚀`;
+  const metrics = [
+    { label: tr('Day streak', 'દિવસ સતત'), value: String(streakDays) },
+    { label: tr('Chapters done', 'પૂરાં પ્રકરણ'), value: String(chaptersCompleted) },
+    { label: tr('Questions solved', 'ઉકેલેલા પ્રશ્નો'), value: String(questionsSolved) },
+    { label: tr('Average score', 'સરેરાશ ગુણ'), value: `${masteryPercentage}%` },
+  ];
+
+  const shareText = [
+    tr(`MindSprint progress — ${studentName}`, `MindSprint પ્રગતિ — ${studentName}`),
+    stageLine,
+    '',
+    ...metrics.map((m) => `${m.label}: ${m.value}`),
+    '',
+    tr('Sent from the MindSprint app.', 'MindSprint ઍપ પરથી મોકલેલ.'),
+  ].join('\n');
 
   const handleShareWhatsApp = async () => {
     const url = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
     try {
       const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(shareText)}`);
-      }
+      await Linking.openURL(supported ? url : `https://wa.me/?text=${encodeURIComponent(shareText)}`);
     } catch {
-      Alert.alert('Progress Card Copied', 'Progress report copied! You can paste and send it to parents or teachers.');
+      handleShareAny();
+    }
+  };
+
+  const handleShareAny = async () => {
+    try {
+      await Share.share({ message: shareText });
+    } catch {
+      Alert.alert(
+        tr('Could not open sharing', 'શેર કરી શકાયું નહીં'),
+        tr('Try again, or take a screenshot of the card.', 'ફરી પ્રયાસ કરો, અથવા કાર્ડનો સ્ક્રીનશૉટ લો.')
+      );
     }
   };
 
   if (!visible) return null;
-
-  const stageLine = grade === 'college' ? 'College · Campus placements' : `Class ${grade} · ${board} · ${medium} medium`;
-  const metrics = [
-    { label: 'Day streak', value: String(streakDays) },
-    { label: 'Chapters done', value: String(chaptersCompleted) },
-    { label: 'Questions solved', value: String(questionsSolved) },
-    { label: 'Average score', value: `${masteryPercentage}%` },
-  ];
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.headerRow}>
-            <Text style={styles.title}>Share your progress</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Close">
+            <Text style={styles.title}>{tr('Share your progress', 'તમારી પ્રગતિ શેર કરો')}</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel={tr('Close', 'બંધ કરો')}>
               <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>Send this card to your parents or teacher.</Text>
+          <Text style={styles.subtitle}>{tr('Send this card to your parents or teacher.', 'આ કાર્ડ માતા-પિતા કે શિક્ષકને મોકલો.')}</Text>
 
           {/* The card that gets shared */}
           <View style={styles.reportCard}>
-            <Text style={styles.reportBrand}>MindSprint progress</Text>
+            <Text style={styles.reportBrand}>{tr('MindSprint progress', 'MindSprint પ્રગતિ')}</Text>
             <Text style={styles.studentName} numberOfLines={1}>{studentName}</Text>
             <Text style={styles.studentMeta} numberOfLines={1}>{stageLine}</Text>
             <View style={styles.metricsGrid}>
@@ -103,7 +119,10 @@ _Consistent daily revision brings top board exam ranks! Keep it up!_ 🚀`;
 
           <TouchableOpacity style={styles.shareBtn} onPress={handleShareWhatsApp} accessibilityRole="button">
             <MaterialIcons name="share" size={20} color="#ffffff" />
-            <Text style={styles.shareBtnText}>Share on WhatsApp</Text>
+            <Text style={styles.shareBtnText}>{tr('Share on WhatsApp', 'WhatsApp પર શેર કરો')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.otherBtn} onPress={handleShareAny} accessibilityRole="button">
+            <Text style={styles.otherBtnText}>{tr('Share with another app', 'બીજી ઍપથી શેર કરો')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -129,4 +148,6 @@ const makeStyles = (c: typeof MindSprintColors) =>
     metricLabel: { fontSize: 12.5, color: c.onHeroSurfaceVariant },
     shareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, borderRadius: 14, marginTop: 16, backgroundColor: '#1F9E50' },
     shareBtnText: { fontFamily: MindSprintFonts.label, fontSize: 16.5, color: '#ffffff' },
+    otherBtn: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
+    otherBtnText: { fontFamily: MindSprintFonts.label, fontSize: 15, color: c.primary },
   });

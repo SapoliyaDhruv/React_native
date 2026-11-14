@@ -19,7 +19,14 @@ const { createRateLimiter, clearAllRateLimits } = require('./middleware/rateLimi
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mindsprint';
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/mindsprint';
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+// In production the default JWT secret would let anyone forge login tokens.
+if (IS_PROD && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'mindsprint_secret')) {
+  console.error('FATAL: set a strong JWT_SECRET environment variable before running in production.');
+  process.exit(1);
+}
 
 // Clear any stale rate limits on server start
 clearAllRateLimits();
@@ -37,6 +44,8 @@ app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 
 // Reset rate limits helper endpoint
 app.get('/api/reset-limits', (req, res) => {
+  // Development helper only: in production it would let anyone bypass rate limits.
+  if (IS_PROD) return res.status(404).json({ error: 'Not found' });
   clearAllRateLimits();
   res.json({ status: 'OK', message: 'Rate limits cleared successfully.' });
 });

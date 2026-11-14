@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
+import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -28,11 +29,12 @@ interface RecentActivityListProps {
 
 export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = [] }) => {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.onSurface }]}>Recent tests</Text>
+      <Text style={[styles.title, { color: colors.onSurface }]}>{tr('Recent tests', 'તાજેતરના ટેસ્ટ')}</Text>
       <View
         style={[
           styles.cardContainer,
@@ -46,12 +48,12 @@ export const RecentActivityList: React.FC<RecentActivityListProps> = ({ items = 
           <View style={{ padding: 20, alignItems: 'center' }}>
             <MaterialIcons name="assessment" size={32} color={colors.outline} />
             <Text style={{ marginTop: 8, color: colors.onSurfaceVariant, fontSize: 13 }}>
-              No tests yet. Your finished tests will be listed here.
+              {tr('No tests yet. Your finished tests will be listed here.', 'હજુ કોઈ ટેસ્ટ નથી. પૂરા કરેલા ટેસ્ટ અહીં દેખાશે.')}
             </Text>
           </View>
         ) : (
           items.map((item, index) => {
-            const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recent';
+            const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : tr('Recent', 'તાજેતરમાં');
             const isPassed = item.scorePercentage >= 60;
             return (
               <TouchableOpacity

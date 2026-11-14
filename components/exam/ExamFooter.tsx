@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ExamFooterProps {
   currentIndex: number;
@@ -32,6 +33,7 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
   onSubmit,
 }) => {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const isFirst = currentIndex === 0;
   const isLast = currentIndex >= totalQuestions - 1;
 
@@ -51,7 +53,7 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
             color={isMarkedForReview ? colors.accent : colors.onSurfaceVariant}
           />
           <Text style={[styles.chipText, { color: isMarkedForReview ? colors.onAccentContainer : colors.onSurfaceVariant }]}>
-            {isMarkedForReview ? 'Marked for review' : 'Mark for review'}
+            {isMarkedForReview ? tr('Marked for review', 'રિવ્યૂ માટે નિશાની કરી') : tr('Mark for review', 'રિવ્યૂ માટે નિશાની કરો')}
           </Text>
         </TouchableOpacity>
 
@@ -59,13 +61,13 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
           {hasSelectedOption && (
             <TouchableOpacity style={styles.chip} activeOpacity={0.7} onPress={onClearChoice} accessibilityRole="button">
               <MaterialIcons name="backspace" size={16} color={colors.onSurfaceVariant} />
-              <Text style={[styles.chipText, { color: colors.onSurfaceVariant }]}>Clear</Text>
+              <Text style={[styles.chipText, { color: colors.onSurfaceVariant }]}>{tr('Clear', 'જવાબ હટાવો')}</Text>
             </TouchableOpacity>
           )}
           {!isLast && (
             <TouchableOpacity style={styles.chip} activeOpacity={0.7} onPress={onSubmit} accessibilityRole="button">
               <MaterialIcons name="done-all" size={16} color={colors.tertiary} />
-              <Text style={[styles.chipText, { color: colors.tertiary }]}>Submit test</Text>
+              <Text style={[styles.chipText, { color: colors.tertiary }]}>{tr('Submit test', 'ટેસ્ટ સબમિટ કરો')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -81,7 +83,7 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
           accessibilityState={{ disabled: isFirst }}
         >
           <MaterialIcons name="chevron-left" size={22} color={colors.onSurface} />
-          <Text style={[styles.btnText, { color: colors.onSurface }]}>Previous</Text>
+          <Text style={[styles.btnText, { color: colors.onSurface }]}>{tr('Previous', 'પાછળ')}</Text>
         </TouchableOpacity>
 
         {!isLast ? (
@@ -91,7 +93,7 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
             onPress={onNext}
             accessibilityRole="button"
           >
-            <Text style={[styles.btnText, { color: colors.onPrimary }]}>Next</Text>
+            <Text style={[styles.btnText, { color: colors.onPrimary }]}>{tr('Next', 'આગળ')}</Text>
             <MaterialIcons name="chevron-right" size={22} color={colors.onPrimary} />
           </TouchableOpacity>
         ) : (
@@ -102,7 +104,7 @@ export const ExamFooter: React.FC<ExamFooterProps> = ({
             accessibilityRole="button"
           >
             <MaterialIcons name="done-all" size={20} color={colors.onAccent} />
-            <Text style={[styles.btnText, { color: colors.onAccent }]}>Submit test</Text>
+            <Text style={[styles.btnText, { color: colors.onAccent }]}>{tr('Submit test', 'ટેસ્ટ સબમિટ કરો')}</Text>
           </TouchableOpacity>
         )}
       </View>

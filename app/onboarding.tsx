@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,43 +14,62 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface OnboardingSlide {
   id: string;
   title: string;
+  titleGu: string;
   description: string;
+  descriptionGu: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
   points: string[];
+  pointsGu: string[];
 }
+
+// Stable config objects for FlatList (must not change between renders).
+const VIEWABILITY_CONFIG = { viewAreaCoveragePercentThreshold: 50 };
 
 const SLIDES: OnboardingSlide[] = [
   {
     id: '1',
     title: 'Every chapter in one place',
+    titleGu: 'દરેક પ્રકરણ એક જ જગ્યાએ',
     description: 'Class 7 to 12 (GSEB, Gujarati medium) and college placement prep.',
+    descriptionGu: 'ધોરણ 7 થી 12 (GSEB, ગુજરાતી માધ્યમ) અને કૉલેજ પ્લેસમેન્ટની તૈયારી.',
     iconName: 'play-lesson',
     points: ['A full video lesson for each chapter', 'The official textbook PDF', 'Short notes and formulas'],
+    pointsGu: ['દરેક પ્રકરણનો પૂરો વિડિયો પાઠ', 'સત્તાવાર પાઠ્યપુસ્તકની PDF', 'ટૂંકી નોંધ અને સૂત્રો'],
   },
   {
     id: '2',
     title: 'Practise the way the board tests',
+    titleGu: 'બોર્ડ પરીક્ષા જેવી પ્રેક્ટિસ',
     description: 'Questions written in the same style as your exam paper.',
+    descriptionGu: 'તમારા પરીક્ષાપત્ર જેવી જ શૈલીના પ્રશ્નો.',
     iconName: 'assignment',
     points: ['1 to 4 mark important questions', 'Full 80-mark board papers', 'A quick quiz after every chapter'],
+    pointsGu: ['1 થી 4 ગુણના મહત્વના પ્રશ્નો', '80 ગુણનાં પૂરાં બોર્ડ પેપર', 'દરેક પ્રકરણ પછી ઝડપી ક્વિઝ'],
   },
   {
     id: '3',
     title: 'Study a little every day',
+    titleGu: 'રોજ થોડું ભણો',
     description: 'Small daily goals keep you moving before exams.',
+    descriptionGu: 'નાના રોજિંદા લક્ષ્યો પરીક્ષા પહેલાં તમને આગળ રાખે છે.',
     iconName: 'local-fire-department',
     points: ['A new question every day', '1v1 quiz duels with classmates', 'Gujarat-wide rankings'],
+    pointsGu: ['રોજ એક નવો પ્રશ્ન', 'સહાધ્યાયીઓ સાથે 1v1 ક્વિઝ મુકાબલો', 'આખા ગુજરાતનું રેન્કિંગ'],
   },
   {
     id: '4',
     title: 'Know what to revise next',
+    titleGu: 'હવે શું ફરી ભણવું તે જાણો',
     description: 'Your tests show which topics need more work.',
+    descriptionGu: 'તમારા ટેસ્ટ બતાવે છે કે કયા વિષય પર વધુ મહેનત જોઈએ.',
     iconName: 'insights',
     points: ['Weak topics found from your answers', 'Retry questions you got wrong', 'Progress saved as you go'],
+    pointsGu: ['તમારા જવાબો પરથી નબળા વિષયો', 'ખોટા પડેલા પ્રશ્નો ફરી કરો', 'પ્રગતિ સાથે સાથે સચવાય છે'],
   },
 ];
 
@@ -58,6 +77,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { completeOnboarding } = useAuth();
+  const { tr, isGujarati, lang, setLang } = useLanguage();
   const { width: screenWidth } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -84,15 +104,11 @@ export default function OnboardingScreen() {
     }
   };
 
-  const viewabilityConfig = useRef({
-    viewAreaCoveragePercentThreshold: 50,
-  }).current;
-
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
     if (viewableItems && viewableItems.length > 0 && viewableItems[0].index != null) {
       setCurrentIndex(viewableItems[0].index);
     }
-  }).current;
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.heroSurface }]}>
@@ -106,11 +122,23 @@ export default function OnboardingScreen() {
           <Text style={[styles.brandName, { color: colors.onHeroSurface }]}>MindSprint</Text>
         </View>
 
-        {currentIndex < SLIDES.length - 1 && (
-          <TouchableOpacity activeOpacity={0.7} style={styles.skipBtn} onPress={handleFinishOnboarding} accessibilityRole="button">
-            <Text style={[styles.skipText, { color: colors.onHeroSurfaceVariant }]}>Skip</Text>
+        <View style={styles.topActions}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.langToggle}
+            onPress={() => setLang(lang === 'gu' ? 'en' : 'gu')}
+            accessibilityRole="button"
+            accessibilityLabel={lang === 'gu' ? 'Switch to English' : 'ગુજરાતીમાં બદલો'}
+          >
+            <MaterialIcons name="translate" size={16} color={colors.onHeroSurface} />
+            <Text style={[styles.langToggleText, { color: colors.onHeroSurface }]}>{lang === 'gu' ? 'English' : 'ગુજરાતી'}</Text>
           </TouchableOpacity>
-        )}
+          {currentIndex < SLIDES.length - 1 && (
+            <TouchableOpacity activeOpacity={0.7} style={styles.skipBtn} onPress={handleFinishOnboarding} accessibilityRole="button">
+              <Text style={[styles.skipText, { color: colors.onHeroSurfaceVariant }]}>{tr('Skip', 'છોડો')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <FlatList
@@ -139,18 +167,18 @@ export default function OnboardingScreen() {
           }
         }}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
+        viewabilityConfig={VIEWABILITY_CONFIG}
         renderItem={({ item }: { item: OnboardingSlide }) => (
           <View style={[styles.slide, { width: screenWidth }]}>
             <View style={styles.slideInner}>
               <View style={[styles.iconTile, { backgroundColor: colors.accent }]}>
                 <MaterialIcons name={item.iconName} size={40} color={colors.onAccent} />
               </View>
-              <Text style={[styles.title, { color: colors.onHeroSurface }]}>{item.title}</Text>
-              <Text style={[styles.description, { color: colors.onHeroSurfaceVariant }]}>{item.description}</Text>
+              <Text style={[styles.title, { color: colors.onHeroSurface }]}>{isGujarati ? item.titleGu : item.title}</Text>
+              <Text style={[styles.description, { color: colors.onHeroSurfaceVariant }]}>{isGujarati ? item.descriptionGu : item.description}</Text>
 
               <View style={styles.pointsCard}>
-                {item.points.map((pt, i) => (
+                {(isGujarati ? item.pointsGu : item.points).map((pt, i) => (
                   <View key={pt} style={[styles.pointRow, i > 0 && styles.pointDivider]}>
                     <MaterialIcons name="check-circle" size={20} color={colors.accent} />
                     <Text style={[styles.pointText, { color: colors.onHeroSurface }]}>{pt}</Text>
@@ -163,7 +191,7 @@ export default function OnboardingScreen() {
       />
 
       <View style={styles.bottomBar}>
-        <View style={styles.paginationRow} accessibilityLabel={`Step ${currentIndex + 1} of ${SLIDES.length}`}>
+        <View style={styles.paginationRow} accessibilityLabel={tr(`Step ${currentIndex + 1} of ${SLIDES.length}`, `${SLIDES.length} માંથી પગલું ${currentIndex + 1}`)}>
           {SLIDES.map((_, idx) => (
             <View
               key={idx}
@@ -185,7 +213,7 @@ export default function OnboardingScreen() {
           accessibilityRole="button"
         >
           <Text style={[styles.nextButtonText, { color: colors.onAccent }]}>
-            {currentIndex === SLIDES.length - 1 ? 'Get started' : 'Next'}
+            {currentIndex === SLIDES.length - 1 ? tr('Get started', 'શરૂ કરો') : tr('Next', 'આગળ')}
           </Text>
           <MaterialIcons name="arrow-forward" size={20} color={colors.onAccent} />
         </TouchableOpacity>
@@ -196,6 +224,17 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  langToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  langToggleText: { fontFamily: MindSprintFonts.label, fontSize: 14 },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface PerformanceChartProps {
   scoresHistory?: number[];
@@ -22,11 +22,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
 }) => {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const { user } = useAuth();
-
-  const userGrade = user?.grade || 'college';
-  const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode && user?.medium === 'Gujarati';
+  const { tr } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'trend' | 'metrics'>('trend');
 
@@ -46,7 +42,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
     return (
       <View style={styles.container}>
         <Text style={[styles.title, { color: colors.onSurface }]}>
-          {isGSEB ? 'તમારી પ્રગતિ' : 'Your accuracy trend'}
+          {tr('Your accuracy trend', 'તમારી પ્રગતિ')}
         </Text>
         <View
           style={[
@@ -57,9 +53,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
         >
           <MaterialIcons name="insights" size={28} color={colors.primary} />
           <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-            {isGSEB
-              ? 'હજુ કોઈ ટેસ્ટ આપ્યો નથી. એક ઝડપી ટેસ્ટ આપો અને અહીં તમારી પ્રગતિ જુઓ.'
-              : 'No test scores yet. Take a quick test and your accuracy trend will appear here.'}
+            {tr('No test scores yet. Take a quick test and your accuracy trend will appear here.', 'હજુ કોઈ ટેસ્ટ આપ્યો નથી. એક ઝડપી ટેસ્ટ આપો અને અહીં તમારી પ્રગતિ જુઓ.')}
           </Text>
           <TouchableOpacity
             activeOpacity={0.85}
@@ -68,7 +62,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
             style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
           >
             <MaterialIcons name="play-arrow" size={18} color="#ffffff" />
-            <Text style={styles.emptyBtnText}>Take a 10-question test</Text>
+            <Text style={styles.emptyBtnText}>{tr('Take a 10-question test', '10 પ્રશ્નોનો ટેસ્ટ આપો')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -81,12 +75,10 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
       <View style={styles.titleRow}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.title, { color: colors.onSurface }]}>
-            Accuracy & performance
+            {tr('Accuracy & performance', 'ચોકસાઈ અને પ્રદર્શન')}
           </Text>
           <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
-            {hasRealData
-              ? `Analyzed from your last ${scoresHistory.length} assessments`
-              : 'Benchmark curve • Take tests to track real progress'}
+            {tr(`From your last ${scoresHistory.length} tests`, `તમારા છેલ્લા ${scoresHistory.length} ટેસ્ટ પરથી`)}
           </Text>
         </View>
 
@@ -146,7 +138,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
                 { color: activeTab === 'trend' ? colors.primary : colors.onSurfaceVariant },
               ]}
             >
-              Trend Chart
+              {tr('Trend', 'વલણ')}
             </Text>
           </TouchableOpacity>
 
@@ -171,7 +163,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
                 { color: activeTab === 'metrics' ? colors.primary : colors.onSurfaceVariant },
               ]}
             >
-              Key Metrics
+              {tr('Key numbers', 'મુખ્ય આંકડા')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -249,7 +241,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
                       ]}
                       numberOfLines={1}
                     >
-                      {isLast ? 'Latest' : `T${index + 1}`}
+                      {isLast ? tr('Latest', 'છેલ્લો') : `T${index + 1}`}
                     </Text>
                   </View>
                 );
@@ -262,22 +254,22 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
           /* ======================================================== */
           <View style={styles.metricsContainer}>
             <View style={styles.metricsRow}>
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(18, 128, 92, 0.12)' : '#DDF3EA', borderColor: '#12805C' }]}>
-                <MaterialIcons name="military-tech" size={24} color="#12805C" />
-                <Text style={[styles.metricValue, { color: '#0B5C42' }]}>{maxScore}%</Text>
-                <Text style={styles.metricLabel}>Personal Best</Text>
+              <View style={[styles.metricCard, { backgroundColor: colors.tertiaryContainer, borderColor: colors.tertiary }]}>
+                <MaterialIcons name="military-tech" size={24} color={colors.tertiary} />
+                <Text style={[styles.metricValue, { color: colors.onTertiaryContainer }]}>{maxScore}%</Text>
+                <Text style={styles.metricLabel}>{tr('Best score', 'શ્રેષ્ઠ ગુણ')}</Text>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(29, 58, 138, 0.12)' : '#E4EAF8', borderColor: colors.primary }]}>
+              <View style={[styles.metricCard, { backgroundColor: colors.primaryFixed, borderColor: colors.primary }]}>
                 <MaterialIcons name="analytics" size={24} color={colors.primary} />
                 <Text style={[styles.metricValue, { color: colors.primary }]}>{avgScore}%</Text>
-                <Text style={styles.metricLabel}>Average Accuracy</Text>
+                <Text style={styles.metricLabel}>{tr('Average', 'સરેરાશ')}</Text>
               </View>
 
-              <View style={[styles.metricCard, { backgroundColor: isDarkMode ? 'rgba(244, 163, 11, 0.12)' : '#FFF1D2', borderColor: '#F4A30B' }]}>
-                <MaterialIcons name="bolt" size={24} color="#F4A30B" />
-                <Text style={[styles.metricValue, { color: '#8A5A00' }]}>{lastScore}%</Text>
-                <Text style={styles.metricLabel}>Latest Attempt</Text>
+              <View style={[styles.metricCard, { backgroundColor: colors.accentContainer, borderColor: colors.accent }]}>
+                <MaterialIcons name="bolt" size={24} color={colors.accent} />
+                <Text style={[styles.metricValue, { color: colors.onAccentContainer }]}>{lastScore}%</Text>
+                <Text style={styles.metricLabel}>{tr('Latest test', 'છેલ્લો ટેસ્ટ')}</Text>
               </View>
             </View>
 
@@ -288,7 +280,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
             >
               <MaterialIcons name="quiz" size={18} color="#ffffff" />
               <Text style={styles.takeTestShortcutText}>
-                Launch New 10-Question Drill 🎯
+                {tr('Take a 10-question test', '10 પ્રશ્નોનો ટેસ્ટ આપો')}
               </Text>
             </TouchableOpacity>
           </View>

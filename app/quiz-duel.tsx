@@ -7,7 +7,6 @@ import {
   ScrollView,
   Animated,
   Easing,
-  Alert,
   TextInput,
   Linking,
   ActivityIndicator,
@@ -20,6 +19,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { confirmAction, notify } from '@/components/common/dialogs';
 import { ApiService } from '@/services/api';
 import { Question } from '@/constants/mindsprintData';
 import { AcademicGrade } from '@/constants/academicData';
@@ -116,17 +117,24 @@ const COLLEGE_SUBJECT_OPTIONS: SubjectOption[] = [
   },
 ];
 
-const PEER_OPPONENTS = [
-  { name: 'Aarav Patel', avatar: '🧑‍🎓', schoolSchool: 'DPS Ahmedabad', college: 'LDCE Ahmedabad' },
-  { name: 'Priya Sharma', avatar: '👩‍🎓', schoolSchool: 'Gyanmanjari Vidyapith', college: 'VGEC Chandkheda' },
-  { name: 'Rohan Mehta', avatar: '👨‍🎓', schoolSchool: 'St. Xavier High School', college: 'DA-IICT Gandhinagar' },
-  { name: 'Ananya Desai', avatar: '👩‍🔬', schoolSchool: 'Shreyas Foundation', college: 'Nirma University' },
-  { name: 'Devendra Shah', avatar: '🧑‍💻', schoolSchool: 'Utkarsh Vidyalaya', college: 'BVM Anand' },
-];
+// When no real classmate is matched by the server, the student races a
+// computer opponent. It is always labelled as a bot, never as a real student.
+/** Points the practice bot scores in one round (kept outside the component: it is random). */
+function botRoundPoints() {
+  return Math.random() < 0.75 ? Math.floor(Math.random() * 25) + 40 : 0;
+}
+
+const PRACTICE_BOT = {
+  name: 'Practice bot',
+  avatar: '🤖',
+  schoolSchool: 'Computer opponent',
+  college: 'Computer opponent',
+};
 
 export default function QuizDuelScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || 'college';
@@ -137,7 +145,7 @@ export default function QuizDuelScreen() {
 
   const [phase, setPhase] = useState<DuelPhase>('select_subject');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('All');
-  const [opponent, setOpponent] = useState(PEER_OPPONENTS[0]);
+  const [opponent, setOpponent] = useState(PRACTICE_BOT);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQIndex, setCurrentQIndex] = useState<number>(0);
   const [timerSeconds, setTimerSeconds] = useState<number>(12);
@@ -158,7 +166,7 @@ export default function QuizDuelScreen() {
   const [myCorrectCount, setMyCorrectCount] = useState<number>(0);
   const [userAnswersRecord, setUserAnswersRecord] = useState<Record<number, number>>({});
 
-  const radarSpin = useRef(new Animated.Value(0)).current;
+  const [radarSpin] = useState(() => new Animated.Value(0));
   const roomPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const xpStorageKey = `@mindsprint_duel_xp_${userGrade}_${user?.email || 'guest'}`;
@@ -302,10 +310,16 @@ export default function QuizDuelScreen() {
           setTimerSeconds(12);
         }, 1500);
       } else {
-        Alert.alert('Cannot Join Room', resp?.error || 'Room code not found or already expired. Please check with your classmate.');
+        notify(
+          tr('Could not join this room', 'આ રૂમમાં જોડાઈ શકાયું નહીં'),
+          resp?.error || tr('Check the 4-digit code with your classmate and try again.', 'મિત્ર પાસેથી 4 અંકનો કોડ ફરી તપાસો અને ફરી પ્રયાસ કરો.')
+        );
       }
     } catch (e) {
-      Alert.alert('Connection Error', 'Could not connect to duel server. Please try again.');
+      notify(
+        tr('Could not reach the duel server', 'ડ્યુઅલ સર્વર સાથે જોડાણ ન થયું'),
+        tr('Check your internet connection and try again.', 'ઇન્ટરનેટ તપાસો અને ફરી પ્રયાસ કરો.')
+      );
     } finally {
       setIsJoiningRoom(false);
     }
@@ -348,9 +362,8 @@ export default function QuizDuelScreen() {
           setQuestions(resp.questions);
         }
       } else {
-        // Fallback to randomized cohort peer & localized questions
-        const randomOpp = PEER_OPPONENTS[Math.floor(Math.random() * PEER_OPPONENTS.length)];
-        setOpponent(randomOpp);
+        // No classmate available: race the practice bot.
+        setOpponent(PRACTICE_BOT);
         const categoryParam = subjectId === 'All' ? undefined : subjectId;
         const fetched = await ApiService.getQuestions(categoryParam, user?.email, 5, undefined, userGrade);
         if (fetched && fetched.length > 0) {
@@ -462,8 +475,7 @@ export default function QuizDuelScreen() {
       }
     } catch (e) {
       console.warn('Duel question load note:', e);
-      const randomOpp = PEER_OPPONENTS[Math.floor(Math.random() * PEER_OPPONENTS.length)];
-      setOpponent(randomOpp);
+      setOpponent(PRACTICE_BOT);
     } finally {
       setTimeout(() => {
         setPhase('duel');
@@ -584,9 +596,8 @@ export default function QuizDuelScreen() {
         console.warn('Multiplayer score sync note:', err);
       }
     } else {
-      // Dynamic realistic peer simulation (Practice Bot Mode)
-      const oppIsCorrect = Math.random() < 0.75;
-      const oppPoints = oppIsCorrect ? Math.floor(Math.random() * 25) + 40 : 0;
+      // Practice bot: answers correctly about 3 times in 4.
+      const oppPoints = botRoundPoints();
       setOppScore((prev) => prev + oppPoints);
     }
 
@@ -607,14 +618,18 @@ export default function QuizDuelScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="1v1 duel"
-        subtitle={isSchoolMode ? `Class ${userGrade} · race a classmate` : 'Aptitude speed race'}
+        title={tr('1v1 duel', '1v1 ડ્યુઅલ')}
+        subtitle={isSchoolMode ? tr(`Class ${userGrade} · race a classmate`, `ધોરણ ${userGrade} · મિત્ર સાથે રેસ`) : tr('Aptitude speed race', 'એપ્ટિટ્યુડ સ્પીડ રેસ')}
         onBack={() => {
           if (phase === 'duel') {
-            Alert.alert('Leave this duel?', 'Leaving now ends the match and counts as a loss.', [
-              { text: 'Keep playing', style: 'cancel' },
-              { text: 'Leave duel', style: 'destructive', onPress: () => router.back() },
-            ]);
+            confirmAction({
+              title: tr('Leave this duel?', 'ડ્યુઅલ છોડવી છે?'),
+              message: tr('Leaving now ends the match and counts as a loss.', 'હમણાં છોડશો તો મેચ પૂરી થશે અને હાર ગણાશે.'),
+              confirmText: tr('Leave duel', 'ડ્યુઅલ છોડો'),
+              cancelText: tr('Keep playing', 'રમતા રહો'),
+              destructive: true,
+              onConfirm: () => router.back(),
+            });
           } else {
             router.back();
           }
@@ -634,14 +649,14 @@ export default function QuizDuelScreen() {
           <View style={[styles.heroCard, { backgroundColor: '#12245C' }, MindSprintShadows.glow]}>
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>
-                Race a classmate
+                {tr('Race a classmate or the practice bot', 'મિત્ર કે પ્રેક્ટિસ બોટ સાથે રેસ')}
               </Text>
             </View>
             <Text style={styles.heroTitle}>
-              Pick a subject and race the clock
+              {tr('Pick a subject and race the clock', 'વિષય પસંદ કરો અને સમય સામે રેસ કરો')}
             </Text>
             <Text style={styles.heroSub}>
-              5 questions, 12 seconds each. The higher score wins extra XP.
+              {tr('5 questions, 12 seconds each. The higher score wins extra XP.', '5 પ્રશ્નો, દરેક માટે 12 સેકન્ડ. વધુ ગુણ મેળવનારને વધારાના XP.')}
             </Text>
           </View>
 
@@ -652,7 +667,7 @@ export default function QuizDuelScreen() {
               onPress={() => setRoomMode('random')}
             >
               <Text style={[styles.modeTabBtnText, { color: roomMode === 'random' ? colors.onPrimary : colors.onSurface }]}>
-                Random opponent
+                {tr('Quick match', 'ઝડપી મેચ')}
               </Text>
             </TouchableOpacity>
 
@@ -666,7 +681,7 @@ export default function QuizDuelScreen() {
               }}
             >
               <Text style={[styles.modeTabBtnText, { color: roomMode === 'create_room' ? colors.onPrimary : colors.onSurface }]}>
-                Create room
+                {tr('Create room', 'રૂમ બનાવો')}
               </Text>
             </TouchableOpacity>
 
@@ -675,7 +690,7 @@ export default function QuizDuelScreen() {
               onPress={() => setRoomMode('join_room')}
             >
               <Text style={[styles.modeTabBtnText, { color: roomMode === 'join_room' ? colors.onPrimary : colors.onSurface }]}>
-                Join room
+                {tr('Join room', 'રૂમમાં જોડાઓ')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -733,7 +748,7 @@ export default function QuizDuelScreen() {
           {/* JOIN ROOM CARD */}
           {roomMode === 'join_room' && (
             <View style={[styles.roomCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }, MindSprintShadows.card]}>
-              <Text style={[styles.roomLabel, { color: colors.onSurface }]}>Enter Classmate's 4-Digit Room Code:</Text>
+              <Text style={[styles.roomLabel, { color: colors.onSurface }]}>{tr("Enter your classmate's 4-digit room code", 'મિત્રનો 4 અંકનો રૂમ કોડ લખો')}</Text>
               <View style={styles.joinInputRow}>
                 <TextInput
                   style={[styles.pinInput, { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#F5F7FB', color: colors.onSurface, borderColor: colors.outlineVariant }]}
@@ -760,7 +775,7 @@ export default function QuizDuelScreen() {
           )}
 
           <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>
-            Choose a subject
+            {tr('Choose a subject', 'વિષય પસંદ કરો')}
           </Text>
 
           <View style={styles.subjectsGrid}>
@@ -822,12 +837,13 @@ export default function QuizDuelScreen() {
           </View>
 
           <Text style={[styles.matchingTitle, { color: colors.onSurface }]}>
-            Finding an Active Classmate...
+            {tr('Getting your duel ready…', 'ડ્યુઅલ તૈયાર થઈ રહી છે…')}
           </Text>
           <Text style={[styles.matchingSub, { color: colors.onSurfaceVariant }]}>
-            {isSchoolMode
-              ? `Matching you with a student in Class ${userGrade}`
-              : 'Connecting with an active candidate in your placement pool'}
+            {tr(
+              "If no classmate is online, you'll race the practice bot.",
+              'કોઈ મિત્ર ઓનલાઇન ન હોય તો તમે પ્રેક્ટિસ બોટ સાથે રમશો.'
+            )}
           </Text>
 
           <View style={[styles.matchedPeerPreview, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>

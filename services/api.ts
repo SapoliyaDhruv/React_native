@@ -6,9 +6,48 @@ import { ACADEMIC_CURRICULUM, GradeCurriculum, AcademicGrade, EducationBoard, In
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
+import { addLocalResult, computeLocalDashboardStats, computeLocalWeakSpots } from './localProgress';
+
+/**
+ * Offline password check for cached accounts. The password is never stored;
+ * only a salted SHA-256 digest (or, where WebCrypto is unavailable such as
+ * plain-http web, a non-cryptographic fallback digest).
+ */
+async function digestPassword(email: string, password: string): Promise<string> {
+  const input = `mindsprint:${email.toLowerCase()}:${password}`;
+  try {
+    return 'sha256:' + (await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, input));
+  } catch {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < input.length; i++) {
+      h ^= input.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return 'fnv:' + h.toString(16);
+  }
+}
+
+async function cacheLocalUser(email: string, password: string, user: any) {
+  try {
+    const raw = await AsyncStorage.getItem('@mindsprint_local_users');
+    const users = raw ? JSON.parse(raw) : {};
+    const { passwordHash: _legacy, ...rest } = user || {};
+    users[email.toLowerCase()] = { ...rest, passwordDigest: await digestPassword(email, password) };
+    await AsyncStorage.setItem('@mindsprint_local_users', JSON.stringify(users));
+  } catch (_) {}
+}
+
+const isLocalUrl = (u: string) => /\/\/(localhost|127\.0\.0\.1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(u);
 
 // Dynamically resolve backend API base URL for Web, Emulator, and Expo Go on physical phones
 const resolveApiBaseUrl = (): string => {
+  // 0. A deployed backend (non-local EXPO_PUBLIC_API_URL) always wins.
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && !isLocalUrl(envUrl)) {
+    return envUrl.replace(/\/$/, '');
+  }
+
   // 1. If running on Web in browser, use localhost or window hostname
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location?.hostname) {
@@ -233,15 +272,19 @@ export const ApiService = {
   },
 
   // Get AI Weak-Spot Topics
+  // weakTopics is [] until the student has finished tests with wrong answers.
   async getWeakSpots(userEmail?: string, grade?: string): Promise<{ weakTopics: string[]; totalTests: number }> {
     try {
-      if (!userEmail) return { weakTopics: ['Quantitative Aptitude', 'Data Structures & Algorithms'], totalTests: 0 };
+      if (!userEmail) return computeLocalWeakSpots(undefined, grade);
       const gradeParam = grade ? `&grade=${encodeURIComponent(grade)}` : '';
       const response = await fetch(`${API_BASE_URL}/user/weak-spots?userEmail=${encodeURIComponent(userEmail)}${gradeParam}`);
       if (!response.ok) throw new Error('API Error');
-      return await response.json();
+      const data = await response.json();
+      // Server has no record (e.g. database offline): use this device's real results.
+      if (!data?.totalTests) return computeLocalWeakSpots(userEmail, grade);
+      return data;
     } catch (error) {
-      return { weakTopics: ['Quantitative Aptitude', 'Data Structures & Algorithms'], totalTests: 0 };
+      return computeLocalWeakSpots(userEmail, grade);
     }
   },
 
@@ -277,44 +320,20 @@ export const ApiService = {
       if (!response.ok) throw new Error('API Error');
       return await response.json();
     } catch (error) {
-      const isSchool = grade && grade !== 'college';
-      const isHSC = ['11', '12'].includes(grade || '');
-      const peers = isHSC
-        ? [
-            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1520, streak: 15, accuracy: 97, avatar: '🥇', college: `Class ${grade} Science • GSHSEB` },
-            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1410, streak: 13, accuracy: 95, avatar: '🥈', college: `Class ${grade} PCM • CBSE` },
-            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1300, streak: 11, accuracy: 92, avatar: '🥉', college: `Class ${grade} Science • Rajkot` },
-            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1170, streak: 9, accuracy: 89, avatar: '⭐', college: `Class ${grade} PCB • Vadodara` },
-            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1040, streak: 7, accuracy: 86, avatar: '🌟', college: `Class ${grade} Science • Bhavnagar` },
-            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 950, streak: 6, accuracy: 83, avatar: '🎯', college: `Class ${grade} Maths • Gandhinagar` },
-          ]
-        : isSchool
-        ? [
-            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1480, streak: 14, accuracy: 96, avatar: '🥇', college: `Class ${grade} • St. Xavier's High` },
-            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1390, streak: 12, accuracy: 94, avatar: '🥈', college: `Class ${grade} • DPS Vadodara` },
-            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1280, streak: 10, accuracy: 91, avatar: '🥉', college: `Class ${grade} • C.N. Vidyalaya` },
-            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1140, streak: 8, accuracy: 88, avatar: '⭐', college: `Class ${grade} • Navrachana` },
-            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1010, streak: 7, accuracy: 85, avatar: '🌟', college: `Class ${grade} • Sharda Mandir` },
-            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 920, streak: 6, accuracy: 82, avatar: '🎯', college: `Class ${grade} • Podar International` },
-          ]
-        : [
-            { id: 'lb-1', rank: 1, name: 'Aarav Patel', points: 1560, streak: 14, accuracy: 96, avatar: '🥇', college: 'LDCE Ahmedabad' },
-            { id: 'lb-2', rank: 2, name: 'Priya Sharma', points: 1420, streak: 12, accuracy: 94, avatar: '🥈', college: 'VGEC Chandkheda' },
-            { id: 'lb-3', rank: 3, name: 'Rohan Mehta', points: 1310, streak: 10, accuracy: 91, avatar: '🥉', college: 'DA-IICT Gandhinagar' },
-            { id: 'lb-4', rank: 4, name: 'Ananya Desai', points: 1180, streak: 8, accuracy: 88, avatar: '⭐', college: 'Nirma University' },
-            { id: 'lb-5', rank: 5, name: 'Kavya Joshi', points: 1050, streak: 7, accuracy: 85, avatar: '🌟', college: 'MSU Baroda' },
-            { id: 'lb-6', rank: 6, name: 'Devendra Shah', points: 960, streak: 6, accuracy: 82, avatar: '🎯', college: 'BVM Anand' },
-          ];
-
+      // No server: there is nobody to rank against. Return an empty board (never
+      // invented students) plus the student's own on-device totals.
+      const stats = await computeLocalDashboardStats(userEmail, grade || 'college');
+      const correct = stats.recentActivity.reduce((a: number, r: any) => a + (r.correctCount || 0), 0);
       return {
         grade: grade || 'college',
-        leaderboard: peers,
+        leaderboard: [],
+        offline: true,
         userRank: {
-          rank: 7,
+          rank: null,
           name: userEmail ? userEmail.split('@')[0] : 'You',
-          points: 880,
-          streak: 1,
-          accuracy: 84,
+          points: correct * 10 + stats.totalTests * 5,
+          streak: stats.streakCount,
+          accuracy: stats.avgScore,
         },
       };
     }
@@ -340,7 +359,8 @@ export const ApiService = {
       });
       return await response.json();
     } catch (error) {
-      return { success: true };
+      // Saved on the device by AuthContext; the server copy updates next time it's reachable.
+      return { success: true, offline: true };
     }
   },
 
@@ -357,30 +377,45 @@ export const ApiService = {
     board?: string;
     category?: string;
   }) {
+    // Always keep an on-device copy so progress is real even when the server is down.
+    await addLocalResult(resultData.userEmail, {
+      grade: resultData.grade || 'college',
+      category: resultData.category || 'Mock Exam',
+      scorePercentage: resultData.scorePercentage,
+      correctCount: resultData.correctCount,
+      totalQuestions: resultData.totalQuestions,
+      weakCategories: resultData.weakCategories || [],
+    });
     try {
       const response = await fetch(`${API_BASE_URL}/exams/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(resultData),
       });
-      return await response.json();
+      const data = await response.json();
+      return response.ok ? data : { success: true, savedOnDevice: true, serverError: data?.error };
     } catch (error) {
-      console.log('Exam result recorded locally');
-      return { success: true };
+      console.log('Exam result saved on this device only');
+      return { success: true, savedOnDevice: true };
     }
   },
 
   // Get User Dashboard Stats (Isolated by grade)
+  // Real numbers only: server stats when it has them, otherwise this device's
+  // recorded tests. A new student gets streakCount 0, totalTests 0, [] activity.
   async getDashboardStats(userEmail?: string, grade?: string) {
+    const g = grade || 'college';
     try {
-      if (!userEmail) return null;
+      if (!userEmail) return computeLocalDashboardStats(undefined, g);
       const gradeParam = grade ? `&grade=${encodeURIComponent(grade)}` : '';
       const response = await fetch(`${API_BASE_URL}/user/dashboard-stats?userEmail=${encodeURIComponent(userEmail)}${gradeParam}`);
-      if (!response.ok) return null;
-      return await response.json();
+      if (!response.ok) return computeLocalDashboardStats(userEmail, g);
+      const data = await response.json();
+      if (data?.source === 'none') return computeLocalDashboardStats(userEmail, g);
+      return data;
     } catch (error) {
-      console.log('Failed to fetch dashboard stats');
-      return null;
+      console.log('Dashboard stats: using results saved on this device');
+      return computeLocalDashboardStats(userEmail, g);
     }
   },
 
@@ -547,45 +582,30 @@ export const ApiService = {
       clearTimeout(timeoutId);
       const data = await response.json();
       if (response.ok && data.user) {
-        try {
-          const raw = await AsyncStorage.getItem('@mindsprint_local_users');
-          const users = raw ? JSON.parse(raw) : {};
-          users[email.toLowerCase()] = { ...data.user, passwordHash: password };
-          await AsyncStorage.setItem('@mindsprint_local_users', JSON.stringify(users));
-        } catch (_) {}
+        await cacheLocalUser(email, password, data.user);
       }
       return data;
     } catch (error) {
-      console.log('Backend server unreachable, checking local user cache...');
+      // Server unreachable: only an account already used on this phone, with the
+      // same password, can sign in. Unknown emails are never signed in.
+      console.log('Backend server unreachable, checking accounts saved on this device...');
       try {
         const raw = await AsyncStorage.getItem('@mindsprint_local_users');
         const users = raw ? JSON.parse(raw) : {};
         const localUser = users[email.toLowerCase()];
         if (localUser) {
-          return {
-            message: 'Signed in via offline profile',
-            token: 'local_jwt_' + Date.now(),
-            user: localUser,
-          };
+          const digest = await digestPassword(email, password);
+          const legacyMatch = localUser.passwordHash !== undefined && localUser.passwordHash === password;
+          if (localUser.passwordDigest === digest || legacyMatch) {
+            if (legacyMatch) await cacheLocalUser(email, password, localUser); // upgrade plain-text entry
+            const { passwordHash: _p, passwordDigest: _d, ...profile } = localUser;
+            return { message: 'Signed in on this device (offline)', token: 'local_jwt_' + Date.now(), user: profile };
+          }
+          return { error: 'Wrong password for this account.' };
         }
       } catch (_) {}
-      // Automatic offline fallback: allow user to sign in offline
-      const name = email.split('@')[0];
       return {
-        message: 'Signed in (Offline Session)',
-        token: 'offline_token_' + Date.now(),
-        user: {
-          id: 'usr_' + Date.now(),
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          email,
-          grade: '10',
-          board: 'GSEB',
-          medium: 'Gujarati',
-          academicStage: 'school',
-          streakCount: 1,
-          targetCompany: 'All Companies',
-          avatarUrl: '🧑‍🎓',
-        },
+        error: "Can't reach the MindSprint server. Check your internet connection, or continue as a guest.",
       };
     }
   },
@@ -611,12 +631,7 @@ export const ApiService = {
       clearTimeout(timeoutId);
       const data = await response.json();
       if (response.ok && data.user) {
-        try {
-          const raw = await AsyncStorage.getItem('@mindsprint_local_users');
-          const users = raw ? JSON.parse(raw) : {};
-          users[email.toLowerCase()] = { ...data.user, passwordHash: password };
-          await AsyncStorage.setItem('@mindsprint_local_users', JSON.stringify(users));
-        } catch (_) {}
+        await cacheLocalUser(email, password, data.user);
       }
       return data;
     } catch (error) {
@@ -629,16 +644,11 @@ export const ApiService = {
         board,
         medium,
         academicStage: grade === 'college' ? 'college' : 'school',
-        streakCount: 1,
+        streakCount: 0,
         targetCompany: 'All Companies',
         avatarUrl: '🧑‍🎓',
       };
-      try {
-        const raw = await AsyncStorage.getItem('@mindsprint_local_users');
-        const users = raw ? JSON.parse(raw) : {};
-        users[email.toLowerCase()] = { ...localProfile, passwordHash: password };
-        await AsyncStorage.setItem('@mindsprint_local_users', JSON.stringify(users));
-      } catch (_) {}
+      await cacheLocalUser(email, password, localProfile);
 
       return {
         message: 'Account created locally (offline session)',

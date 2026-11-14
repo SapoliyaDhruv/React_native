@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -10,18 +10,24 @@ interface ConfettiPieceProps {
 }
 
 const ConfettiPiece: React.FC<ConfettiPieceProps> = ({ index }) => {
-  const startX = useRef(Math.random() * SCREEN_WIDTH).current;
-  const endX = useRef(startX + (Math.random() - 0.5) * 160).current;
-  const size = useRef(6 + Math.random() * 8).current;
-  const isCircle = useRef(Math.random() > 0.5).current;
-  const color = useRef(CONFETTI_COLORS[index % CONFETTI_COLORS.length]).current;
-  const duration = useRef(2000 + Math.random() * 1500).current;
-  const delay = useRef(Math.random() * 400).current;
-
-  const translateY = useRef(new Animated.Value(-20)).current;
-  const translateX = useRef(new Animated.Value(startX)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  // Random layout is chosen once per piece (useState initializer runs a single time).
+  const [piece] = useState(() => {
+    const startX = Math.random() * SCREEN_WIDTH;
+    return {
+      startX,
+      endX: startX + (Math.random() - 0.5) * 160,
+      size: 6 + Math.random() * 8,
+      isCircle: Math.random() > 0.5,
+      color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+      duration: 2000 + Math.random() * 1500,
+      delay: Math.random() * 400,
+      translateY: new Animated.Value(-20),
+      translateX: new Animated.Value(startX),
+      rotate: new Animated.Value(0),
+      opacity: new Animated.Value(1),
+    };
+  });
+  const { endX, size, isCircle, color, duration, delay, translateY, translateX, rotate, opacity } = piece;
 
   useEffect(() => {
     Animated.sequence([

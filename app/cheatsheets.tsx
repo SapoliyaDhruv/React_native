@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -16,6 +15,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { notify } from '@/components/common/dialogs';
 import { CheatSheetItem, FormulaStorage } from '@/constants/cheatsheetsData';
 import { AcademicGrade } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
@@ -41,6 +42,7 @@ const getCategoryStyle = (category: string) => {
 
 export default function CheatSheetsScreen() {
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = user?.grade || 'college';
@@ -94,20 +96,18 @@ export default function CheatSheetsScreen() {
       } else {
         await Clipboard.setStringAsync(formulaText);
       }
-      Alert.alert('Formula copied', `"${formulaText}" copied to clipboard!`);
+      notify(tr('Formula copied', 'સૂત્ર કૉપિ થયું'), formulaText);
     } catch (e) {
-      Alert.alert('Formula copied', `"${formulaText}" copied for quick revision!`);
+      notify(tr('Could not copy the formula', 'સૂત્ર કૉપિ ન થયું'), formulaText);
     }
   };
 
   const toggleSave = async (item: CheatSheetItem) => {
     const res = await FormulaStorage.toggleSave(user?.email, item.id);
     setSavedIds(res.ids);
-    Alert.alert(
-      res.saved ? 'Saved for revision' : 'Removed from saved',
-      res.saved
-        ? `"${item.title}" saved to your Bookmarks collection!`
-        : `"${item.title}" removed from saved formulas.`
+    notify(
+      res.saved ? tr('Saved for revision', 'રિવિઝન માટે સેવ કર્યું') : tr('Removed from saved', 'સેવમાંથી દૂર કર્યું'),
+      item.title
     );
   };
 
@@ -118,10 +118,10 @@ export default function CheatSheetsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Formula sheets"
+        title={tr('Formula sheets', 'સૂત્રો')}
         subtitle={isSchoolMode
-          ? `Class ${userGrade} · ${user?.board || 'CBSE'} · ${user?.medium === 'Gujarati' ? 'ગુજરાતી માધ્યમ' : 'English medium'}`
-          : 'Quant formulas, complexities and tech notes'}
+          ? tr(`Class ${userGrade} · ${user?.board || 'GSEB'}`, `ધોરણ ${userGrade} · ${user?.board || 'GSEB'}`)
+          : tr('Quant formulas, complexities and tech notes', 'ગણિત સૂત્રો અને ટેક નોંધ')}
       />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>

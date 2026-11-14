@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintFonts } from '../../constants/mindsprintTheme';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface ExamHeaderProps {
   title: string;
@@ -24,6 +25,7 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
   onQuitExam,
 }) => {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const formatTime = (totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
@@ -44,7 +46,10 @@ export const ExamHeader: React.FC<ExamHeaderProps> = ({
             {title}
           </Text>
           <Text style={[styles.counter, { color: colors.onSurfaceVariant }]}>
-            Question {currentQuestionIndex + 1} of {totalQuestions}
+            {tr(
+              `Question ${currentQuestionIndex + 1} of ${totalQuestions}`,
+              `પ્રશ્ન ${currentQuestionIndex + 1} / ${totalQuestions}`
+            )}
           </Text>
         </View>
 

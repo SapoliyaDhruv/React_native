@@ -1,522 +1,244 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useMemo, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { MindSprintShadows, MindSprintFonts } from '@/constants/mindsprintTheme';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { MindSprintFonts } from '@/constants/mindsprintTheme';
+import { subjectTone } from '@/constants/subjectTones';
+import { ACADEMIC_CURRICULUM, AcademicGrade, AcademicSubject, SubjectChapter } from '@/constants/academicData';
+import { VIDEO_LECTURES_DATA, VideoLecture } from '@/constants/videoData';
 import { VideoPlayerView } from '@/components/mindsprint/VideoPlayerView';
-import { UpNextList } from '@/components/mindsprint/UpNextList';
-import { VideoScreenSkeleton } from '@/components/mindsprint/SkeletonLoader';
-import { ErrorState } from '@/components/mindsprint/ErrorState';
-import { VIDEO_LECTURES_DATA, VideoLecture, VideoComment } from '@/constants/videoData';
-import { ApiService } from '@/services/api';
+import { useCourseProgress } from '@/components/courses/useCourseProgress';
+import { subjectLabel } from '@/components/courses/chapterLinks';
+import { saveLastChapter } from '@/services/learningProgress';
 
-const COLLEGE_FILTERS = [
-  { key: 'All', label: 'All Topics', icon: 'video-library' as const },
-  { key: 'Quant', label: 'Quant', icon: 'calculate' as const },
-  { key: 'DSA', label: 'DSA', icon: 'code' as const },
-  { key: 'React', label: 'React JS', icon: 'web' as const },
-  { key: 'HR', label: 'HR Rounds', icon: 'person-outline' as const },
-];
+type Item = { subject: AcademicSubject; chapter: SubjectChapter };
 
-const SCHOOL_GSEB_FILTERS = [
-  { key: 'All', label: 'બધા વિષયો', icon: 'video-library' as const },
-  { key: 'ગણિત', label: 'ગણિત', icon: 'calculate' as const },
-  { key: 'વિજ્ઞાન', label: 'વિજ્ઞાન', icon: 'biotech' as const },
-  { key: 'સામાજિક વિજ્ઞાન', label: 'સામા. વિજ્ઞાન', icon: 'public' as const },
-  { key: 'ગુજરાતી', label: 'ગુજરાતી', icon: 'edit-note' as const },
-  { key: 'અંગ્રેજી', label: 'અંગ્રેજી', icon: 'menu-book' as const },
-];
+/** Player data for a chapter: reuse the lecture record (notes, comments) when one exists. */
+function toLecture({ subject, chapter }: Item): VideoLecture {
+  const video = chapter.videos![0];
+  const match = VIDEO_LECTURES_DATA.find((l) => l.youtubeVideoId === video.youtubeVideoId);
+  const base: VideoLecture = match ?? {
+    id: `chapter-${chapter.id}`,
+    category: subject.name,
+    categoryGujarati: subject.nameGujarati,
+    title: chapter.title,
+    instructor: video.teacher,
+    duration: video.duration,
+    durationSeconds: 0,
+    youtubeVideoId: video.youtubeVideoId,
+    thumbnailUrl: `https://i.ytimg.com/vi/${video.youtubeVideoId}/hqdefault.jpg`,
+    playbackMode: 'embed',
+    description: chapter.summary,
+    timeStampedNotes: [],
+    comments: [],
+  };
+  return {
+    ...base,
+    title: `${chapter.chapterNumber}. ${chapter.title}`,
+    titleGujarati: chapter.titleGujarati ? `${chapter.chapterNumber}. ${chapter.titleGujarati}` : undefined,
+    description: chapter.summary || base.description,
+    descriptionGujarati: chapter.summaryGujarati || base.descriptionGujarati,
+    instructor: video.teacher || base.instructor,
+    duration: video.duration || base.duration,
+  };
+}
 
-const SENIOR_GSEB_FILTERS = [
-  { key: 'All', label: 'બધા વિષયો', icon: 'video-library' as const },
-  { key: 'ભૌતિક વિજ્ઞાન', label: 'ભૌતિક વિજ્ઞાન', icon: 'speed' as const },
-  { key: 'રસાયણ વિજ્ઞાન', label: 'રસાયણ વિજ્ઞાન', icon: 'science' as const },
-  { key: 'ગણિત', label: 'ગણિત', icon: 'calculate' as const },
-  { key: 'જીવ વિજ્ઞાન', label: 'જીવ વિજ્ઞાન', icon: 'biotech' as const },
-  { key: 'ગુજરાતી', label: 'ગુજરાતી', icon: 'edit-note' as const },
-  { key: 'અંગ્રેજી', label: 'અંગ્રેજી', icon: 'menu-book' as const },
-  { key: 'કોમ્પ્યુટર સાયન્સ', label: 'કોમ્પ્યુટર', icon: 'computer' as const },
-];
-
-export default function VideoScreen() {
+/**
+ * Lectures = "Watching": the video you're on, then what to watch next.
+ * Browsing every chapter lives in Courses; this tab is only the queue.
+ */
+export default function WatchingScreen() {
+  const router = useRouter();
   const { colors } = useTheme();
   const { user } = useAuth();
+  const { tr, isGujarati } = useLanguage();
+  const grade = (user?.grade || '7') as AcademicGrade;
+  const subjects = useMemo(() => (ACADEMIC_CURRICULUM[grade] || ACADEMIC_CURRICULUM['7']).subjects, [grade]);
+  const progress = useCourseProgress(grade, user?.email);
+  const done = progress.completedIds;
 
-  const userGrade = user?.grade || 'college';
-  const isSchoolMode = userGrade !== 'college';
-  const isGSEB = isSchoolMode;
+  const all: Item[] = useMemo(
+    () => subjects.flatMap((s) => s.chapters.filter((c) => c.videos?.length).map((c) => ({ subject: s, chapter: c }))),
+    [subjects]
+  );
 
-  const filterOptions = useMemo(() => {
-    if (!isSchoolMode) return COLLEGE_FILTERS;
-    if (userGrade === '11' || userGrade === '12') return SENIOR_GSEB_FILTERS;
-    return SCHOOL_GSEB_FILTERS;
-  }, [isSchoolMode, userGrade]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const last = progress.lastChapter;
+  const current =
+    all.find((x) => x.chapter.id === selectedId) ||
+    all.find((x) => x.chapter.id === last?.chapterId) ||
+    all.find((x) => !done.includes(x.chapter.id)) ||
+    all[0];
 
-  const [lectures, setLectures] = useState<VideoLecture[]>(VIDEO_LECTURES_DATA);
-  const [activeLecture, setActiveLecture] = useState<VideoLecture>(VIDEO_LECTURES_DATA[0]);
-  const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const [isSequentialMode, setIsSequentialMode] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [bookmarkedLectures, setBookmarkedLectures] = useState<string[]>([]);
-  const [completedLectureIds, setCompletedLectureIds] = useState<string[]>([]);
+  // Up next: the following unfinished chapters in this subject, then the next one in each other subject.
+  const sameSubject = current
+    ? current.subject.chapters
+        .filter((c) => c.chapterNumber > current.chapter.chapterNumber && c.videos?.length && !done.includes(c.id))
+        .slice(0, 3)
+        .map((c) => ({ subject: current.subject, chapter: c }))
+    : [];
+  const otherSubjects = subjects
+    .filter((s) => s.id !== current?.subject.id)
+    .map((s) => {
+      const c = s.chapters.find((ch) => ch.videos?.length && !done.includes(ch.id));
+      return c ? { subject: s, chapter: c } : null;
+    })
+    .filter((x): x is Item => !!x);
 
-  const storageKey = `@mindsprint_completed_videos_${userGrade}_${user?.board || 'CBSE'}_${user?.email || 'guest'}`;
-
-  // Reset filter when grade or board changes
-  useEffect(() => {
-    setSelectedFilter('All');
-  }, [userGrade, user?.board]);
-
-  // Load completed videos
-  useEffect(() => {
-    async function loadCompleted() {
-      try {
-        const data = await AsyncStorage.getItem(storageKey);
-        if (data) {
-          setCompletedLectureIds(JSON.parse(data));
-        }
-      } catch (e) {
-        console.warn('Completed videos load error:', e);
-      }
-    }
-    loadCompleted();
-  }, [user?.email, storageKey]);
-
-  // Check if a lecture is unlocked sequentially within its subject
-  const isLectureUnlocked = useCallback((lecture: VideoLecture) => {
-    const subjectLecs = lectures.filter(
-      (l) => (l.category && l.category === lecture.category) ||
-             (l.categoryGujarati && l.categoryGujarati === lecture.categoryGujarati)
+  const select = (item: Item) => {
+    setSelectedId(item.chapter.id);
+    progress.setLastChapter(
+      saveLastChapter(user?.email, {
+        grade,
+        subjectId: item.subject.id,
+        chapterId: item.chapter.id,
+        chapterNumber: item.chapter.chapterNumber,
+        title: item.chapter.title,
+        titleGujarati: item.chapter.titleGujarati,
+        subjectName: subjectLabel(item.subject, isGujarati),
+        action: 'video',
+      })
     );
-    const index = subjectLecs.findIndex((l) => l.id === lecture.id);
-    if (index <= 0) return true; // Chapter 1 is always unlocked
-    return completedLectureIds.includes(subjectLecs[index - 1].id);
-  }, [lectures, completedLectureIds]);
-
-  // Displayed lectures based on sequential mode
-  const displayedLectures = useMemo(() => {
-    if (!isSequentialMode) return lectures;
-    return lectures.filter((l) => isLectureUnlocked(l));
-  }, [isSequentialMode, lectures, isLectureUnlocked]);
-
-  // Number of remaining locked chapters
-  const remainingLockedCount = Math.max(0, lectures.length - displayedLectures.length);
-
-  // Next locked lecture title
-  const nextLockedLecture = useMemo(() => {
-    return lectures.find((l) => !isLectureUnlocked(l));
-  }, [lectures, isLectureUnlocked]);
-
-  // Ensure active lecture is valid and in displayed list
-  useEffect(() => {
-    if (displayedLectures.length > 0 && !displayedLectures.some((l) => l.id === activeLecture?.id)) {
-      setActiveLecture(displayedLectures[0]);
-    }
-  }, [displayedLectures, activeLecture?.id]);
-
-  const toggleComplete = async (lectureId: string) => {
-    let updated: string[];
-    const isNowComplete = !completedLectureIds.includes(lectureId);
-
-    if (completedLectureIds.includes(lectureId)) {
-      updated = completedLectureIds.filter((id) => id !== lectureId);
-    } else {
-      updated = [...completedLectureIds, lectureId];
-
-      // Auto-unlock next chapter feedback
-      const currentSubjectLecs = lectures.filter(
-        (l) => (l.category && l.category === activeLecture?.category) ||
-               (l.categoryGujarati && l.categoryGujarati === activeLecture?.categoryGujarati)
-      );
-      const currIdx = currentSubjectLecs.findIndex((l) => l.id === lectureId);
-      if (currIdx !== -1 && currIdx + 1 < currentSubjectLecs.length) {
-        const nextLec = currentSubjectLecs[currIdx + 1];
-        setActiveLecture(nextLec);
-        Alert.alert(
-          isGSEB ? '🎉 પ્રકરણ પૂર્ણ થયું!' : '🎉 Lesson Completed!',
-          isGSEB
-            ? `અભિનંદન! આગળનું પ્રકરણ અનલૉક થઈ ગયું છે:\n"${nextLec.titleGujarati || nextLec.title}"`
-            : `Great job! Next chapter unlocked:\n"${nextLec.title}"`
-        );
-      } else if (updated.length >= lectures.length) {
-        Alert.alert(
-          'Masterclass Series Completed! 🎓',
-          'Congratulations! You have completed all masterclass lectures in this track.'
-        );
-      }
-    }
-
-    setCompletedLectureIds(updated);
-    try {
-      await AsyncStorage.setItem(storageKey, JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Failed to save completed video:', e);
-    }
   };
 
-  const fetchVideos = useCallback(async (isRefresh = false) => {
-    if (!isRefresh) setLoading(true);
-    setError(null);
-    try {
-      const data = await ApiService.getVideos(selectedFilter, userGrade, user?.board);
-      if (Array.isArray(data) && data.length > 0) {
-        setLectures(data);
-        setActiveLecture((prev) => {
-          const matched = data.find((v) => v.id === prev?.id);
-          return matched || data[0];
-        });
-      }
-    } catch (err: any) {
-      console.warn('Failed to load dynamic videos:', err);
-      setError('Could not connect to video server');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [selectedFilter, userGrade, user?.board]);
+  const videosLeft = all.filter((x) => !done.includes(x.chapter.id)).length;
+  const lecture = current ? toLecture(current) : null;
+  const currentDone = !!current && done.includes(current.chapter.id);
 
-  useEffect(() => {
-    fetchVideos();
-  }, [fetchVideos]);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchVideos(true);
-  };
-
-  const toggleBookmark = () => {
-    if (bookmarkedLectures.includes(activeLecture.id)) {
-      setBookmarkedLectures(bookmarkedLectures.filter((id) => id !== activeLecture.id));
-    } else {
-      setBookmarkedLectures([...bookmarkedLectures, activeLecture.id]);
-    }
-  };
-
-  const handleCommentAdded = (newComment: VideoComment) => {
-    setActiveLecture((prev) => ({
-      ...prev,
-      comments: [newComment, ...(prev.comments || [])],
-      discussionCount: (prev.discussionCount || 0) + 1,
-    }));
-  };
-
-  const completedCount = lectures.filter((l) => completedLectureIds.includes(l.id)).length;
-  const progressPercentage = lectures.length > 0 ? Math.round((completedCount / lectures.length) * 100) : 0;
-  const isActiveCompleted = completedLectureIds.includes(activeLecture?.id || '');
-
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-      edges={['top']}
-    >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+  const renderRow = (item: Item, i: number) => {
+    const video = item.chapter.videos![0];
+    return (
+      <TouchableOpacity
+        key={item.chapter.id}
+        activeOpacity={0.75}
+        onPress={() => select(item)}
+        accessibilityRole="button"
+        accessibilityLabel={`${subjectLabel(item.subject, isGujarati)}, ${tr('chapter', 'પ્રકરણ')} ${item.chapter.chapterNumber}`}
+        style={[styles.row, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.outlineVariant }]}
+      >
+        <View style={styles.thumbBox}>
+          <Image source={{ uri: `https://i.ytimg.com/vi/${video.youtubeVideoId}/mqdefault.jpg` }} style={styles.thumb} />
+          <View style={styles.durationTag}>
+            <Text style={styles.durationText}>{video.duration}</Text>
+          </View>
+        </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.onSurface }]}>
-            {isSchoolMode ? `Class ${userGrade} lectures` : 'Placement lectures'}
+          <Text style={[styles.rowSubject, { color: subjectTone(item.subject.id).cover }]} numberOfLines={1}>
+            {subjectLabel(item.subject, isGujarati)} · {tr(`Ch ${item.chapter.chapterNumber}`, `પ્ર. ${item.chapter.chapterNumber}`)}
           </Text>
-          <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
-            {isSequentialMode
-              ? `${displayedLectures.length} of ${lectures.length} lessons unlocked`
-              : `${lectures.length} lessons`}
-            {isSchoolMode ? ` · ${user?.board || 'GSEB'}` : ' · Campus placements'}
+          <Text style={[styles.rowTitle, { color: colors.onSurface }]} numberOfLines={2}>
+            {isGujarati && item.chapter.titleGujarati ? item.chapter.titleGujarati : item.chapter.title}
           </Text>
         </View>
-        <View style={[styles.headerProgressPill, { backgroundColor: colors.tertiaryContainer }]}>
-          <MaterialIcons name="check-circle" size={15} color={colors.tertiary} />
-          <Text style={[styles.headerProgressText, { color: colors.onTertiaryContainer }]}>{progressPercentage}%</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text numberOfLines={1} style={[styles.headerTitle, { color: colors.onSurface }]}>{tr('Watching', 'વિડિયો')}</Text>
+          <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
+            {grade === 'college' ? tr('College', 'કૉલેજ') : tr(`Class ${grade}`, `ધોરણ ${grade}`)} · {tr(`${videosLeft} videos left`, `${videosLeft} વિડિયો બાકી`)}
+          </Text>
         </View>
       </View>
 
-      {/* Main Scrollable Content */}
-      {loading ? (
-        <VideoScreenSkeleton />
-      ) : error && lectures.length === 0 ? (
-        <ErrorState
-          title="Video Feed Unavailable"
-          message="Could not load latest video masterclasses. Check your connection."
-          onRetry={() => fetchVideos()}
-        />
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {lecture && current ? (
+          <>
+            <VideoPlayerView
+              key={current.chapter.id}
+              lecture={lecture}
+              isBookmarked={progress.bookmarkedIds.includes(current.chapter.id)}
+              onToggleBookmark={() => progress.toggleBookmark(current.chapter.id)}
             />
-          }
-        >
-          {/* Interactive Video Player */}
-          {activeLecture && (
-            <View>
-              <VideoPlayerView
-                lecture={activeLecture}
-                isBookmarked={bookmarkedLectures.includes(activeLecture.id)}
-                onToggleBookmark={toggleBookmark}
-                onCommentAdded={handleCommentAdded}
-              />
-
-              {/* Active Lesson Completion Bar */}
-              <View style={styles.completeBarWrapper}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={[
-                    styles.completeActionBtn,
-                    {
-                      backgroundColor: isActiveCompleted ? colors.tertiary : colors.surfaceContainerLow,
-                      borderColor: isActiveCompleted ? colors.tertiary : colors.outlineVariant,
-                    },
-                                      ]}
-                  onPress={() => toggleComplete(activeLecture.id)}
-                >
-                  <MaterialIcons
-                    name={isActiveCompleted ? 'check-circle' : 'radio-button-unchecked'}
-                    size={20}
-                    color={isActiveCompleted ? colors.onTertiary : colors.primary}
-                  />
-                  <Text
-                    style={[
-                      styles.completeActionText,
-                      { color: isActiveCompleted ? colors.onTertiary : colors.onSurface },
-                    ]}
-                  >
-                    {isActiveCompleted
-                      ? isGSEB ? 'પ્રકરણ પૂર્ણ · Undo' : 'Lesson done · Undo'
-                      : isGSEB ? 'પૂર્ણ તરીકે ચિહ્નિત કરો' : 'Mark lesson as done'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Course Progress Card */}
-          <View
-            style={[
-              styles.progressCard,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.outlineVariant,
-              },
-              MindSprintShadows.card,
-            ]}
-          >
-            <View style={styles.progressHeaderRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialIcons name="school" size={20} color={colors.primary} />
-                <Text style={[styles.progressTitle, { color: colors.onSurface }]}>
-                  {isGSEB ? 'અભ્યાસક્રમ પ્રગતિ' : 'Course progress'}
+            <View style={styles.actions}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => progress.toggleComplete(current.chapter.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: currentDone }}
+                style={[styles.actionBtn, { backgroundColor: currentDone ? colors.tertiaryContainer : colors.surface, borderColor: currentDone ? colors.tertiary : colors.outlineVariant }]}
+              >
+                <MaterialIcons name={currentDone ? 'check-circle' : 'radio-button-unchecked'} size={20} color={currentDone ? colors.tertiary : colors.primary} />
+                <Text style={[styles.actionText, { color: currentDone ? colors.onTertiaryContainer : colors.onSurface }]}>
+                  {currentDone ? tr('Done · undo', 'પૂર્ણ · પાછું લો') : tr('Mark as done', 'પૂર્ણ કરો')}
                 </Text>
-              </View>
-              <Text style={[styles.progressCountText, { color: colors.primary }]}>
-                {completedCount} of {lectures.length}
-              </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push({ pathname: '/chapter/[id]', params: { id: current.chapter.id, grade } })}
+                accessibilityRole="button"
+                style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
+              >
+                <MaterialIcons name="menu-book" size={20} color={colors.primary} />
+                <Text style={[styles.actionText, { color: colors.onSurface }]}>{tr('Open chapter', 'પ્રકરણ ખોલો')}</Text>
+              </TouchableOpacity>
             </View>
+          </>
+        ) : (
+          <View style={styles.empty}>
+            <MaterialIcons name="video-library" size={40} color={colors.onSurfaceVariant} />
+            <Text style={[styles.emptyText, { color: colors.onSurface }]}>
+              {tr('No videos for your class yet.', 'તમારા ધોરણ માટે હજુ વિડિયો નથી.')}
+            </Text>
+          </View>
+        )}
 
-            {/* Progress Bar Line */}
-            <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceContainer }]}>
-              <View style={[styles.progressBarFill, { width: `${progressPercentage}%`, backgroundColor: colors.accent }]} />
+        {sameSubject.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{tr('Up next', 'આગળ જુઓ')}</Text>
+            <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              {sameSubject.map(renderRow)}
             </View>
           </View>
+        )}
 
-          {/* Category Filter Chips */}
-          <View style={[styles.filterSection, { backgroundColor: colors.background }]}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipScroll}
-            >
-              {filterOptions.map((filter) => {
-                const isSelected = selectedFilter === filter.key;
-                return (
-                  <TouchableOpacity
-                    key={filter.key}
-                    activeOpacity={0.75}
-                    style={[
-                      styles.filterChip,
-                      {
-                        backgroundColor: isSelected
-                          ? colors.primary
-                          : colors.surface,
-                        borderColor: isSelected ? colors.primary : colors.outlineVariant,
-                      },
-                    ]}
-                    onPress={() => setSelectedFilter(filter.key)}
-                  >
-                    <MaterialIcons
-                      name={filter.icon}
-                      size={14}
-                      color={isSelected ? '#ffffff' : colors.onSurfaceVariant}
-                    />
-                    <Text
-                      style={[
-                        styles.filterChipText,
-                        { color: isSelected ? '#ffffff' : colors.onSurface },
-                      ]}
-                    >
-                      {filter.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+        {otherSubjects.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>{tr('Next in other subjects', 'બીજા વિષયોમાં આગળ')}</Text>
+            <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+              {otherSubjects.map(renderRow)}
+            </View>
           </View>
+        )}
 
-          {/* Dynamic Course Playlist with sequential unlocking */}
-          <UpNextList
-            lectures={displayedLectures}
-            allLectures={lectures}
-            totalChaptersCount={lectures.length}
-            activeLectureId={activeLecture?.id || ''}
-            completedLectureIds={completedLectureIds}
-            isSequentialMode={isSequentialMode}
-            onToggleSequentialMode={() => setIsSequentialMode(!isSequentialMode)}
-            onSelectLecture={(lec) => setActiveLecture(lec)}
-            onToggleComplete={toggleComplete}
-            remainingLockedCount={remainingLockedCount}
-            nextLockedTitle={isGSEB ? nextLockedLecture?.titleGujarati || nextLockedLecture?.title : nextLockedLecture?.title}
-            isLectureUnlocked={isLectureUnlocked}
-          />
-        </ScrollView>
-      )}
+        <TouchableOpacity onPress={() => router.push('/(tabs)/courses')} style={styles.allLink} accessibilityRole="button">
+          <Text style={[styles.allLinkText, { color: colors.primary }]}>{tr('Browse all chapters in Courses', 'બધાં પ્રકરણ અભ્યાસમાં જુઓ')}</Text>
+          <MaterialIcons name="arrow-forward" size={18} color={colors.primary} />
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    minWidth: 0,
-    marginRight: 8,
-  },
-  headerIconCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontFamily: MindSprintFonts.heading,
-    fontSize: 22,
-    lineHeight: 28,
-  },
-  headerSub: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  headerProgressPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    minHeight: 36,
-    borderRadius: 18,
-  },
-  headerProgressText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  completeBarWrapper: {
-    paddingHorizontal: 16,
-    marginTop: 8,
-  },
-  completeActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1.5,
-  },
-  completeActionText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 15,
-    flexShrink: 1,
-  },
-  progressCard: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 10,
-  },
-  progressHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  progressTitle: {
-    fontFamily: MindSprintFonts.title,
-    fontSize: 16,
-  },
-  progressCountText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  progressBarTrack: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  filterSection: {
-    paddingVertical: 12,
-  },
-  chipScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
-  filterChipText: {
-    fontFamily: MindSprintFonts.label,
-    fontSize: 14,
-  },
+  safe: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  headerTitle: { fontFamily: MindSprintFonts.heading, fontSize: 22, lineHeight: 28 },
+  headerSub: { fontSize: 13, fontWeight: '500' },
+  scroll: { paddingBottom: 40, gap: 16 },
+  actions: { flexDirection: 'row', gap: 10, paddingHorizontal: 16 },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48, borderRadius: 14, borderWidth: 1, paddingHorizontal: 8 },
+  actionText: { fontFamily: MindSprintFonts.label, fontSize: 14.5, flexShrink: 1 },
+  section: { gap: 10, paddingHorizontal: 16 },
+  sectionTitle: { fontFamily: MindSprintFonts.heading, fontSize: 19, lineHeight: 25 },
+  list: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10 },
+  thumbBox: { width: 112, height: 63, borderRadius: 10, overflow: 'hidden', backgroundColor: '#000' },
+  thumb: { width: '100%', height: '100%' },
+  durationTag: { position: 'absolute', right: 4, bottom: 4, backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1 },
+  durationText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
+  rowSubject: { fontFamily: MindSprintFonts.label, fontSize: 12.5 },
+  rowTitle: { fontFamily: MindSprintFonts.title, fontSize: 15, lineHeight: 20 },
+  empty: { alignItems: 'center', gap: 10, padding: 32 },
+  emptyText: { fontFamily: MindSprintFonts.title, fontSize: 16, textAlign: 'center' },
+  allLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48 },
+  allLinkText: { fontFamily: MindSprintFonts.label, fontSize: 15 },
 });

@@ -1,0 +1,26 @@
+# Render Blueprint for the MindSprint backend (Express + MongoDB).
+# Deploy: Render dashboard → New → Blueprint → pick this repo.
+# Secrets marked `sync: false` are entered in the dashboard, never committed.
+services:
+  - type: web
+    name: mindsprint-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGO_URI # MongoDB Atlas connection string: mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/mindsprint
+        sync: false
+      - key: JWT_SECRET # long random string; the server refuses to start in production without it
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID_WEB # Web OAuth client ID (also used to verify Android sign-in tokens)
+        sync: false
+      - key: GEMINI_API_KEY # optional: AI doubt solver / viva evaluator
+        sync: false

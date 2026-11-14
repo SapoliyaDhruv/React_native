@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,19 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintShadows } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useRouter } from 'expo-router';
 import { ApiService } from '@/services/api';
 import { AcademicGrade, ACADEMIC_CURRICULUM } from '@/constants/academicData';
 
 export default function LeaderboardScreen() {
   const { colors, isDarkMode } = useTheme();
+  const { tr } = useLanguage();
+  const router = useRouter();
   const { user } = useAuth();
 
   const userGrade: AcademicGrade = (user?.grade as AcademicGrade) || 'college';
   const isSchool = userGrade !== 'college';
-  const isGSEB = isSchool;
 
   // Build subject filter list from curriculum
   const curriculum = ACADEMIC_CURRICULUM[userGrade];
@@ -46,41 +49,48 @@ export default function LeaderboardScreen() {
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [userRank, setUserRank] = useState<any>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [selectedTab, setSelectedTab] = useState<'weekly' | 'allTime'>('weekly');
+  const [loaded, setLoaded] = useState<boolean>(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
 
-  const loadLeaderboard = async () => {
-    try {
-      const subjectParam = selectedSubject !== 'All' ? selectedSubject : undefined;
-      const data = await ApiService.getLeaderboard(userGrade, user?.email, subjectParam);
-      if (data && data.leaderboard) {
-        setLeaderboardData(data.leaderboard);
-        setUserRank(data.userRank);
-      }
-    } catch (e) {
-      console.warn('Leaderboard fetch note:', e);
-    } finally {
-      setRefreshing(false);
+  const fetchLeaderboard = useCallback(
+    () => ApiService.getLeaderboard(userGrade, user?.email, selectedSubject !== 'All' ? selectedSubject : undefined),
+    [userGrade, user?.email, selectedSubject]
+  );
+
+  const applyResult = (data: any) => {
+    if (data && data.leaderboard) {
+      setLeaderboardData(data.leaderboard);
+      setUserRank(data.userRank);
+    } else {
+      setLeaderboardData([]);
+      setUserRank(null);
     }
   };
 
   useEffect(() => {
-    loadLeaderboard();
-  }, [userGrade, user?.email, selectedSubject]);
+    let active = true;
+    fetchLeaderboard()
+      .then((data) => { if (active) applyResult(data); })
+      .catch((e) => console.warn('Leaderboard fetch note:', e))
+      .finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, [fetchLeaderboard]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadLeaderboard();
+    fetchLeaderboard()
+      .then(applyResult)
+      .catch((e) => console.warn('Leaderboard fetch note:', e))
+      .finally(() => setRefreshing(false));
   };
 
   const top3 = leaderboardData.slice(0, 3);
-  const restRanks = leaderboardData.slice(3);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
-        title="Rankings"
-        subtitle={isSchool ? `Class ${userGrade} · students on your syllabus` : 'Campus placement candidates'}
+        title={tr('Rankings', 'રેન્કિંગ')}
+        subtitle={isSchool ? tr(`Class ${userGrade} · students on your syllabus`, `ધોરણ ${userGrade} · તમારા અભ્યાસક્રમના વિદ્યાર્થીઓ`) : tr('Campus placement candidates', 'કેમ્પસ પ્લેસમેન્ટ ઉમેદવારો')}
       />
 
       <ScrollView
@@ -95,48 +105,6 @@ export default function LeaderboardScreen() {
           />
         }
       >
-        {/* Tab Switcher */}
-        <View
-          style={[
-            styles.tabBar,
-            { backgroundColor: isDarkMode ? colors.surfaceContainerLow : '#EEF2F8' },
-          ]}
-        >
-          <TouchableOpacity
-            style={[
-              styles.tabBtn,
-              selectedTab === 'weekly' && { backgroundColor: colors.primary },
-            ]}
-            onPress={() => setSelectedTab('weekly')}
-          >
-            <Text
-              style={[
-                styles.tabBtnText,
-                { color: selectedTab === 'weekly' ? colors.onPrimary : colors.onSurface },
-              ]}
-            >
-              This week
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.tabBtn,
-              selectedTab === 'allTime' && { backgroundColor: colors.primary },
-            ]}
-            onPress={() => setSelectedTab('allTime')}
-          >
-            <Text
-              style={[
-                styles.tabBtnText,
-                { color: selectedTab === 'allTime' ? colors.onPrimary : colors.onSurface },
-              ]}
-            >
-              All time
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Subject Filter Chips */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subjectChipScroll}>
           {subjectFilters.map((f) => {
@@ -207,13 +175,25 @@ export default function LeaderboardScreen() {
           </View>
         )}
 
+        {/* Not ranked yet: no tests taken (or server offline) */}
+        {userRank && userRank.rank == null && leaderboardData.length > 0 && (
+          <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, paddingVertical: 16 }]}>
+            <Text style={[styles.emptyTitle, { color: colors.onSurface, fontSize: 16 }]}>
+              {tr('You are not ranked yet', 'તમારો હજુ રેન્ક નથી')}
+            </Text>
+            <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+              {tr('Take a test to get your rank.', 'રેન્ક મેળવવા માટે ટેસ્ટ આપો.')}
+            </Text>
+          </View>
+        )}
+
         {/* Your Standing Banner */}
-        {userRank && (
+        {userRank && userRank.rank != null && (
           <View
             style={[
               styles.yourStandingCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(147,172,255,0.15)' : '#E3EDFC',
+                backgroundColor: colors.primaryFixed,
                 borderColor: colors.primary,
               },
               MindSprintShadows.glow,
@@ -225,10 +205,10 @@ export default function LeaderboardScreen() {
               </View>
               <View>
                 <Text style={[styles.standingTitle, { color: colors.onSurface }]}>
-                  You
+                  {tr('You', 'તમે')}
                 </Text>
                 <Text style={[styles.standingSub, { color: colors.onSurfaceVariant }]}>
-                  {userRank.accuracy}% accuracy · {userRank.streak}-day streak
+                  {tr(`${userRank.accuracy}% accuracy · ${userRank.streak}-day streak`, `${userRank.accuracy}% ચોકસાઈ · ${userRank.streak} દિવસની સ્ટ્રીક`)}
                 </Text>
               </View>
             </View>
@@ -238,10 +218,34 @@ export default function LeaderboardScreen() {
           </View>
         )}
 
+        {loaded && leaderboardData.length === 0 && (
+          <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            <MaterialIcons name="emoji-events" size={30} color={colors.primary} />
+            <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
+              {tr('No rankings yet', 'હજુ કોઈ રેન્કિંગ નથી')}
+            </Text>
+            <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+              {tr(
+                'Rankings appear when the server is online and students take tests. Take a quiz to get on the board.',
+                'સર્વર ચાલુ હોય અને વિદ્યાર્થીઓ ટેસ્ટ આપે ત્યારે રેન્કિંગ દેખાશે. બોર્ડ પર આવવા ક્વિઝ આપો.'
+              )}
+            </Text>
+            <TouchableOpacity
+              style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/exam?limit=10' as any)}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.emptyBtnText, { color: colors.onPrimary }]}>{tr('Take a quiz', 'ક્વિઝ આપો')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Rest of Leaderboard List */}
-        <Text style={[styles.listSectionHeading, { color: colors.onSurface }]}>
-          All rankings
-        </Text>
+        {leaderboardData.length > 0 && (
+          <Text style={[styles.listSectionHeading, { color: colors.onSurface }]}>
+            {tr('All rankings', 'બધા રેન્ક')}
+          </Text>
+        )}
 
         <View style={styles.ranksList}>
           {leaderboardData.map((item) => (
@@ -266,7 +270,7 @@ export default function LeaderboardScreen() {
                     {item.name}
                   </Text>
                   <Text style={[styles.rankItemCollege, { color: colors.onSurfaceVariant }]}>
-                    {isSchool ? `Class ${userGrade}` : item.college}
+                    {isSchool ? tr(`Class ${userGrade}`, `ધોરણ ${userGrade}`) : item.college}
                   </Text>
                 </View>
               </View>
@@ -291,6 +295,34 @@ export default function LeaderboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: 'center',
+    gap: 8,
+    padding: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  emptyTitle: {
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  emptyText: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  emptyBtn: {
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  emptyBtnText: {
+    fontFamily: MindSprintFonts.label,
+    fontSize: 15,
+  },
   safeArea: {
     flex: 1,
   },

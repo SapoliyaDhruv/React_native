@@ -4,12 +4,14 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 
 type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const { tr } = useLanguage();
   const insets = useSafeAreaInsets();
 
   const icon = (name: IconName, activeName: IconName = name) =>
@@ -44,10 +46,10 @@ export default function TabLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: icon('home') }} />
-      <Tabs.Screen name="courses" options={{ title: 'Courses', tabBarIcon: icon('menu-book', 'auto-stories') }} />
-      <Tabs.Screen name="video" options={{ title: 'Lectures', tabBarIcon: icon('play-circle-outline', 'play-circle-filled') }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: icon('person-outline', 'person') }} />
+      <Tabs.Screen name="index" options={{ title: tr('Home', 'હોમ'), tabBarIcon: icon('home') }} />
+      <Tabs.Screen name="courses" options={{ title: tr('Courses', 'અભ્યાસ'), tabBarIcon: icon('menu-book', 'auto-stories') }} />
+      <Tabs.Screen name="video" options={{ title: tr('Lectures', 'વિડિયો'), tabBarIcon: icon('play-circle-outline', 'play-circle-filled') }} />
+      <Tabs.Screen name="profile" options={{ title: tr('Profile', 'પ્રોફાઇલ'), tabBarIcon: icon('person-outline', 'person') }} />
     </Tabs>
   );
 }
