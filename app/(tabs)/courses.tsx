@@ -86,7 +86,7 @@ export default function CoursesScreen() {
   const hits = isSearching ? searchChapters(subjects, searchQuery) : [];
 
   const openChapter = (chap: SubjectChapter, action?: 'video' | 'pdf' | 'notes') =>
-    router.push({ pathname: '/chapter/[id]', params: { id: chap.id, grade: userGrade, ...(action ? { action } : {}) } });
+    router.push({ pathname: '/chapter/[id]' as any, params: { id: chap.id, grade: userGrade, ...(action ? { action } : {}) } });
 
   // Home links here with ?subject=<id> (textbook shelf) and &resume=<ts> (Resume button).
   const params = useLocalSearchParams<{ subject?: string; resume?: string }>();
@@ -104,7 +104,7 @@ export default function CoursesScreen() {
   useEffect(() => {
     if (!params.resume || handledResume.current === params.resume || !last) return;
     handledResume.current = params.resume;
-    router.push({ pathname: '/chapter/[id]', params: { id: last.chapterId, grade: userGrade, action: last.action } });
+    router.push({ pathname: '/chapter/[id]' as any, params: { id: last.chapterId, grade: userGrade, action: last.action } });
   }, [params.resume, last, router, userGrade]);
 
   const chips: { key: View_; label: string }[] = [
@@ -177,7 +177,7 @@ export default function CoursesScreen() {
             {last && (
               <ContinueLearningCard
                 last={last}
-                onPress={() => router.push({ pathname: '/chapter/[id]', params: { id: last.chapterId, grade: userGrade, action: last.action } })}
+                onPress={() => router.push({ pathname: '/chapter/[id]' as any, params: { id: last.chapterId, grade: userGrade, action: last.action } })}
               />
             )}
 

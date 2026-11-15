@@ -173,7 +173,7 @@ export default function WatchingScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.85}
-                onPress={() => router.push({ pathname: '/chapter/[id]', params: { id: current.chapter.id, grade } })}
+                onPress={() => router.push({ pathname: '/chapter/[id]' as any, params: { id: current.chapter.id, grade } })}
                 accessibilityRole="button"
                 style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
               >

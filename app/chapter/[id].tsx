@@ -279,7 +279,7 @@ export default function ChapterScreen() {
         {next && (
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.replace({ pathname: '/chapter/[id]', params: { id: next.id, grade } })}
+            onPress={() => router.replace({ pathname: '/chapter/[id]' as any, params: { id: next.id, grade } })}
             style={[styles.nextBtn, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}
             accessibilityRole="button"
           >
