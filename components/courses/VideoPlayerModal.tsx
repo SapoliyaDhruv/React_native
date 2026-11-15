@@ -80,7 +80,22 @@ export const VideoPlayerModal: React.FC<Props> = ({ chapter, subject, grade, ema
             </TouchableOpacity>
           </View>
 
-          {active && (
+          {active && active.embeddable === false && (
+            // The teacher has turned off playing inside other apps, so it opens in YouTube instead.
+            <TouchableOpacity
+              style={[styles.ytOnly, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}
+              onPress={() => chapter && openYouTube(active.youtubeVideoId, chapterSearchQuery(grade, subject, chapter), tr)}
+              accessibilityRole="button"
+            >
+              <MaterialIcons name="smart-display" size={40} color={colors.primary} />
+              <Text style={[styles.ytOnlyTitle, { color: colors.onSurface }]}>{tr('Watch on YouTube', 'YouTube પર જુઓ')}</Text>
+              <Text style={[styles.ytOnlySub, { color: colors.onSurfaceVariant }]}>
+                {tr('This teacher allows the lesson to play only in the YouTube app.', 'આ શિક્ષક પાઠ ફક્ત YouTube એપમાં જોવા દે છે.')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {active && active.embeddable !== false && (
             <View style={styles.player}>
               {Platform.OS === 'web' ? (
                 <iframe
@@ -176,6 +191,9 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontFamily: MindSprintFonts.heading, fontSize: 19, lineHeight: 25 },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   player: { width: '100%', backgroundColor: '#000000', borderRadius: 14, overflow: 'hidden' },
+  ytOnly: { width: '100%', height: VIDEO_HEIGHT, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 24 },
+  ytOnlyTitle: { fontFamily: MindSprintFonts.label, fontSize: 17 },
+  ytOnlySub: { fontSize: 13.5, textAlign: 'center' },
   nowPlaying: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   nowTitle: { fontFamily: MindSprintFonts.title, fontSize: 15, lineHeight: 20 },
   nowSub: { fontSize: 12.5, marginTop: 1 },

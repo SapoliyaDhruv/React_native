@@ -18,7 +18,8 @@ import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { confirmAction } from '@/components/common/dialogs';
-import { IMPORTANT_QUESTIONS_DATA, ImportantQuestion, effectiveStream, streamLabel } from '@/constants/academicData';
+import { ACADEMIC_CURRICULUM, AcademicGrade, IMPORTANT_QUESTIONS_DATA, ImportantQuestion, effectiveStream, subjectsForStream } from '@/constants/academicData';
+import { ALL_QUESTIONS_DATA } from '@/constants/mindsprintData';
 import { ApiService } from '@/services/api';
 
 export interface BoardQuestion {
@@ -48,10 +49,14 @@ export default function BoardExamSimulatorScreen() {
   const isSchoolMode = userGrade !== 'college';
   const isGSEB = isSchoolMode;
 
-  const { tr, isGujarati } = useLanguage();
-  // Board papers exist only for the Science stream so far; Commerce/Arts get an honest notice below.
+  const { tr } = useLanguage();
   const stream = effectiveStream(userGrade, user?.stream);
-  const noPapersForStream = stream === 'commerce' || stream === 'arts';
+  // Class 11/12: the student's own stream subjects that have board questions (names match the question data).
+  const streamSubjects = useMemo(() => {
+    if (!stream) return [];
+    const withQuestions = new Set(IMPORTANT_QUESTIONS_DATA.filter((q) => q.grade === userGrade).map((q) => q.subject));
+    return subjectsForStream(ACADEMIC_CURRICULUM[userGrade as AcademicGrade]?.subjects, userGrade, stream).filter((s) => withQuestions.has(s.name));
+  }, [stream, userGrade]);
 
   // `value` is what the API / question filter expects; `label` is what students see.
   const availableSubjects = useMemo<{ value: string; label: string }[]>(() => {
@@ -64,14 +69,9 @@ export default function BoardExamSimulatorScreen() {
         { value: 'Computer Networks', label: tr('Computer networks', 'કમ્પ્યુટર નેટવર્ક') },
       ];
     }
-    if (['11', '12'].includes(userGrade)) {
-      return [
-        { value: 'All Subjects', label: tr('All subjects', 'બધા વિષયો') },
-        { value: 'Physics (ભૌતિકવિજ્ઞાન)', label: tr('Physics', 'ભૌતિક વિજ્ઞાન') },
-        { value: 'Chemistry (રસાયણવિજ્ઞાન)', label: tr('Chemistry', 'રસાયણ વિજ્ઞાન') },
-        { value: 'Mathematics (ગણિત)', label: tr('Maths', 'ગણિત') },
-        { value: 'Biology (જીવવિજ્ઞાન)', label: tr('Biology', 'જીવ વિજ્ઞાન') },
-      ];
+    if (streamSubjects.length) {
+      // One paper per subject, like the real board exam.
+      return streamSubjects.map((s) => ({ value: s.name, label: tr(s.name, s.nameGujarati || s.name) }));
     }
     return [
       { value: 'All Subjects', label: tr('All subjects', 'બધા વિષયો') },
@@ -81,9 +81,11 @@ export default function BoardExamSimulatorScreen() {
       { value: 'English', label: tr('English', 'અંગ્રેજી') },
       { value: 'Gujarati', label: tr('Gujarati', 'ગુજરાતી') },
     ];
-  }, [isSchoolMode, userGrade, tr]);
+  }, [isSchoolMode, streamSubjects, tr]);
 
-  const [selectedSubject, setSelectedSubject] = useState<string>(isSchoolMode ? 'All Subjects' : 'All Topics');
+  const [selectedSubject, setSelectedSubject] = useState<string>(
+    streamSubjects[0]?.name ?? (isSchoolMode ? 'All Subjects' : 'All Topics')
+  );
   const [selectedSection, setSelectedSection] = useState<'All' | 'A' | 'B' | 'C' | 'D'>('All');
   const [loading, setLoading] = useState<boolean>(true);
   const [fetchedQuestions, setFetchedQuestions] = useState<ImportantQuestion[]>([]);
@@ -143,7 +145,25 @@ export default function BoardExamSimulatorScreen() {
       if (pool.length === 0) pool = IMPORTANT_QUESTIONS_DATA;
     }
 
-    const ones = pool.filter((q) => q.marks === 1);
+    let ones = pool.filter((q) => q.marks === 1);
+    // Section A is objective: top it up with this subject's MCQs (the real paper has an MCQ section).
+    if (streamSubjects.length && ones.length < 16) {
+      const mcqs = ALL_QUESTIONS_DATA.filter(
+        (m) => m.grades?.includes(userGrade) && m.subject?.toLowerCase() === selectedSubject.toLowerCase()
+      ).slice(0, 16 - ones.length);
+      ones = ones.concat(
+        mcqs.map((m): ImportantQuestion => {
+          const answer = (m.optionsGujarati || m.options)[m.correctAnswer];
+          return {
+            id: `mcq-${m.id}`, grade: userGrade, board: 'GSEB', subject: m.subject || selectedSubject, chapterNumber: 0, chapterTitle: '',
+            marks: 1, marksCategory: '1-Mark Objective', questionText: m.questionText, questionTextGujarati: m.questionTextGujarati || m.questionText,
+            options: m.optionsGujarati || m.options, correctAnswer: m.correctAnswer,
+            modelAnswer: `${m.options[m.correctAnswer]} — ${m.explanation}`, modelAnswerGujarati: `${answer} — ${m.explanationGujarati || m.explanation}`,
+            stepWiseMarking: [{ stepNumber: 1, marksAllocated: '1', text: 'Correct option', textGujarati: 'સાચો વિકલ્પ' }],
+          };
+        })
+      );
+    }
     const twos = pool.filter((q) => q.marks === 2);
     const threes = pool.filter((q) => q.marks === 3);
     const fours = pool.filter((q) => q.marks >= 4);
@@ -198,7 +218,7 @@ export default function BoardExamSimulatorScreen() {
         examinerTipsGujarati: q.examinerTipsGujarati,
       };
     });
-  }, [fetchedQuestions, userGrade, selectedSubject]);
+  }, [fetchedQuestions, userGrade, selectedSubject, streamSubjects]);
 
   const handleSelectSubject = (subj: string) => {
     setSelectedSubject(subj);
@@ -323,31 +343,6 @@ export default function BoardExamSimulatorScreen() {
       router.replace('/(tabs)');
     }
   };
-
-  if (noPapersForStream) {
-    const name = streamLabel(stream, isGujarati);
-    return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
-        <ScreenHeader title={tr('Board exam', 'બોર્ડ પરીક્ષા')} subtitle={tr(`Class ${userGrade} · ${name}`, `ધોરણ ${userGrade} · ${name}`)} leadingIcon="close" />
-        <View style={styles.centerLoading}>
-          <MaterialIcons name="assignment" size={40} color={colors.primary} />
-          <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-            {tr(`${name} board papers are on the way`, `${name} નાં બોર્ડ પેપર તૈયાર થઈ રહ્યાં છે`)}
-          </Text>
-          <Text style={[styles.loadingText, { color: colors.onSurfaceVariant, fontWeight: '400', fontSize: 14 }]}>
-            {tr('Until then, practise with chapter quizzes for your subjects.', 'ત્યાં સુધી તમારા વિષયોની પ્રકરણ ક્વિઝથી પ્રેક્ટિસ કરો.')}
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.replace('/(tabs)/courses')}
-            style={[styles.headerSubmitBtn, { backgroundColor: colors.accent, minHeight: 48, paddingHorizontal: 20, justifyContent: 'center' }]}
-            accessibilityRole="button"
-          >
-            <Text style={[styles.headerSubmitBtnText, { color: colors.onAccent }]}>{tr('Open my subjects', 'મારા વિષયો ખોલો')}</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>

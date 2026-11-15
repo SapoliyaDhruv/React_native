@@ -6924,20 +6924,14 @@ export function getOfflineQuestions(
     filtered = ALL_QUESTIONS_DATA;
   }
 
-  const lim = limit || 10;
-  if (filtered.length >= lim) {
-    return filtered.slice(0, lim);
+  // Random order so repeated quizzes don't always show the same first questions. Never repeat a
+  // question inside one quiz: when the pool is smaller than the limit, the quiz is just shorter.
+  const pool = [...filtered];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-
-  // If requested limit exceeds available pool (e.g. 50 requested with 30 pool), cycle through safely
-  const result: Question[] = [];
-  while (result.length < lim) {
-    for (const q of filtered) {
-      result.push({ ...q, id: q.id + result.length * 10000 });
-      if (result.length >= lim) break;
-    }
-  }
-  return result;
+  return pool.slice(0, limit || 10);
 }
 
 

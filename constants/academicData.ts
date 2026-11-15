@@ -16,6 +16,8 @@ export interface ChapterVideo {
   duration: string;
   youtubeVideoId: string;
   tag: string;
+  /** false when the uploader blocks playing inside other apps: the app opens it in YouTube instead. */
+  embeddable?: boolean;
 }
 
 export interface ChapterConcept {

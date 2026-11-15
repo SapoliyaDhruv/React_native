@@ -22,6 +22,7 @@ const warnings = [];
 const err = (m) => errors.push(m);
 
 const videoUse = new Map(); // youtube id -> chapter keys
+const youtubeOnly = new Set(); // videos marked embeddable: false (opened in the YouTube app)
 let chapterCount = 0;
 let pendingVideos = 0;
 const externalUrls = new Set();
@@ -47,6 +48,7 @@ for (const [grade, g] of Object.entries(curriculum)) {
       if (!c.videos?.length) (s.videosPending ? pendingVideos++ : err(`${key}: no videos`));
       const ids = (c.videos || []).map((v) => v.youtubeVideoId);
       if (new Set(ids).size !== ids.length) err(`${key}: same video listed twice`);
+      for (const v of c.videos || []) if (v.embeddable === false) youtubeOnly.add(v.youtubeVideoId);
       for (const id of ids) {
         if (!/^[\w-]{11}$/.test(id || '')) err(`${key}: invalid YouTube id "${id}"`);
         videoUse.set(id, [...(videoUse.get(id) || []), key]);
@@ -93,6 +95,7 @@ if (online) {
   });
   for (const [id, status] of results) {
     if (status === 200) continue;
+    if (status === 401 && youtubeOnly.has(id)) continue; // oEmbed says 401 when embedding is off; expected here
     (typeof status === 'number' ? err : (m) => warnings.push(m))(`video ${id}: ${status} (used by ${(videoUse.get(id) || ['lectures']).join(', ')})`);
   }
   const urls = [...externalUrls].filter((u) => /^https?:/.test(u));
@@ -127,7 +130,8 @@ if (online) {
     if (typeof len === 'string') warnings.push(`video ${id}: length not checked, ${len}`);
     else if (len === null) warnings.push(`video ${id}: length not found on watch page`);
     else if (len < MIN_VIDEO_SECONDS) err(`video ${id}: only ${len}s long (used by ${used})`);
-    if (embed === 'false') err(`video ${id}: embedding disabled (used by ${used})`);
+    if (embed === 'false' && !youtubeOnly.has(id)) err(`video ${id}: embedding disabled (used by ${used})`);
+    if (embed === 'true' && youtubeOnly.has(id)) warnings.push(`video ${id}: now embeddable, remove embeddable:false (${used})`);
   }
   console.log(`Online: checked ${ids.length} videos (${chapterIds.length} lengths) and ${urls.length} external links.`);
 }
