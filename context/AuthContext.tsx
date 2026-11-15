@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import { ApiService } from '@/services/api';
-import { AcademicGrade, EducationBoard, InstructionMedium } from '@/constants/academicData';
+import { AcademicGrade, AcademicStream, EducationBoard, InstructionMedium, effectiveStream } from '@/constants/academicData';
 
 export interface UserProfile {
   id?: string;
@@ -12,6 +12,8 @@ export interface UserProfile {
   grade?: AcademicGrade;
   board?: EducationBoard;
   medium?: InstructionMedium;
+  /** Class 11/12 only: Science, Commerce or Arts. */
+  stream?: AcademicStream;
   academicStage?: 'school' | 'college';
   targetCompany?: string;
   avatarUrl?: string;
@@ -33,9 +35,9 @@ interface AuthContextType {
   completeOnboarding: () => Promise<void>;
   resetOnboarding: () => Promise<void>;
   login: (email: string, pass: string) => Promise<{ error?: string }>;
-  register: (name: string, email: string, pass: string, grade?: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium) => Promise<{ error?: string }>;
+  register: (name: string, email: string, pass: string, grade?: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium, stream?: AcademicStream) => Promise<{ error?: string }>;
   loginWithGoogle: (idToken: string) => Promise<{ error?: string }>;
-  updateAcademicProfile: (grade: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium) => Promise<{ success: boolean; error?: string }>;
+  updateAcademicProfile: (grade: AcademicGrade, board?: EducationBoard, medium?: InstructionMedium, stream?: AcademicStream) => Promise<{ success: boolean; error?: string }>;
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
@@ -130,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grade: res.user?.grade || 'college',
         board: res.user?.board || 'CBSE',
         medium: res.user?.medium || 'English',
+        stream: effectiveStream(res.user?.grade, res.user?.stream),
         academicStage: res.user?.academicStage || (res.user?.grade === 'college' ? 'college' : 'school'),
         targetCompany: res.user?.targetCompany || 'All Companies',
         avatarUrl: res.user?.avatarUrl || '',
@@ -159,15 +162,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pass: string,
     grade: AcademicGrade = 'college',
     board?: EducationBoard,
-    medium?: InstructionMedium
+    medium?: InstructionMedium,
+    stream?: AcademicStream
   ) => {
     setIsLoading(true);
     try {
       const isCollege = grade === 'college';
       const effectiveBoard: EducationBoard = isCollege ? 'CBSE' : 'GSEB';
       const effectiveMedium: InstructionMedium = isCollege ? 'English' : 'Gujarati';
+      const chosenStream = effectiveStream(grade, stream);
 
-      const res = await ApiService.register(name, email, pass, grade, effectiveBoard, effectiveMedium);
+      const res = await ApiService.register(name, email, pass, grade, effectiveBoard, effectiveMedium, chosenStream);
       if (res.error) {
         setIsLoading(false);
         return { error: res.error };
@@ -180,6 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grade: grade,
         board: effectiveBoard,
         medium: effectiveMedium,
+        stream: chosenStream,
         academicStage: isCollege ? 'college' : 'school',
         targetCompany: 'All Companies',
         avatarUrl: res.user?.avatarUrl || '',
@@ -219,6 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grade: res.user?.grade || 'college',
         board: res.user?.board || 'CBSE',
         medium: res.user?.medium || 'English',
+        stream: effectiveStream(res.user?.grade, res.user?.stream),
         academicStage: res.user?.academicStage || 'college',
         targetCompany: res.user?.targetCompany || 'All Companies',
         avatarUrl: res.user?.avatarUrl || '',
@@ -247,18 +254,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateAcademicProfile = async (
     grade: AcademicGrade,
     board?: EducationBoard,
-    medium?: InstructionMedium
+    medium?: InstructionMedium,
+    stream?: AcademicStream
   ) => {
     const isCollege = grade === 'college';
     const chosenStage = isCollege ? 'college' : 'school';
     const effectiveBoard: EducationBoard = isCollege ? 'CBSE' : 'GSEB';
     const effectiveMedium: InstructionMedium = isCollege ? 'English' : 'Gujarati';
+    // Keep the current stream when only the class changes between 11 and 12.
+    const chosenStream = effectiveStream(grade, stream ?? user?.stream);
 
     const updatedUser: UserProfile = {
       ...(user || { name: 'Student', email: 'student@mindsprint.app' }),
       grade,
       board: effectiveBoard,
       medium: effectiveMedium,
+      stream: chosenStream,
       academicStage: chosenStage,
     };
 
@@ -277,7 +288,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (user?.email && !user?.isGuest) {
       try {
-        await ApiService.updateAcademicProfile(user.email, grade, board, medium, token || undefined);
+        await ApiService.updateAcademicProfile(user.email, grade, board, medium, token || undefined, chosenStream);
       } catch (err) {
         console.warn('Backend academic profile update note:', err);
       }

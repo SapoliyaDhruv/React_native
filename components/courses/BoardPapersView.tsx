@@ -12,10 +12,12 @@ import { openPdfUrl } from './chapterLinks';
 interface Props {
   grade: string;
   board: string;
+  /** Class 11/12: only show papers for these subjects (the student's stream). */
+  subjectNames?: string[];
 }
 
 /** Full 80-mark exam entry plus official sample / previous papers. */
-export const BoardPapersView: React.FC<Props> = ({ grade, board }) => {
+export const BoardPapersView: React.FC<Props> = ({ grade, board, subjectNames }) => {
   const router = useRouter();
   const { colors } = useTheme();
   const { tr, isGujarati } = useLanguage();
@@ -24,10 +26,10 @@ export const BoardPapersView: React.FC<Props> = ({ grade, board }) => {
   useEffect(() => {
     let active = true;
     ApiService.getSamplePapers(grade, board)
-      .then((p) => { if (active) setPapers(p); })
+      .then((p) => { if (active) setPapers(subjectNames ? p.filter((x) => subjectNames.some((n) => n.toLowerCase() === x.subject.toLowerCase())) : p); })
       .catch(() => { if (active) setPapers([]); });
     return () => { active = false; };
-  }, [grade, board]);
+  }, [grade, board, subjectNames?.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={{ gap: 12 }}>

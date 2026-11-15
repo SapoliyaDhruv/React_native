@@ -16,7 +16,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { ApiService } from '@/services/api';
-import { ACADEMIC_CURRICULUM, AcademicGrade } from '@/constants/academicData';
+import { ACADEMIC_CURRICULUM, AcademicGrade, subjectsForStream } from '@/constants/academicData';
 
 interface SubjectMasteryItem {
   name: string;
@@ -66,7 +66,7 @@ export default function MasteryAnalyticsScreen() {
         if (isSchoolMode) {
           // 3. Build per-subject mastery from real chapter completions
           const curriculum = ACADEMIC_CURRICULUM[userGrade];
-          const subjects = curriculum?.subjects || [];
+          const subjects = subjectsForStream(curriculum?.subjects, userGrade, user?.stream);
           let totalChaps = 0;
           let doneChaps  = 0;
 
@@ -169,7 +169,7 @@ export default function MasteryAnalyticsScreen() {
       }
     }
     loadMastery();
-  }, [user?.email, userGrade, isSchoolMode, isGSEB]);
+  }, [user?.email, userGrade, isSchoolMode, isGSEB, user?.stream]);
 
   const weakestTopic =
     masteryData.find((m) => m.status === 'Needs Practice') ||

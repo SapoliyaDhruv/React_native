@@ -21,8 +21,12 @@ import {
   AcademicGrade,
   EducationBoard,
   InstructionMedium,
+  AcademicStream,
   GradeCurriculum,
   ACADEMIC_CURRICULUM,
+  effectiveStream,
+  streamLabel,
+  subjectsForStream,
 } from '@/constants/academicData';
 import { TrackSwitcher } from '@/components/mindsprint/TrackSwitcher';
 import { SearchBar } from '@/components/mindsprint/SearchBar';
@@ -49,7 +53,7 @@ import { CoachTour, CoachStep } from '@/components/tour/CoachTour';
 const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuDpTpadB_GY_XTy7q4R83ni9Q0r3ovKCNCuNHvfTLdAAUsEDZQQ26lLxFQO_WijYLtiUQadQJ_c0VDSE0fHXcuipv31vufAkHZtjG1aj35AKp-BjX-2zVCFy4qBBlHxSdFhkGtwh5DKfM4qwVUmYdc-K3yrzrEPvVhlN2E9YXrZH1pl8ECG17oL9IkbPI8NtjpIidsOBmstyEVvCWiL4dNDK14kJBzDlDXzw8GOBDLwWHwzKNd5EGU3';
 
-// Set once the first-open Home tour has been shown or skipped.
+// Per-account flag (email appended) set once the Home tour has been finished or skipped.
 const TOUR_KEY = '@mindsprint_home_tour_v1';
 
 export default function DashboardScreen() {
@@ -60,6 +64,7 @@ export default function DashboardScreen() {
 
   const userGrade: AcademicGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
+  const userStream = effectiveStream(userGrade, user?.stream);
 
   // Initial state with immediate fallback so there is never a blank flash
   const [curriculum, setCurriculum] = useState<GradeCurriculum | null>(
@@ -80,7 +85,7 @@ export default function DashboardScreen() {
   const [weakSpots, setWeakSpots] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [lastChapter, setLastChapter] = useState<LastChapter | null>(null);
+  const [savedLastChapter, setLastChapter] = useState<LastChapter | null>(null);
   const [completedChapterIds, setCompletedChapterIds] = useState<string[]>([]);
   const [showMorningSprint, setShowMorningSprint] = useState<boolean>(false);
   const [showShareProgress, setShowShareProgress] = useState<boolean>(false);
@@ -112,18 +117,21 @@ export default function DashboardScreen() {
     }, [userGrade, user?.email])
   );
 
-  // Show the first-open tour once per device.
+  // Show the Home tour once per account: the first time each student signs in on this device.
+  // Signing out and back in does not show it again; a different account sees it once.
+  const tourKey = `${TOUR_KEY}_${(user?.email || 'guest').toLowerCase()}`;
   useEffect(() => {
     let active = true;
-    AsyncStorage.getItem(TOUR_KEY)
-      .then((seen) => { if (active && !seen) setShowTour(true); })
+    // TOUR_KEY alone is the old device-wide flag: anyone who already saw the tour isn't shown it again.
+    AsyncStorage.multiGet([tourKey, TOUR_KEY])
+      .then(([[, seen], [, legacySeen]]) => { if (active) setShowTour(!seen && !legacySeen); })
       .catch(() => {});
     return () => { active = false; };
-  }, []);
+  }, [tourKey]);
 
   const finishTour = () => {
     setShowTour(false);
-    AsyncStorage.setItem(TOUR_KEY, '1').catch(() => {});
+    AsyncStorage.setItem(tourKey, '1').catch(() => {});
   };
 
   // Fetch dynamic curriculum from the server (falls back to bundled data)
@@ -179,8 +187,8 @@ export default function DashboardScreen() {
     loadStats(true);
   };
 
-  const handleSaveGrade = async (grade: AcademicGrade, board: EducationBoard, medium: InstructionMedium) => {
-    await updateAcademicProfile(grade, board, medium);
+  const handleSaveGrade = async (grade: AcademicGrade, board: EducationBoard, medium: InstructionMedium, stream?: AcademicStream) => {
+    await updateAcademicProfile(grade, board, medium, stream);
     try {
       const currData = await ApiService.getCurriculum(grade);
       if (currData && currData.subjects && currData.subjects.length > 0) {
@@ -204,7 +212,10 @@ export default function DashboardScreen() {
     }
   };
 
-  const activeSubjects = curriculum?.subjects || [];
+  // Class 11/12 shows only the student's stream (plus shared language subjects).
+  const activeSubjects = subjectsForStream(curriculum?.subjects, userGrade, userStream);
+  // Ignore a "continue" chapter from a subject outside the current stream (e.g. after switching to Commerce).
+  const lastChapter = savedLastChapter && (!userStream || activeSubjects.some((s) => s.id === savedLastChapter.subjectId)) ? savedLastChapter : null;
   const activeSubject = activeSubjects.find((s) => s.id === selectedSubjectId) || activeSubjects[0];
   const recentActivity = Array.isArray(userStats?.recentActivity) ? userStats.recentActivity : [];
   // A streak needs recorded activity; never show one for a student with no tests.
@@ -243,7 +254,9 @@ export default function DashboardScreen() {
   const suggestedChapter = firstSubject?.chapters?.find((c) => !completedChapterIds.includes(c.id)) || firstSubject?.chapters?.[0];
   const firstName = (user?.name || '').split(' ')[0] || tr('there', 'મિત્ર');
   const gradeLine = isSchoolMode
-    ? tr(`Class ${userGrade} · ${user?.board || 'GSEB'}`, `ધોરણ ${userGrade} · ${user?.board || 'GSEB'}`)
+    ? userStream
+      ? tr(`Class ${userGrade} · ${streamLabel(userStream, false)}`, `ધોરણ ${userGrade} · ${streamLabel(userStream, true)}`)
+      : tr(`Class ${userGrade} · ${user?.board || 'GSEB'}`, `ધોરણ ${userGrade} · ${user?.board || 'GSEB'}`)
     : tr('College · Campus placements', 'કૉલેજ · કૅમ્પસ પ્લેસમેન્ટ');
 
   // Exam countdown + today's plan (school only). Skip the chapter already shown in the hero.
@@ -529,6 +542,7 @@ export default function DashboardScreen() {
         currentGrade={userGrade}
         currentBoard={user?.board || 'CBSE'}
         currentMedium={user?.medium || 'English'}
+        currentStream={userStream}
         onClose={() => setShowGradeModal(false)}
         onSave={handleSaveGrade}
       />

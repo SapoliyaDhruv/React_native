@@ -23,6 +23,7 @@ const err = (m) => errors.push(m);
 
 const videoUse = new Map(); // youtube id -> chapter keys
 let chapterCount = 0;
+let pendingVideos = 0;
 const externalUrls = new Set();
 
 for (const [grade, g] of Object.entries(curriculum)) {
@@ -41,7 +42,9 @@ for (const [grade, g] of Object.entries(curriculum)) {
         }
       }
       for (const f of ['fullBookPdfUrl', 'shalamitraUrl']) if (c[f]?.startsWith('http')) externalUrls.add(c[f]);
-      if (!c.videos?.length) err(`${key}: no videos`);
+      // Subjects flagged videosPending (new Commerce/Arts subjects) may have chapters without videos yet;
+      // the app offers a YouTube search for them. Everywhere else a missing video is an error.
+      if (!c.videos?.length) (s.videosPending ? pendingVideos++ : err(`${key}: no videos`));
       const ids = (c.videos || []).map((v) => v.youtubeVideoId);
       if (new Set(ids).size !== ids.length) err(`${key}: same video listed twice`);
       for (const id of ids) {
@@ -102,7 +105,8 @@ if (online) {
   });
   for (const [u, status] of linkResults) {
     if (status === 200) continue;
-    (typeof status === 'number' ? err : (m) => warnings.push(m))(`link ${u}: ${status}`);
+    // 429 = the site rate-limited this run (shalamitra.in does with many links); not a broken link.
+    (typeof status === 'number' && status !== 429 ? err : (m) => warnings.push(m))(`link ${u}: ${status}${status === 429 ? ' (rate limited, not checked)' : ''}`);
   }
   // Real length from the watch page (stored durations can drift or be wrong).
   const chapterIds = [...videoUse.keys()];
@@ -129,6 +133,7 @@ if (online) {
 }
 
 console.log(`Checked ${chapterCount} chapters, ${videoUse.size} distinct videos, ${lectures.length} video lectures.`);
+if (pendingVideos) warnings.push(`${pendingVideos} chapters in videosPending subjects have no video yet`);
 warnings.forEach((w) => console.warn('warning:', w));
 if (errors.length) {
   errors.forEach((e) => console.error('error:', e));

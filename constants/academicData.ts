@@ -1,9 +1,12 @@
 // Single source of truth for curriculum content: backend/data/curriculum.json (shared by app and server).
 import curriculumData from '../backend/data/curriculum.json';
+import streamImportantQuestions from '../backend/data/stream_important_questions.json';
 
 export type AcademicGrade = '7' | '8' | '9' | '10' | '11' | '12' | 'college';
 export type EducationBoard = 'CBSE' | 'GSEB' | 'ICSE';
 export type InstructionMedium = 'English' | 'Gujarati';
+/** GSEB Class 11/12 stream. Other classes have no stream. */
+export type AcademicStream = 'science' | 'commerce' | 'arts';
 
 export interface ChapterVideo {
   id: string;
@@ -61,6 +64,10 @@ export interface AcademicSubject {
   textbookTitleGujarati?: string;
   officialTextbookPdf?: string;
   shalamitraUrl?: string;
+  /** Class 11/12: the streams that study this subject. Absent = every stream (e.g. Gujarati, English). */
+  streams?: AcademicStream[];
+  /** True while the chapters have no lesson videos yet (the app offers a YouTube search instead). */
+  videosPending?: boolean;
   chapters: SubjectChapter[];
 }
 
@@ -126,12 +133,56 @@ export const GRADE_OPTIONS: { grade: AcademicGrade; label: string; subLabel: str
   { grade: '8', label: 'ધોરણ ૮ (Class 8)', subLabel: 'GSEB ગુજરાતી માધ્યમ', icon: 'looks-two' },
   { grade: '9', label: 'ધોરણ ૯ (Class 9)', subLabel: 'GSEB ગુજરાતી માધ્યમ', icon: 'looks-3' },
   { grade: '10', label: 'ધોરણ ૧૦ (SSC બોર્ડ)', subLabel: 'GSEB બોર્ડ પરીક્ષા તૈયારી', icon: 'school' },
-  { grade: '11', label: 'ધોરણ ૧૧ (Class 11)', subLabel: 'વિજ્ઞાન & સામાન્ય પ્રવાહ (GSEB)', icon: 'biotech' },
-  { grade: '12', label: 'ધોરણ ૧૨ (HSC બોર્ડ)', subLabel: 'GSEB બોર્ડ & ગુજકેટ (GUJCET)', icon: 'workspace-premium' },
+  { grade: '11', label: 'ધોરણ ૧૧ (Class 11)', subLabel: 'વિજ્ઞાન, વાણિજ્ય & આર્ટ્સ (GSEB)', icon: 'biotech' },
+  { grade: '12', label: 'ધોરણ ૧૨ (HSC બોર્ડ)', subLabel: 'વિજ્ઞાન, વાણિજ્ય & આર્ટ્સ · GSEB બોર્ડ', icon: 'workspace-premium' },
   { grade: 'college', label: 'College & Placements', subLabel: 'TCS, Amazon, DSA & Aptitude (English)', icon: 'business-center' },
 ];
 
 export const ACADEMIC_CURRICULUM = curriculumData as unknown as Record<AcademicGrade, GradeCurriculum>;
+
+export const STREAM_OPTIONS: {
+  stream: AcademicStream;
+  label: string;
+  labelGujarati: string;
+  icon: string;
+  subjects: string;
+  subjectsGujarati: string;
+}[] = [
+  { stream: 'science', label: 'Science', labelGujarati: 'વિજ્ઞાન', icon: 'science', subjects: 'Physics, Chemistry, Maths, Biology', subjectsGujarati: 'ભૌતિક, રસાયણ, ગણિત, જીવ વિજ્ઞાન' },
+  { stream: 'commerce', label: 'Commerce', labelGujarati: 'વાણિજ્ય', icon: 'account-balance', subjects: 'Accounts, Economics, Statistics, Business', subjectsGujarati: 'નામું, અર્થશાસ્ત્ર, આંકડાશાસ્ત્ર, વાણિજ્ય વ્યવસ્થા' },
+  { stream: 'arts', label: 'Arts', labelGujarati: 'આર્ટ્સ (સામાન્ય પ્રવાહ)', icon: 'palette', subjects: 'History, Geography, Psychology, Sociology', subjectsGujarati: 'ઇતિહાસ, ભૂગોળ, મનોવિજ્ઞાન, સમાજશાસ્ત્ર' },
+];
+
+/** Only Class 11 and 12 split into streams. */
+export const gradeHasStreams = (grade?: string): boolean => grade === '11' || grade === '12';
+
+/** The stream that applies to a student: their saved one in Class 11/12 (Science if unset), otherwise none. */
+export function effectiveStream(grade?: string, stream?: string | null): AcademicStream | undefined {
+  if (!gradeHasStreams(grade)) return undefined;
+  return stream === 'commerce' || stream === 'arts' ? stream : 'science';
+}
+
+export function streamLabel(stream: AcademicStream | undefined, gujarati: boolean): string {
+  const o = STREAM_OPTIONS.find((x) => x.stream === stream);
+  return o ? (gujarati ? o.labelGujarati : o.label) : '';
+}
+
+/** Subjects a student of this grade and stream studies (subjects without `streams` are shared by all). */
+export function subjectsForStream<T extends { streams?: AcademicStream[] }>(subjects: T[] | undefined, grade?: string, stream?: string | null): T[] {
+  const list = subjects || [];
+  const s = effectiveStream(grade, stream);
+  if (!s) return list;
+  return list.filter((sub) => !sub.streams?.length || sub.streams.includes(s));
+}
+
+/** A copy of the grade curriculum with only the student's stream subjects. */
+export function curriculumForStream<T extends { subjects: AcademicSubject[] }>(curriculum: T, grade?: string, stream?: string | null): T;
+export function curriculumForStream<T extends { subjects: AcademicSubject[] }>(curriculum: T | null | undefined, grade?: string, stream?: string | null): T | null;
+export function curriculumForStream<T extends { subjects: AcademicSubject[] }>(curriculum: T | null | undefined, grade?: string, stream?: string | null): T | null {
+  if (!curriculum) return null;
+  if (!gradeHasStreams(grade)) return curriculum;
+  return { ...curriculum, subjects: subjectsForStream(curriculum.subjects, grade, stream) };
+}
 
 export const SAMPLE_PAPERS_DATA: SamplePaper[] = [
   // ==========================================
@@ -2708,7 +2759,7 @@ export const IMPORTANT_QUESTIONS_DATA: ImportantQuestion[] = [
       "Infosys 2023"
     ],
     "modelAnswer": "Approach 1 (Subquery with MAX):\nSELECT MAX(salary) AS SecondHighestSalary FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nApproach 2 (LIMIT and OFFSET in MySQL / Postgres):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nApproach 3 (Window Function DENSE_RANK):\nWITH RankedSalaries AS (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as rank_no FROM Employee) SELECT salary FROM RankedSalaries WHERE rank_no = 2;",
-    "modelAnswerGujarati": "રીત ૧ (સબક્વેરી):\nSELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nરીત ૨ (LIMIT અને OFFSET):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nરીત ૩ (DENSE_RANK વિન્ડો ફંક્શન):\nSELECT salary FROM (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as r FROM Employee) WHERE r = 2;",
+    "modelAnswerGujarati": "રીત ૧ (સબક્વેરી):\nSELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nરીત ૨ (LIMIT અને OFFSET):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nરીત ૩ (DENSE_RANK વિન્ડો ફંક્શન):\nSELECT salary FROM (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as r FROM Employee) AS t WHERE r = 2;",
     "stepWiseMarking": [
       {
         "stepNumber": 1,
@@ -2862,3 +2913,6 @@ export const IMPORTANT_QUESTIONS_DATA: ImportantQuestion[] = [
     "examinerTipsGujarati": "0/1 નેપસેક ગ્રીડી પદ્ધતિથી ન ઉકેલાય તે દર્શાવો."
   }
 ];
+
+// Class 11/12 Commerce and Arts board questions, shared with the server.
+IMPORTANT_QUESTIONS_DATA.push(...(streamImportantQuestions as ImportantQuestion[]));

@@ -7,10 +7,15 @@ const User = require('../models/User');
 const ExamResult = require('../models/ExamResult');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
+const STREAMS = ['science', 'commerce', 'arts'];
+// Streams exist only in Class 11/12; default to Science there so old clients keep their subjects.
+const streamFor = (grade, stream) =>
+  grade === '11' || grade === '12' ? (STREAMS.includes(stream) ? stream : 'science') : '';
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, grade, board, medium } = req.body;
+    const { name, email, password, grade, board, medium, stream } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Please provide all required fields' });
@@ -38,8 +43,9 @@ router.post('/register', async (req, res) => {
           grade: chosenGrade,
           board: effectiveBoard,
           medium: effectiveMedium,
+          stream: streamFor(chosenGrade, stream),
           academicStage: chosenStage,
-          streakCount: 1,
+          streakCount: 0,
           avatarUrl: '',
         },
       });
@@ -65,6 +71,7 @@ router.post('/register', async (req, res) => {
       grade: chosenGrade,
       board: effectiveBoard,
       medium: effectiveMedium,
+      stream: streamFor(chosenGrade, stream),
       academicStage: chosenStage,
       activeTrack: chosenStage === 'college' ? 'placement' : 'school',
     });
@@ -88,6 +95,7 @@ router.post('/register', async (req, res) => {
         grade: user.grade,
         board: user.board,
         medium: user.medium,
+        stream: user.stream || '',
         academicStage: user.academicStage,
         streakCount: user.streakCount,
         avatarUrl: user.avatarUrl || '',
@@ -125,7 +133,7 @@ router.post('/login', async (req, res) => {
           board: 'CBSE',
           medium: 'English',
           academicStage: 'college',
-          streakCount: 1,
+          streakCount: 0,
           targetCompany: 'All Companies',
           avatarUrl: '',
         },
@@ -159,6 +167,7 @@ router.post('/login', async (req, res) => {
         grade: user.grade || 'college',
         board: user.board || 'CBSE',
         medium: user.medium || 'English',
+        stream: user.stream || '',
         academicStage: user.academicStage || 'college',
         streakCount: user.streakCount,
         targetCompany: user.targetCompany,
@@ -204,6 +213,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         grade: updatedUser.grade,
         board: updatedUser.board,
         medium: updatedUser.medium,
+        stream: updatedUser.stream || '',
         streakCount: updatedUser.streakCount,
         targetCompany: updatedUser.targetCompany,
         avatarUrl: updatedUser.avatarUrl || '',
@@ -240,7 +250,7 @@ router.delete('/account', authenticateToken, async (req, res) => {
 router.put('/academic-profile', authenticateToken, async (req, res) => {
   try {
     const email = req.user?.email || req.body.email;
-    const { grade, board, medium } = req.body;
+    const { grade, board, medium, stream } = req.body;
     if (!email || !grade) {
       return res.status(400).json({ error: 'Email and grade are required' });
     }
@@ -255,6 +265,7 @@ router.put('/academic-profile', authenticateToken, async (req, res) => {
         grade,
         board: effectiveBoard,
         medium: effectiveMedium,
+        stream: streamFor(grade, stream),
         academicStage: chosenStage,
         activeTrack: chosenStage === 'college' ? 'placement' : 'school',
       },
@@ -274,6 +285,7 @@ router.put('/academic-profile', authenticateToken, async (req, res) => {
         grade: user.grade,
         board: user.board,
         medium: user.medium,
+        stream: user.stream || '',
         academicStage: user.academicStage,
       },
     });
@@ -323,7 +335,7 @@ router.post('/google', async (req, res) => {
         medium: 'English',
         academicStage: 'college',
         activeTrack: 'placement',
-        streakCount: 1,
+        streakCount: 0,
         targetCompany: 'All Companies',
       });
       await user.save();
@@ -346,6 +358,7 @@ router.post('/google', async (req, res) => {
         grade: user.grade || 'college',
         board: user.board || 'CBSE',
         medium: user.medium || 'English',
+        stream: user.stream || '',
         academicStage: user.academicStage || 'college',
         streakCount: user.streakCount,
         targetCompany: user.targetCompany,

@@ -23,6 +23,7 @@ import {
   ACADEMIC_CURRICULUM,
   AcademicGrade,
   AcademicSubject,
+  subjectsForStream,
 } from "@/constants/academicData";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -40,11 +41,11 @@ interface FlashcardItem {
   color: string;
 }
 
-function buildSchoolFlashcards(grade: AcademicGrade, isGSEB: boolean): FlashcardItem[] {
+function buildSchoolFlashcards(grade: AcademicGrade, isGSEB: boolean, stream?: string): FlashcardItem[] {
   const curriculum = ACADEMIC_CURRICULUM[grade];
   if (!curriculum) return [];
   const cards: FlashcardItem[] = [];
-  curriculum.subjects.forEach((subject: AcademicSubject) => {
+  subjectsForStream(curriculum.subjects, grade, stream).forEach((subject: AcademicSubject) => {
     const subName = isGSEB ? (subject.nameGujarati || subject.name) : subject.name;
     subject.chapters.forEach((chapter) => {
       const chapTitle = isGSEB ? (chapter.titleGujarati || chapter.title) : chapter.title;
@@ -112,13 +113,13 @@ function buildSchoolFlashcards(grade: AcademicGrade, isGSEB: boolean): Flashcard
   return cards;
 }
 
-function buildSchoolFilters(grade: AcademicGrade, isGSEB: boolean) {
+function buildSchoolFilters(grade: AcademicGrade, isGSEB: boolean, stream?: string) {
   const curriculum = ACADEMIC_CURRICULUM[grade];
   if (!curriculum) return [{ key: "All", label: "All", color: "#1D3A8A" }];
   const filters: { key: string; label: string; color: string }[] = [
     { key: "All", label: "All", color: "#1D3A8A" },
   ];
-  curriculum.subjects.forEach((sub) => {
+  subjectsForStream(curriculum.subjects, grade, stream).forEach((sub) => {
     const name = isGSEB ? (sub.nameGujarati || sub.name) : sub.name;
     filters.push({
       key: name,
@@ -166,7 +167,7 @@ export default function FlashcardsScreen() {
   const storageKey = `@mindsprint_flashcard_mastered_${userGrade}_${user?.email || "guest"}`;
   const skippedKey = `@mindsprint_flashcard_skipped_${userGrade}_${user?.email || "guest"}`;
 
-  const schoolFilters = isSchoolMode ? buildSchoolFilters(userGrade, isGSEB) : [];
+  const schoolFilters = isSchoolMode ? buildSchoolFilters(userGrade, isGSEB, user?.stream) : [];
   const collegeFilters = [
     { key: "All", label: "All", color: "#1D3A8A" },
     { key: "HR Interview", label: "HR", color: "#F4A30B" },
@@ -194,7 +195,7 @@ export default function FlashcardsScreen() {
       setLoading(true);
       try {
         if (isSchoolMode) {
-          const built = buildSchoolFlashcards(userGrade, isGSEB);
+          const built = buildSchoolFlashcards(userGrade, isGSEB, user?.stream);
           setAllCards(built);
         } else {
           const data = await ApiService.getFlashcards("All");
@@ -218,7 +219,7 @@ export default function FlashcardsScreen() {
       }
     }
     loadCards();
-  }, [userGrade, isSchoolMode, isGSEB]);
+  }, [userGrade, isSchoolMode, isGSEB, user?.stream]);
 
   // Cards shown = all cards filtered by subject (derived, not stored separately).
   const cards = selectedFilter === "All" ? allCards : allCards.filter((c) => c.subject === selectedFilter);

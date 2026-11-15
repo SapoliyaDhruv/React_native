@@ -57,7 +57,9 @@ export const ImportantQuestionsView: React.FC<Props> = ({ grade, subjectName }) 
         <View style={[styles.card, styles.empty, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
           <MaterialIcons name="star-outline" size={32} color={colors.onSurfaceVariant} />
           <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-            {tr('No questions for this filter yet. Try "All".', 'આ પસંદગી માટે હજુ પ્રશ્નો નથી. "બધા" પસંદ કરો.')}
+            {marks
+              ? tr('No questions for this filter yet. Try "All".', 'આ પસંદગી માટે હજુ પ્રશ્નો નથી. "બધા" પસંદ કરો.')
+              : tr('Important questions for this subject are being added. Try the chapter quiz meanwhile.', 'આ વિષયના મહત્વના પ્રશ્નો ઉમેરાઈ રહ્યા છે. ત્યાં સુધી પ્રકરણ ક્વિઝ અજમાવો.')}
           </Text>
         </View>
       ) : (

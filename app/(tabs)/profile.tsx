@@ -21,7 +21,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { ApiService } from '@/services/api';
 import { AcademicGradeModal } from '@/components/mindsprint/AcademicGradeModal';
-import { AcademicGrade, EducationBoard, InstructionMedium, ACADEMIC_CURRICULUM } from '@/constants/academicData';
+import { AcademicGrade, AcademicStream, EducationBoard, InstructionMedium, ACADEMIC_CURRICULUM, effectiveStream, streamLabel, subjectsForStream } from '@/constants/academicData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLanguage } from '@/context/LanguageContext';
 import { buildParentReport } from '@/components/mindsprint/home/parentReport';
@@ -109,6 +109,7 @@ export default function ProfileScreen() {
 
   const userGrade = user?.grade || 'college';
   const isSchoolMode = userGrade !== 'college';
+  const userStream = effectiveStream(userGrade, user?.stream);
 
   const userEmail = user?.email;
   useFocusEffect(
@@ -126,23 +127,27 @@ export default function ProfileScreen() {
     }, [userEmail, userGrade])
   );
 
-  const handleSaveGrade = async (grade: AcademicGrade, board: EducationBoard, medium: InstructionMedium) => {
-    await updateAcademicProfile(grade, board, medium);
+  const handleSaveGrade = async (grade: AcademicGrade, board: EducationBoard, medium: InstructionMedium, stream?: AcademicStream) => {
+    await updateAcademicProfile(grade, board, medium, stream);
+    const en = stream ? `Class ${grade} ${streamLabel(stream, false)}` : `Class ${grade}`;
+    const gu = stream ? `ધોરણ ${grade} ${streamLabel(stream, true)}` : `ધોરણ ${grade}`;
     Alert.alert(
       tr('Class changed', 'ધોરણ બદલાયું'),
       grade === 'college'
         ? tr('You will now see college placement content.', 'હવે તમને કૉલેજ પ્લેસમેન્ટનું સાહિત્ય દેખાશે.')
-        : tr(`You will now see Class ${grade} chapters, videos and tests.`, `હવે તમને ધોરણ ${grade} નાં પ્રકરણ, વિડિયો અને ટેસ્ટ દેખાશે.`)
+        : tr(`You will now see ${en} chapters, videos and tests.`, `હવે તમને ${gu} નાં પ્રકરણ, વિડિયો અને ટેસ્ટ દેખાશે.`)
     );
   };
 
   const classLabel = isSchoolMode
-    ? tr(`Class ${userGrade}`, `ધોરણ ${userGrade}`)
+    ? userStream
+      ? tr(`Class ${userGrade} · ${streamLabel(userStream, false)}`, `ધોરણ ${userGrade} · ${streamLabel(userStream, true)}`)
+      : tr(`Class ${userGrade}`, `ધોરણ ${userGrade}`)
     : tr('College', 'કૉલેજ');
 
   const hasActivity = (Number(userStats?.totalTests) || 0) > 0 || (userStats?.recentActivity?.length || 0) > 0;
   const streak = hasActivity ? Number(userStats?.streakCount) || 0 : 0;
-  const curriculumSubjects = ACADEMIC_CURRICULUM[userGrade]?.subjects || [];
+  const curriculumSubjects = subjectsForStream(ACADEMIC_CURRICULUM[userGrade]?.subjects, userGrade, userStream);
   const totalChapters = curriculumSubjects.reduce((n, sub) => n + (sub.chapters?.length || 0), 0);
 
   const handleShareParentReport = async () => {
@@ -426,6 +431,7 @@ export default function ProfileScreen() {
         currentGrade={user?.grade || 'college'}
         currentBoard={user?.board || 'CBSE'}
         currentMedium={user?.medium || 'English'}
+        currentStream={userStream}
         onClose={() => setShowGradeModal(false)}
         onSave={handleSaveGrade}
       />

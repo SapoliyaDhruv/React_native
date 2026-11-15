@@ -18,7 +18,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { confirmAction } from '@/components/common/dialogs';
-import { IMPORTANT_QUESTIONS_DATA, ImportantQuestion } from '@/constants/academicData';
+import { IMPORTANT_QUESTIONS_DATA, ImportantQuestion, effectiveStream, streamLabel } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 
 export interface BoardQuestion {
@@ -48,7 +48,10 @@ export default function BoardExamSimulatorScreen() {
   const isSchoolMode = userGrade !== 'college';
   const isGSEB = isSchoolMode;
 
-  const { tr } = useLanguage();
+  const { tr, isGujarati } = useLanguage();
+  // Board papers exist only for the Science stream so far; Commerce/Arts get an honest notice below.
+  const stream = effectiveStream(userGrade, user?.stream);
+  const noPapersForStream = stream === 'commerce' || stream === 'arts';
 
   // `value` is what the API / question filter expects; `label` is what students see.
   const availableSubjects = useMemo<{ value: string; label: string }[]>(() => {
@@ -320,6 +323,31 @@ export default function BoardExamSimulatorScreen() {
       router.replace('/(tabs)');
     }
   };
+
+  if (noPapersForStream) {
+    const name = streamLabel(stream, isGujarati);
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
+        <ScreenHeader title={tr('Board exam', 'બોર્ડ પરીક્ષા')} subtitle={tr(`Class ${userGrade} · ${name}`, `ધોરણ ${userGrade} · ${name}`)} leadingIcon="close" />
+        <View style={styles.centerLoading}>
+          <MaterialIcons name="assignment" size={40} color={colors.primary} />
+          <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
+            {tr(`${name} board papers are on the way`, `${name} નાં બોર્ડ પેપર તૈયાર થઈ રહ્યાં છે`)}
+          </Text>
+          <Text style={[styles.loadingText, { color: colors.onSurfaceVariant, fontWeight: '400', fontSize: 14 }]}>
+            {tr('Until then, practise with chapter quizzes for your subjects.', 'ત્યાં સુધી તમારા વિષયોની પ્રકરણ ક્વિઝથી પ્રેક્ટિસ કરો.')}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/(tabs)/courses')}
+            style={[styles.headerSubmitBtn, { backgroundColor: colors.accent, minHeight: 48, paddingHorizontal: 20, justifyContent: 'center' }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.headerSubmitBtnText, { color: colors.onAccent }]}>{tr('Open my subjects', 'મારા વિષયો ખોલો')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top']}>
@@ -988,6 +1016,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 32,
+  },
+  emptyTitle: {
+    fontFamily: MindSprintFonts.heading,
+    fontSize: 19,
+    lineHeight: 26,
+    textAlign: 'center',
   },
   loadingText: {
     fontSize: 13,

@@ -345,7 +345,8 @@ export const ApiService = {
     grade: AcademicGrade,
     board: EducationBoard = 'CBSE',
     medium: InstructionMedium = 'English',
-    token?: string
+    token?: string,
+    stream?: string
   ) {
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -355,7 +356,7 @@ export const ApiService = {
       const response = await fetch(`${API_BASE_URL}/auth/academic-profile`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ email, grade, board, medium }),
+        body: JSON.stringify({ email, grade, board, medium, stream }),
       });
       return await response.json();
     } catch (error) {
@@ -617,7 +618,8 @@ export const ApiService = {
     password: string,
     grade: AcademicGrade = 'college',
     board: EducationBoard = 'CBSE',
-    medium: InstructionMedium = 'English'
+    medium: InstructionMedium = 'English',
+    stream?: string
   ) {
     try {
       const controller = new AbortController();
@@ -625,7 +627,7 @@ export const ApiService = {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, grade, board, medium }),
+        body: JSON.stringify({ name, email, password, grade, board, medium, stream }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -643,6 +645,7 @@ export const ApiService = {
         grade,
         board,
         medium,
+        stream,
         academicStage: grade === 'college' ? 'college' : 'school',
         streakCount: 0,
         targetCompany: 'All Companies',
@@ -730,8 +733,9 @@ export const ApiService = {
       list = list.filter((q) => q.grade === grade);
     }
     if (subject && subject !== 'All') {
-      const subFiltered = list.filter((q) => q.subject.toLowerCase() === subject.toLowerCase());
-      if (subFiltered.length > 0) list = subFiltered;
+      // A subject with no questions yet (e.g. Accountancy) gets none, not another subject's questions.
+      list = list.filter((q) => q.subject.toLowerCase() === subject.toLowerCase());
+      if (list.length === 0) return [];
     }
     if (marks) {
       const marksFiltered = list.filter((q) => q.marks === marks);

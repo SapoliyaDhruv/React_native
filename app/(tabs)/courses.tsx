@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { subjectTone } from '@/constants/subjectTones';
-import { ACADEMIC_CURRICULUM, AcademicGrade, GradeCurriculum, SubjectChapter } from '@/constants/academicData';
+import { ACADEMIC_CURRICULUM, AcademicGrade, GradeCurriculum, SubjectChapter, effectiveStream, streamLabel, subjectsForStream } from '@/constants/academicData';
 import { ApiService } from '@/services/api';
 import { ServerStatusBanner } from '@/components/mindsprint/ServerStatusBanner';
 import { ContinueLearningCard } from '@/components/mindsprint/ContinueLearningCard';
@@ -35,6 +35,7 @@ export default function CoursesScreen() {
   const userGrade = (user?.grade || '7') as AcademicGrade;
   const isSchoolMode = userGrade !== 'college';
   const localCurriculum = ACADEMIC_CURRICULUM[userGrade] || ACADEMIC_CURRICULUM['7'];
+  const stream = effectiveStream(userGrade, user?.stream);
 
   const [curriculum, setCurriculum] = useState<GradeCurriculum>(localCurriculum);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(localCurriculum.subjects[0]?.id || '');
@@ -74,7 +75,8 @@ export default function CoursesScreen() {
     return () => { active = false; };
   }, [userGrade]);
 
-  const subjects = curriculum.subjects || [];
+  // Class 11/12: only the student's stream (Science / Commerce / Arts) plus shared language subjects.
+  const subjects = subjectsForStream(curriculum.subjects, userGrade, stream);
   const subject = subjects.find((s) => s.id === selectedSubjectId) || subjects[0];
   const chapters = subject?.chapters || [];
   const doneInSubject = chapters.filter((c) => progress.completedIds.includes(c.id)).length;
@@ -123,7 +125,7 @@ export default function CoursesScreen() {
           </Text>
           <Text numberOfLines={1} style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>
             {isSchoolMode
-              ? `${user?.board || 'GSEB'} · ${user?.medium === 'English' ? tr('English medium', 'અંગ્રેજી માધ્યમ') : tr('Gujarati medium', 'ગુજરાતી માધ્યમ')}`
+              ? `${user?.board || 'GSEB'}${stream ? ` · ${streamLabel(stream, isGujarati)}` : ''} · ${user?.medium === 'English' ? tr('English medium', 'અંગ્રેજી માધ્યમ') : tr('Gujarati medium', 'ગુજરાતી માધ્યમ')}`
               : tr('Campus recruitment tracks', 'કેમ્પસ ભરતી')}
           </Text>
         </View>
@@ -248,7 +250,7 @@ export default function CoursesScreen() {
             )}
             {view === 'formulas' && <FormulasView chapters={chapters} onOpenChapter={(c) => openChapter(c)} />}
             {view === 'imp' && <ImportantQuestionsView grade={userGrade} subjectName={subject?.name} />}
-            {view === 'papers' && <BoardPapersView grade={userGrade} board={isSchoolMode ? 'GSEB' : user?.board || 'CBSE'} />}
+            {view === 'papers' && <BoardPapersView grade={userGrade} board={isSchoolMode ? 'GSEB' : user?.board || 'CBSE'} subjectNames={stream ? subjects.map((s) => s.name) : undefined} />}
           </>
         )}
       </ScrollView>

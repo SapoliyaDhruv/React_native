@@ -17,7 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'expo-router';
 import { ApiService } from '@/services/api';
-import { AcademicGrade, ACADEMIC_CURRICULUM } from '@/constants/academicData';
+import { AcademicGrade, ACADEMIC_CURRICULUM, subjectsForStream } from '@/constants/academicData';
 
 export default function LeaderboardScreen() {
   const { colors, isDarkMode } = useTheme();
@@ -33,7 +33,7 @@ export default function LeaderboardScreen() {
   const subjectFilters = isSchool && curriculum
     ? [
         { key: 'All', label: 'બધા વિષયો', color: '#1D3A8A' },
-        ...curriculum.subjects.map((s) => ({
+        ...subjectsForStream(curriculum.subjects, userGrade, user?.stream).map((s) => ({
           key: s.name,
           label: s.nameGujarati || s.name,
           color: s.color,

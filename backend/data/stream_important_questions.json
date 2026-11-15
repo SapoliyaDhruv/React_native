@@ -1,0 +1,2178 @@
+[
+  {
+    "id": "imp-g11-acc-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 10,
+    "chapterTitle": "Trial Balance",
+    "chapterTitleGujarati": "કાચું સરવૈયું",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "What is a trial balance?",
+    "questionTextGujarati": "કાચું સરવૈયું એટલે શું?",
+    "modelAnswer": "A trial balance is a statement of the debit and credit balances of all ledger accounts on a particular date, prepared to check the arithmetical accuracy of the books.",
+    "modelAnswerGujarati": "ચોક્કસ તારીખે ખાતાવહીનાં તમામ ખાતાંની ઉધાર અને જમા બાકીઓ દર્શાવતું, ચોપડાની ગાણિતિક ચોકસાઈ ચકાસવા માટે તૈયાર કરાતું પત્રક એટલે કાચું સરવૈયું.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Definition with its purpose (checking arithmetical accuracy).",
+        "textGujarati": "વ્યાખ્યા અને હેતુ (ગાણિતિક ચોકસાઈ ચકાસવી)."
+      }
+    ],
+    "examinerTips": "Mention both 'ledger balances' and 'arithmetical accuracy' for the full mark.",
+    "examinerTipsGujarati": "પૂરો ગુણ મેળવવા 'ખાતાવહીની બાકીઓ' અને 'ગાણિતિક ચોકસાઈ' બંને શબ્દો લખો."
+  },
+  {
+    "id": "imp-g11-acc-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 5,
+    "chapterTitle": "Accounting Equation and Business Transactions",
+    "chapterTitleGujarati": "હિસાબી સમીકરણ અને ધંધાના વ્યવહારો",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "A business has assets of ₹2,50,000 and liabilities of ₹70,000. Find the capital using the accounting equation. If the owner withdraws ₹10,000 cash, what will the new capital be?",
+    "questionTextGujarati": "એક ધંધાની મિલકતો ₹2,50,000 અને દેવાં ₹70,000 છે. હિસાબી સમીકરણની મદદથી મૂડી શોધો. જો માલિક ₹10,000 રોકડ ઉપાડે તો નવી મૂડી કેટલી થશે?",
+    "modelAnswer": "Capital = Assets − Liabilities = 2,50,000 − 70,000 = ₹1,80,000. Drawings of ₹10,000 reduce cash (asset) and capital equally, so new capital = 1,80,000 − 10,000 = ₹1,70,000 (Assets 2,40,000 = Liabilities 70,000 + Capital 1,70,000).",
+    "modelAnswerGujarati": "મૂડી = મિલકતો − દેવાં = 2,50,000 − 70,000 = ₹1,80,000. ₹10,000ના ઉપાડથી રોકડ (મિલકત) અને મૂડી બંને સરખા ઘટે છે, તેથી નવી મૂડી = 1,80,000 − 10,000 = ₹1,70,000 (મિલકતો 2,40,000 = દેવાં 70,000 + મૂડી 1,70,000).",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Capital = 2,50,000 − 70,000 = ₹1,80,000.",
+        "textGujarati": "મૂડી = 2,50,000 − 70,000 = ₹1,80,000."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "After drawings: capital = ₹1,70,000; assets = ₹2,40,000; equation balances.",
+        "textGujarati": "ઉપાડ પછી: મૂડી = ₹1,70,000; મિલકતો = ₹2,40,000; સમીકરણ સરખું રહે છે."
+      }
+    ],
+    "examinerTips": "Always write the equation first and show that both sides still balance after the transaction.",
+    "examinerTipsGujarati": "પહેલાં સમીકરણ લખો અને વ્યવહાર પછી પણ બંને બાજુ સરખી છે તે દર્શાવો."
+  },
+  {
+    "id": "imp-g11-acc-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 13,
+    "chapterTitle": "Depreciation Accounting (Part 2)",
+    "chapterTitleGujarati": "ઘસારાના હિસાબો (ભાગ 2)",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "A machine was purchased for ₹1,10,000 and ₹10,000 was spent on its installation. Its residual value is ₹20,000 and estimated life is 5 years. Calculate annual depreciation by the straight line method and the book value at the end of the second year.",
+    "questionTextGujarati": "એક યંત્ર ₹1,10,000માં ખરીદ્યું અને તેની ગોઠવણી પાછળ ₹10,000 ખર્ચ થયો. તેની ભંગાર કિંમત ₹20,000 અને અંદાજિત આયુષ્ય 5 વર્ષ છે. સીધી લીટીની પદ્ધતિએ વાર્ષિક ઘસારો અને બીજા વર્ષના અંતે ચોપડે કિંમત ગણો.",
+    "modelAnswer": "Cost = 1,10,000 + 10,000 = ₹1,20,000. Annual depreciation = (1,20,000 − 20,000) ÷ 5 = ₹20,000. Book value after 2 years = 1,20,000 − (20,000 × 2) = ₹80,000.",
+    "modelAnswerGujarati": "પડતર = 1,10,000 + 10,000 = ₹1,20,000. વાર્ષિક ઘસારો = (1,20,000 − 20,000) ÷ 5 = ₹20,000. બે વર્ષ પછી ચોપડે કિંમત = 1,20,000 − (20,000 × 2) = ₹80,000.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Total cost including installation = ₹1,20,000.",
+        "textGujarati": "ગોઠવણી ખર્ચ સાથે કુલ પડતર = ₹1,20,000."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Depreciation = (1,20,000 − 20,000) ÷ 5 = ₹20,000 per year.",
+        "textGujarati": "ઘસારો = (1,20,000 − 20,000) ÷ 5 = દર વર્ષે ₹20,000."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Book value at end of year 2 = 1,20,000 − 40,000 = ₹80,000.",
+        "textGujarati": "બીજા વર્ષના અંતે ચોપડે કિંમત = 1,20,000 − 40,000 = ₹80,000."
+      }
+    ],
+    "examinerTips": "Installation charges are part of the cost of the asset; students often forget to add them.",
+    "examinerTipsGujarati": "ગોઠવણી ખર્ચ મિલકતની પડતરનો ભાગ છે; ઘણા વિદ્યાર્થીઓ તે ઉમેરવાનું ભૂલી જાય છે."
+  },
+  {
+    "id": "imp-g11-acc-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 2,
+    "chapterTitle": "Dual Effect of Transactions and Types of Accounts",
+    "chapterTitleGujarati": "વ્યવહારોની દ્વિ-અસર અને ખાતાના પ્રકાર",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain the three types of accounts with their debit-credit rules and one example each.",
+    "questionTextGujarati": "ખાતાંના ત્રણ પ્રકાર તેમના ઉધાર-જમાના નિયમો અને દરેકના એક ઉદાહરણ સાથે સમજાવો.",
+    "modelAnswer": "(1) Personal accounts relate to persons, firms and institutions (e.g. Ramesh A/c, Bank A/c); rule: debit the receiver, credit the giver. (2) Real accounts relate to assets and property (e.g. Furniture A/c, Cash A/c); rule: debit what comes in, credit what goes out. (3) Nominal accounts relate to expenses, losses, incomes and gains (e.g. Salary A/c, Commission received A/c); rule: debit all expenses and losses, credit all incomes and gains. Every transaction affects at least two accounts with equal debit and credit (dual effect).",
+    "modelAnswerGujarati": "(1) વ્યક્તિ ખાતાં વ્યક્તિ, પેઢી કે સંસ્થા સાથે સંબંધિત છે (દા.ત. રમેશ ખાતું, બૅન્ક ખાતું); નિયમ: લેનાર ઉધાર, આપનાર જમા. (2) માલમિલકત ખાતાં મિલકતો સાથે સંબંધિત છે (દા.ત. ફર્નિચર ખાતું, રોકડ ખાતું); નિયમ: જે આવે તે ઉધાર, જે જાય તે જમા. (3) ઊપજ-ખર્ચ ખાતાં ખર્ચ, નુકસાન, આવક અને નફા સાથે સંબંધિત છે (દા.ત. પગાર ખાતું, મળેલું કમિશન ખાતું); નિયમ: ખર્ચ અને નુકસાન ઉધાર, આવક અને નફો જમા. દરેક વ્યવહાર ઓછામાં ઓછાં બે ખાતાંને સરખી ઉધાર-જમા રકમથી અસર કરે છે (દ્વિ-અસર).",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Personal account: meaning, rule and example.",
+        "textGujarati": "વ્યક્તિ ખાતું: અર્થ, નિયમ અને ઉદાહરણ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Real account: meaning, rule and example.",
+        "textGujarati": "માલમિલકત ખાતું: અર્થ, નિયમ અને ઉદાહરણ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Nominal account: meaning, rule and example.",
+        "textGujarati": "ઊપજ-ખર્ચ ખાતું: અર્થ, નિયમ અને ઉદાહરણ."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Link to the dual effect: equal debit and credit in every transaction.",
+        "textGujarati": "દ્વિ-અસર સાથે જોડાણ: દરેક વ્યવહારમાં સરખી ઉધાર અને જમા."
+      }
+    ],
+    "examinerTips": "Write the rule exactly as in the textbook and give a clear example for each type; a table format scores well.",
+    "examinerTipsGujarati": "દરેક નિયમ પાઠ્યપુસ્તક મુજબ ચોક્કસ લખો અને દરેક પ્રકારનું સ્પષ્ટ ઉદાહરણ આપો; કોઠા સ્વરૂપે જવાબ સારો ગણાય."
+  },
+  {
+    "id": "imp-g11-bom-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Business Organisation",
+    "chapterNumber": 10,
+    "chapterTitle": "International Trade",
+    "chapterTitleGujarati": "આંતરરાષ્ટ્રીય વેપાર",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "What is entrepot trade?",
+    "questionTextGujarati": "પુનઃનિકાસ (એન્ટ્રેપો) વેપાર એટલે શું?",
+    "modelAnswer": "Importing goods from one country in order to export them again to another country is called entrepot trade.",
+    "modelAnswerGujarati": "એક દેશમાંથી માલની આયાત કરી તે માલ બીજા દેશમાં ફરી નિકાસ કરવો તેને પુનઃનિકાસ (એન્ટ્રેપો) વેપાર કહે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Correct definition: import for the purpose of re-export.",
+        "textGujarati": "સાચી વ્યાખ્યા: ફરી નિકાસ કરવાના હેતુથી આયાત."
+      }
+    ],
+    "examinerTips": "Use the words 'import' and 're-export' together in a one-line definition.",
+    "examinerTipsGujarati": "એક વાક્યની વ્યાખ્યામાં 'આયાત' અને 'ફરી નિકાસ' બંને શબ્દો વાપરો."
+  },
+  {
+    "id": "imp-g11-bom-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Business Organisation",
+    "chapterNumber": 5,
+    "chapterTitle": "Forms of Business Organisation – 1",
+    "chapterTitleGujarati": "ધંધાકીય વ્યવસ્થાનાં સ્વરૂપો – 1",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "State any two features of sole proprietorship.",
+    "questionTextGujarati": "એકાકી વેપારનાં કોઈ પણ બે લક્ષણો જણાવો.",
+    "modelAnswer": "(1) Single ownership: one person owns, manages and controls the business and bears all the risk. (2) Unlimited liability: the proprietor's personal property can be used to pay business debts. (Other valid features: all profit to the owner, easy formation, secrecy, no separate legal entity.)",
+    "modelAnswerGujarati": "(1) એક જ માલિક: એક જ વ્યક્તિ ધંધાની માલિક, સંચાલક અને નિયંત્રક હોય છે અને તમામ જોખમ ઉઠાવે છે. (2) અમર્યાદિત જવાબદારી: ધંધાનાં દેવાં ચૂકવવા માલિકની અંગત મિલકત પણ વાપરી શકાય. (અન્ય સાચાં લક્ષણો: સમગ્ર નફો માલિકને, સરળ સ્થાપના, ગુપ્તતા, અલગ કાનૂની અસ્તિત્વ નથી.)",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "First feature with a short explanation.",
+        "textGujarati": "પ્રથમ લક્ષણ ટૂંકી સમજૂતી સાથે."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Second feature with a short explanation.",
+        "textGujarati": "બીજું લક્ષણ ટૂંકી સમજૂતી સાથે."
+      }
+    ],
+    "examinerTips": "Write a heading for each feature and one explaining line; do not just list words.",
+    "examinerTipsGujarati": "દરેક લક્ષણનું શીર્ષક અને એક સમજૂતી વાક્ય લખો; ફક્ત શબ્દોની યાદી ન આપો."
+  },
+  {
+    "id": "imp-g11-bom-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Business Organisation",
+    "chapterNumber": 8,
+    "chapterTitle": "Sources of Business Finance",
+    "chapterTitleGujarati": "ધંધાકીય મૂડીનાં પ્રાપ્તિસ્થાનો",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Distinguish between shares and debentures (any three points).",
+    "questionTextGujarati": "શૅર અને ડિબેન્ચર વચ્ચેનો તફાવત આપો (કોઈ પણ ત્રણ મુદ્દા).",
+    "modelAnswer": "(1) Status: shareholders are owners of the company; debenture holders are creditors. (2) Return: shareholders get dividend, which depends on profit; debenture holders get interest at a fixed rate whether or not there is profit. (3) Voting right: equity shareholders have voting rights; debenture holders normally do not. (Repayment priority: debentures are repaid before shares on winding up.)",
+    "modelAnswerGujarati": "(1) સ્થાન: શૅરહોલ્ડરો કંપનીના માલિક છે; ડિબેન્ચરધારકો લેણદાર છે. (2) વળતર: શૅરહોલ્ડરોને નફા પર આધારિત ડિવિડન્ડ મળે છે; ડિબેન્ચરધારકોને નફો હોય કે ન હોય, નિશ્ચિત દરે વ્યાજ મળે છે. (3) મતાધિકાર: ઇક્વિટી શૅરહોલ્ડરોને મતાધિકાર હોય છે; ડિબેન્ચરધારકોને સામાન્ય રીતે હોતો નથી. (પરત ચુકવણી: કંપની વિસર્જન વખતે શૅર પહેલાં ડિબેન્ચરની રકમ ચૂકવાય છે.)",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Ownership vs creditorship.",
+        "textGujarati": "માલિકી સામે લેણદારી."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Dividend (depends on profit) vs fixed interest.",
+        "textGujarati": "નફા પર આધારિત ડિવિડન્ડ સામે નિશ્ચિત વ્યાજ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Voting rights vs no voting rights.",
+        "textGujarati": "મતાધિકાર સામે મતાધિકાર નહિ."
+      }
+    ],
+    "examinerTips": "Present the answer in a two-column table with the basis of difference in the first column.",
+    "examinerTipsGujarati": "તફાવતનો આધાર પ્રથમ ખાનામાં લખી બે ખાનાવાળા કોઠામાં જવાબ આપો."
+  },
+  {
+    "id": "imp-g11-bom-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Business Organisation",
+    "chapterNumber": 6,
+    "chapterTitle": "Forms of Business Organisation – 2",
+    "chapterTitleGujarati": "ધંધાકીય વ્યવસ્થાનાં સ્વરૂપો – 2",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain any four features of a joint stock company.",
+    "questionTextGujarati": "સંયુક્ત મૂડી કંપનીનાં કોઈ પણ ચાર લક્ષણો સમજાવો.",
+    "modelAnswer": "(1) Artificial person created by law: a company is formed by registration under the Companies Act. (2) Separate legal entity: it can own property, enter contracts and sue or be sued in its own name. (3) Limited liability: in a company limited by shares, members are liable only up to the unpaid amount on their shares. (4) Perpetual succession: the company continues even if members die or transfer their shares. (Also: common seal, transferability of shares, separation of ownership and management.)",
+    "modelAnswerGujarati": "(1) કાયદાથી સર્જાયેલી કૃત્રિમ વ્યક્તિ: કંપની કંપની ધારા હેઠળ નોંધણીથી અસ્તિત્વમાં આવે છે. (2) અલગ કાનૂની અસ્તિત્વ: તે પોતાના નામે મિલકત ધરાવી શકે, કરાર કરી શકે અને દાવો કરી શકે કે તેના પર દાવો થઈ શકે. (3) મર્યાદિત જવાબદારી: શૅરથી મર્યાદિત કંપનીમાં સભ્યોની જવાબદારી શૅરની ન ભરાયેલી રકમ સુધી જ હોય છે. (4) કાયમી અસ્તિત્વ: સભ્યોના મૃત્યુ કે શૅરની તબદીલીથી કંપનીનું અસ્તિત્વ સમાપ્ત થતું નથી. (અન્ય: સામાન્ય મુદ્રા, શૅરની તબદીલીક્ષમતા, માલિકી અને સંચાલનનું અલગપણું.)",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Artificial person created by law.",
+        "textGujarati": "કાયદાથી સર્જાયેલી કૃત્રિમ વ્યક્તિ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Separate legal entity.",
+        "textGujarati": "અલગ કાનૂની અસ્તિત્વ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Limited liability.",
+        "textGujarati": "મર્યાદિત જવાબદારી."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Perpetual succession.",
+        "textGujarati": "કાયમી અસ્તિત્વ."
+      }
+    ],
+    "examinerTips": "Each feature needs a heading plus one or two lines of explanation to earn its mark.",
+    "examinerTipsGujarati": "દરેક લક્ષણનો ગુણ મેળવવા શીર્ષક સાથે એક-બે લીટીની સમજૂતી જરૂરી છે."
+  },
+  {
+    "id": "imp-g11-stat-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 4,
+    "chapterTitle": "Measures of Dispersion",
+    "chapterTitleGujarati": "પ્રસારમાન",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Write the formula for the coefficient of variation.",
+    "questionTextGujarati": "ચલનાંકનું સૂત્ર લખો.",
+    "modelAnswer": "Coefficient of variation C.V. = (s ÷ x̄) × 100, where s is the standard deviation and x̄ is the mean.",
+    "modelAnswerGujarati": "ચલનાંક C.V. = (s ÷ x̄) × 100, જ્યાં s = પ્રમાણિત વિચલન અને x̄ = મધ્યક.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Correct formula with symbols explained.",
+        "textGujarati": "સંકેતોની સમજૂતી સાથે સાચું સૂત્ર."
+      }
+    ],
+    "examinerTips": "Do not forget '× 100'; C.V. is expressed as a percentage.",
+    "examinerTipsGujarati": "'× 100' ભૂલશો નહિ; ચલનાંક ટકામાં દર્શાવાય છે."
+  },
+  {
+    "id": "imp-g11-stat-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 3,
+    "chapterTitle": "Measures of Central Tendency",
+    "chapterTitleGujarati": "મધ્યવર્તી સ્થિતિનાં માપ",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Find the median of the observations 12, 7, 15, 9, 20, 11.",
+    "questionTextGujarati": "અવલોકનો 12, 7, 15, 9, 20, 11 નો મધ્યસ્થ શોધો.",
+    "modelAnswer": "Ascending order: 7, 9, 11, 12, 15, 20. n = 6 (even), so median = mean of the 3rd and 4th observations = (11 + 12) ÷ 2 = 11.5.",
+    "modelAnswerGujarati": "ચડતા ક્રમમાં: 7, 9, 11, 12, 15, 20. n = 6 (યુગ્મ), તેથી મધ્યસ્થ = 3જા અને 4થા અવલોકનનો મધ્યક = (11 + 12) ÷ 2 = 11.5.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Arrange in ascending order and note n = 6.",
+        "textGujarati": "ચડતા ક્રમમાં ગોઠવી n = 6 નોંધો."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Median = (11 + 12) ÷ 2 = 11.5.",
+        "textGujarati": "મધ્યસ્થ = (11 + 12) ÷ 2 = 11.5."
+      }
+    ],
+    "examinerTips": "Arranging the data in order is compulsory; the median of unordered data earns no marks.",
+    "examinerTipsGujarati": "માહિતીને ક્રમમાં ગોઠવવી ફરજિયાત છે; ક્રમ વગર શોધેલા મધ્યસ્થના ગુણ મળતા નથી."
+  },
+  {
+    "id": "imp-g11-stat-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 4,
+    "chapterTitle": "Measures of Dispersion",
+    "chapterTitleGujarati": "પ્રસારમાન",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Find the standard deviation and coefficient of variation of 2, 4, 6, 8, 10.",
+    "questionTextGujarati": "2, 4, 6, 8, 10 નું પ્રમાણિત વિચલન અને ચલનાંક શોધો.",
+    "modelAnswer": "Mean x̄ = 30 ÷ 5 = 6. Deviations (x − x̄): −4, −2, 0, 2, 4; squares: 16, 4, 0, 4, 16; Σ(x − x̄)² = 40. s = √(40 ÷ 5) = √8 ≈ 2.83. C.V. = (√8 ÷ 6) × 100 ≈ 47.14%.",
+    "modelAnswerGujarati": "મધ્યક x̄ = 30 ÷ 5 = 6. વિચલનો (x − x̄): −4, −2, 0, 2, 4; વર્ગો: 16, 4, 0, 4, 16; Σ(x − x̄)² = 40. s = √(40 ÷ 5) = √8 ≈ 2.83. ચલનાંક = (√8 ÷ 6) × 100 ≈ 47.14%.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Mean = 6.",
+        "textGujarati": "મધ્યક = 6."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Σ(x − x̄)² = 40 and s = √8 ≈ 2.83.",
+        "textGujarati": "Σ(x − x̄)² = 40 અને s = √8 ≈ 2.83."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "C.V. ≈ 47.14%.",
+        "textGujarati": "ચલનાંક ≈ 47.14%."
+      }
+    ],
+    "examinerTips": "Show the deviation table; writing only the final answer loses step marks.",
+    "examinerTipsGujarati": "વિચલનોનું કોષ્ટક બતાવો; ફક્ત અંતિમ જવાબ લખવાથી સ્ટેપના ગુણ કપાય છે."
+  },
+  {
+    "id": "imp-g11-stat-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 5,
+    "chapterTitle": "Skewness of a Frequency Distribution",
+    "chapterTitleGujarati": "આવૃત્તિ-વિતરણની વિષમતા",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "For a distribution, mean = 50, median = 48 and standard deviation = 10. Find the mode using the empirical relation and then Karl Pearson's coefficient of skewness. Interpret the result.",
+    "questionTextGujarati": "એક વિતરણ માટે મધ્યક = 50, મધ્યસ્થ = 48 અને પ્રમાણિત વિચલન = 10 છે. પ્રયોગાત્મક સંબંધથી બહુલક શોધો અને પછી કાર્લ પિયર્સનનો વિષમતાંક શોધો. પરિણામનું અર્થઘટન કરો.",
+    "modelAnswer": "Mode = 3 Median − 2 Mean = 3(48) − 2(50) = 144 − 100 = 44. j = (x̄ − Mode) ÷ s = (50 − 44) ÷ 10 = 0.6. Since j is positive, the distribution is positively skewed (Mean > Median > Mode).",
+    "modelAnswerGujarati": "બહુલક = 3 મધ્યસ્થ − 2 મધ્યક = 3(48) − 2(50) = 144 − 100 = 44. j = (x̄ − બહુલક) ÷ s = (50 − 44) ÷ 10 = 0.6. j ધન હોવાથી વિતરણ ધન વિષમ છે (મધ્યક > મધ્યસ્થ > બહુલક).",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Write the empirical relation Mode = 3 Median − 2 Mean.",
+        "textGujarati": "પ્રયોગાત્મક સંબંધ બહુલક = 3 મધ્યસ્થ − 2 મધ્યક લખો."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Mode = 44.",
+        "textGujarati": "બહુલક = 44."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "j = (50 − 44) ÷ 10 = 0.6.",
+        "textGujarati": "j = (50 − 44) ÷ 10 = 0.6."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Interpretation: positive skewness.",
+        "textGujarati": "અર્થઘટન: ધન વિષમતા."
+      }
+    ],
+    "examinerTips": "Always state the sign of skewness in words at the end; interpretation carries a mark.",
+    "examinerTipsGujarati": "અંતે વિષમતાનું ચિહ્ન શબ્દોમાં જણાવો; અર્થઘટનનો અલગ ગુણ છે."
+  },
+  {
+    "id": "imp-g11-eco-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 5,
+    "chapterTitle": "Concepts of Revenue and Cost",
+    "chapterTitleGujarati": "આવક અને ખર્ચના ખ્યાલો",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "What is marginal revenue?",
+    "questionTextGujarati": "સીમાંત આવક એટલે શું?",
+    "modelAnswer": "Marginal revenue is the addition to total revenue from selling one more unit of output: MR = TRn − TRn−1.",
+    "modelAnswerGujarati": "ઉત્પાદનનો એક વધારાનો એકમ વેચવાથી કુલ આવકમાં થતો વધારો એટલે સીમાંત આવક: MR = TRn − TRn−1.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Definition with formula.",
+        "textGujarati": "સૂત્ર સાથે વ્યાખ્યા."
+      }
+    ],
+    "examinerTips": "Adding the formula makes a one-mark definition complete.",
+    "examinerTipsGujarati": "સૂત્ર ઉમેરવાથી એક ગુણની વ્યાખ્યા સંપૂર્ણ બને છે."
+  },
+  {
+    "id": "imp-g11-eco-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 3,
+    "chapterTitle": "Demand",
+    "chapterTitleGujarati": "માંગ",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "When the price of a good falls from ₹20 to ₹15, its demand rises from 100 units to 150 units. Calculate the price elasticity of demand.",
+    "questionTextGujarati": "વસ્તુની કિંમત ₹20 થી ઘટીને ₹15 થતાં તેની માંગ 100 એકમથી વધીને 150 એકમ થાય છે. માંગની મૂલ્ય-સાપેક્ષતા ગણો.",
+    "modelAnswer": "% change in demand = (50 ÷ 100) × 100 = 50%. % change in price = (5 ÷ 20) × 100 = 25%. Ed = 50% ÷ 25% = 2 (ignoring the minus sign), so demand is relatively elastic (Ed > 1).",
+    "modelAnswerGujarati": "માંગમાં ટકાવાર ફેરફાર = (50 ÷ 100) × 100 = 50%. કિંમતમાં ટકાવાર ફેરફાર = (5 ÷ 20) × 100 = 25%. Ed = 50% ÷ 25% = 2 (ઋણ ચિહ્ન અવગણતાં), તેથી માંગ વધુ સાપેક્ષ છે (Ed > 1).",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Percentage changes: demand 50%, price 25%.",
+        "textGujarati": "ટકાવાર ફેરફાર: માંગ 50%, કિંમત 25%."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Ed = 2, relatively elastic demand.",
+        "textGujarati": "Ed = 2, વધુ સાપેક્ષ માંગ."
+      }
+    ],
+    "examinerTips": "Always use the original price and quantity as the base for percentage change.",
+    "examinerTipsGujarati": "ટકાવાર ફેરફાર ગણવા મૂળ કિંમત અને મૂળ જથ્થાને આધાર તરીકે લો."
+  },
+  {
+    "id": "imp-g11-eco-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 9,
+    "chapterTitle": "National Income",
+    "chapterTitleGujarati": "રાષ્ટ્રીય આવક",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "From the following data find GNP and NNP: GDP = ₹5,000 crore, net factor income from abroad = −₹200 crore, depreciation = ₹400 crore.",
+    "questionTextGujarati": "નીચેની માહિતી પરથી GNP અને NNP શોધો: GDP = ₹5,000 કરોડ, વિદેશમાંથી ચોખ્ખી સાધન આવક = −₹200 કરોડ, ઘસારો = ₹400 કરોડ.",
+    "modelAnswer": "GNP = GDP + Net factor income from abroad = 5,000 + (−200) = ₹4,800 crore. NNP = GNP − Depreciation = 4,800 − 400 = ₹4,400 crore.",
+    "modelAnswerGujarati": "GNP = GDP + વિદેશમાંથી ચોખ્ખી સાધન આવક = 5,000 + (−200) = ₹4,800 કરોડ. NNP = GNP − ઘસારો = 4,800 − 400 = ₹4,400 કરોડ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Write both formulas.",
+        "textGujarati": "બંને સૂત્રો લખો."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "GNP = ₹4,800 crore (negative net factor income is subtracted).",
+        "textGujarati": "GNP = ₹4,800 કરોડ (ઋણ ચોખ્ખી સાધન આવક બાદ થાય છે)."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "NNP = ₹4,400 crore.",
+        "textGujarati": "NNP = ₹4,400 કરોડ."
+      }
+    ],
+    "examinerTips": "Watch the sign of net factor income from abroad; a negative value reduces GNP below GDP.",
+    "examinerTipsGujarati": "વિદેશમાંથી ચોખ્ખી સાધન આવકનું ચિહ્ન ધ્યાનથી જુઓ; ઋણ હોય તો GNP, GDP કરતાં ઓછી થાય."
+  },
+  {
+    "id": "imp-g11-eco-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 6,
+    "chapterTitle": "Market",
+    "chapterTitleGujarati": "બજાર",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain any four features of perfect competition.",
+    "questionTextGujarati": "સંપૂર્ણ હરીફાઈનાં કોઈ પણ ચાર લક્ષણો સમજાવો.",
+    "modelAnswer": "(1) Large number of buyers and sellers: no single buyer or seller can influence the price. (2) Homogeneous product: all firms sell identical goods, so there is no product differentiation. (3) Free entry and exit: firms can enter or leave the industry freely. (4) Perfect knowledge of the market: buyers and sellers know the market price, so a single price prevails. (Also: perfect mobility of factors, no transport cost; the firm is a price taker with AR = MR.)",
+    "modelAnswerGujarati": "(1) અસંખ્ય ખરીદનાર અને વેચનાર: કોઈ એક ખરીદનાર કે વેચનાર કિંમત પર અસર કરી શકતો નથી. (2) એકરૂપ વસ્તુ: બધી પેઢીઓ એકસરખી વસ્તુ વેચે છે, તેથી વસ્તુ-વિભેદન નથી. (3) પ્રવેશ અને નિર્ગમનની સ્વતંત્રતા: પેઢીઓ ઉદ્યોગમાં મુક્તપણે પ્રવેશી કે નીકળી શકે છે. (4) બજારનું સંપૂર્ણ જ્ઞાન: ખરીદનાર-વેચનારને બજારકિંમતની જાણ હોવાથી એક જ કિંમત પ્રવર્તે છે. (અન્ય: સાધનોની સંપૂર્ણ ગતિશીલતા, પરિવહન ખર્ચ નથી; પેઢી કિંમત સ્વીકારનાર છે અને AR = MR.)",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Many buyers and sellers.",
+        "textGujarati": "અસંખ્ય ખરીદનાર અને વેચનાર."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Homogeneous product.",
+        "textGujarati": "એકરૂપ વસ્તુ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Free entry and exit.",
+        "textGujarati": "પ્રવેશ અને નિર્ગમનની સ્વતંત્રતા."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Perfect knowledge of the market.",
+        "textGujarati": "બજારનું સંપૂર્ણ જ્ઞાન."
+      }
+    ],
+    "examinerTips": "Explain why each feature leads to a single uniform price; a bare list scores half.",
+    "examinerTipsGujarati": "દરેક લક્ષણને કારણે એકસરખી કિંમત કેમ રહે છે તે સમજાવો; ફક્ત યાદી આપવાથી અડધા ગુણ મળે."
+  },
+  {
+    "id": "imp-g12-acc-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 4,
+    "chapterTitle": "Reconstitution of Partnership",
+    "chapterTitleGujarati": "ભાગીદારીનું પુનર્ગઠન",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Define sacrifice ratio.",
+    "questionTextGujarati": "ત્યાગનું પ્રમાણ એટલે શું?",
+    "modelAnswer": "Sacrifice ratio is the ratio in which old partners give up their share of profit in favour of another partner. Sacrifice ratio = Old ratio − New ratio.",
+    "modelAnswerGujarati": "જૂના ભાગીદારો બીજા ભાગીદારની તરફેણમાં પોતાના નફાના હિસ્સામાંથી જે પ્રમાણમાં ત્યાગ કરે તેને ત્યાગનું પ્રમાણ કહે છે. ત્યાગનું પ્રમાણ = જૂનું પ્રમાણ − નવું પ્રમાણ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Definition with formula: Old ratio − New ratio.",
+        "textGujarati": "સૂત્ર સાથે વ્યાખ્યા: જૂનું પ્રમાણ − નવું પ્રમાણ."
+      }
+    ],
+    "examinerTips": "Write the formula; students often reverse it with the gain ratio.",
+    "examinerTipsGujarati": "સૂત્ર અવશ્ય લખો; ઘણા વિદ્યાર્થીઓ તેને લાભના પ્રમાણ સાથે ઊલટાવી દે છે."
+  },
+  {
+    "id": "imp-g12-acc-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 3,
+    "chapterTitle": "Valuation of Goodwill",
+    "chapterTitleGujarati": "પાઘડીનું મૂલ્યાંકન",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Average profit of a firm is ₹60,000, normal rate of return is 12% and capital employed is ₹4,00,000. Find goodwill by capitalisation of average profit method.",
+    "questionTextGujarati": "એક પેઢીનો સરેરાશ નફો ₹60,000, સામાન્ય વળતરનો દર 12% અને રોકાયેલી મૂડી ₹4,00,000 છે. સરેરાશ નફાના મૂડીકરણ પદ્ધતિથી પાઘડી શોધો.",
+    "modelAnswer": "Capitalised value of average profit = 60,000 × 100/12 = ₹5,00,000. Goodwill = 5,00,000 − 4,00,000 = ₹1,00,000.",
+    "modelAnswerGujarati": "સરેરાશ નફાનું મૂડીકૃત મૂલ્ય = 60,000 × 100/12 = ₹5,00,000. પાઘડી = 5,00,000 − 4,00,000 = ₹1,00,000.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Capitalised value = 60,000 × 100/12 = ₹5,00,000",
+        "textGujarati": "મૂડીકૃત મૂલ્ય = 60,000 × 100/12 = ₹5,00,000"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Goodwill = 5,00,000 − 4,00,000 = ₹1,00,000",
+        "textGujarati": "પાઘડી = 5,00,000 − 4,00,000 = ₹1,00,000"
+      }
+    ],
+    "examinerTips": "Write the formula before substituting values; that earns method marks even if arithmetic slips.",
+    "examinerTipsGujarati": "કિંમતો મૂકતાં પહેલાં સૂત્ર લખો; ગણતરીમાં ભૂલ થાય તો પણ પદ્ધતિના ગુણ મળે છે."
+  },
+  {
+    "id": "imp-g12-acc-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 5,
+    "chapterTitle": "Admission of a Partner",
+    "chapterTitleGujarati": "ભાગીદારનો પ્રવેશ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "A and B share profits in the ratio 3:2. C is admitted for 1/4 share, which he takes 1/8 from A and 1/8 from B. Find the new profit-sharing ratio.",
+    "questionTextGujarati": "A અને B 3:2 ના પ્રમાણમાં નફો વહેંચે છે. C ને 1/4 હિસ્સા માટે પ્રવેશ મળે છે, જે તે A પાસેથી 1/8 અને B પાસેથી 1/8 મેળવે છે. નવું નફા-નુકસાનનું પ્રમાણ શોધો.",
+    "modelAnswer": "A's new share = 3/5 − 1/8 = 24/40 − 5/40 = 19/40. B's new share = 2/5 − 1/8 = 16/40 − 5/40 = 11/40. C's share = 1/4 = 10/40. New ratio A:B:C = 19:11:10.",
+    "modelAnswerGujarati": "A નો નવો હિસ્સો = 3/5 − 1/8 = 24/40 − 5/40 = 19/40. B નો નવો હિસ્સો = 2/5 − 1/8 = 16/40 − 5/40 = 11/40. C નો હિસ્સો = 1/4 = 10/40. નવું પ્રમાણ A:B:C = 19:11:10.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "A's new share = 3/5 − 1/8 = 19/40",
+        "textGujarati": "A નો નવો હિસ્સો = 3/5 − 1/8 = 19/40"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "B's new share = 2/5 − 1/8 = 11/40",
+        "textGujarati": "B નો નવો હિસ્સો = 2/5 − 1/8 = 11/40"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "C's share = 1/4 = 10/40; new ratio 19:11:10",
+        "textGujarati": "C નો હિસ્સો = 1/4 = 10/40; નવું પ્રમાણ 19:11:10"
+      }
+    ],
+    "examinerTips": "Check that the three shares add up to 40/40 before writing the final ratio.",
+    "examinerTipsGujarati": "અંતિમ પ્રમાણ લખતાં પહેલાં ત્રણેય હિસ્સાનો સરવાળો 40/40 થાય છે કે નહિ તે ચકાસો."
+  },
+  {
+    "id": "imp-g12-acc-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Accountancy",
+    "chapterNumber": 12,
+    "chapterTitle": "Accounting Ratios and Analysis (Part 2)",
+    "chapterTitleGujarati": "હિસાબી ગુણોત્તર અને વિશ્લેષણ (ભાગ 2)",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "From the following, calculate the current ratio and the liquid ratio: Inventory ₹40,000, Debtors ₹30,000, Cash ₹20,000, Prepaid expenses ₹10,000, Creditors ₹35,000, Bills payable ₹15,000.",
+    "questionTextGujarati": "નીચેની વિગતો પરથી ચાલુ ગુણોત્તર અને પ્રવાહી ગુણોત્તર શોધો: સ્ટૉક ₹40,000, દેવાદારો ₹30,000, રોકડ ₹20,000, પૂર્વદત્ત ખર્ચા ₹10,000, લેણદારો ₹35,000, દેવીહૂંડી ₹15,000.",
+    "modelAnswer": "Current assets = 40,000 + 30,000 + 20,000 + 10,000 = ₹1,00,000; current liabilities = 35,000 + 15,000 = ₹50,000. Current ratio = 1,00,000 ÷ 50,000 = 2:1. Liquid assets = 1,00,000 − 40,000 − 10,000 = ₹50,000. Liquid ratio = 50,000 ÷ 50,000 = 1:1.",
+    "modelAnswerGujarati": "ચાલુ મિલકતો = 40,000 + 30,000 + 20,000 + 10,000 = ₹1,00,000; ચાલુ જવાબદારીઓ = 35,000 + 15,000 = ₹50,000. ચાલુ ગુણોત્તર = 1,00,000 ÷ 50,000 = 2:1. પ્રવાહી મિલકતો = 1,00,000 − 40,000 − 10,000 = ₹50,000. પ્રવાહી ગુણોત્તર = 50,000 ÷ 50,000 = 1:1.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Current assets ₹1,00,000 and current liabilities ₹50,000",
+        "textGujarati": "ચાલુ મિલકતો ₹1,00,000 અને ચાલુ જવાબદારીઓ ₹50,000"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Current ratio = 1,00,000 ÷ 50,000 = 2:1",
+        "textGujarati": "ચાલુ ગુણોત્તર = 1,00,000 ÷ 50,000 = 2:1"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Liquid assets = 1,00,000 − 40,000 (inventory) − 10,000 (prepaid) = ₹50,000",
+        "textGujarati": "પ્રવાહી મિલકતો = 1,00,000 − 40,000 (સ્ટૉક) − 10,000 (પૂર્વદત્ત) = ₹50,000"
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Liquid ratio = 50,000 ÷ 50,000 = 1:1",
+        "textGujarati": "પ્રવાહી ગુણોત્તર = 50,000 ÷ 50,000 = 1:1"
+      }
+    ],
+    "examinerTips": "Remember to exclude both inventory and prepaid expenses from liquid assets, and express answers as ratios (x:1).",
+    "examinerTipsGujarati": "પ્રવાહી મિલકતોમાંથી સ્ટૉક અને પૂર્વદત્ત ખર્ચા બંને બાદ કરવાનું ભૂલશો નહિ અને જવાબ ગુણોત્તર (x:1) રૂપે લખો."
+  },
+  {
+    "id": "imp-g12-bom-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Business Management",
+    "chapterNumber": 2,
+    "chapterTitle": "Principles of Management",
+    "chapterTitleGujarati": "સંચાલનના સિદ્ધાંતો",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Who is known as the father of scientific management?",
+    "questionTextGujarati": "વૈજ્ઞાનિક સંચાલનના પિતા તરીકે કોણ ઓળખાય છે?",
+    "modelAnswer": "F. W. (Frederick Winslow) Taylor is known as the father of scientific management.",
+    "modelAnswerGujarati": "એફ. ડબલ્યુ. (ફ્રેડરિક વિન્સલો) ટેલર વૈજ્ઞાનિક સંચાલનના પિતા તરીકે ઓળખાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "F. W. Taylor",
+        "textGujarati": "એફ. ડબલ્યુ. ટેલર"
+      }
+    ],
+    "examinerTips": "Do not confuse with Henri Fayol, who gave the 14 principles of (administrative) management.",
+    "examinerTipsGujarati": "હેન્રી ફેયોલ સાથે ગૂંચવશો નહિ; ફેયોલે (વહીવટી) સંચાલનના 14 સિદ્ધાંતો આપ્યા હતા."
+  },
+  {
+    "id": "imp-g12-bom-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Business Management",
+    "chapterNumber": 11,
+    "chapterTitle": "Consumer Protection",
+    "chapterTitleGujarati": "ગ્રાહક સુરક્ષા",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "State any four rights of consumers.",
+    "questionTextGujarati": "ગ્રાહકના કોઈ પણ ચાર અધિકારો જણાવો.",
+    "modelAnswer": "(1) Right to safety (2) Right to be informed (3) Right to choose (4) Right to seek redressal. Others include the right to be heard and the right to consumer education.",
+    "modelAnswerGujarati": "(1) સલામતીનો અધિકાર (2) માહિતી મેળવવાનો અધિકાર (3) પસંદગીનો અધિકાર (4) ફરિયાદ નિવારણનો અધિકાર. આ ઉપરાંત રજૂઆતનો (સાંભળવાનો) અધિકાર અને ગ્રાહક શિક્ષણનો અધિકાર પણ છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Right to safety and right to be informed",
+        "textGujarati": "સલામતીનો અધિકાર અને માહિતી મેળવવાનો અધિકાર"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Right to choose and right to seek redressal",
+        "textGujarati": "પસંદગીનો અધિકાર અને ફરિયાદ નિવારણનો અધિકાર"
+      }
+    ],
+    "examinerTips": "Write the rights as a numbered list; mention that the current law is the Consumer Protection Act, 2019.",
+    "examinerTipsGujarati": "અધિકારો ક્રમાંક આપીને લખો; હાલનો કાયદો ગ્રાહક સુરક્ષા ધારો, 2019 છે તેનો ઉલ્લેખ કરો."
+  },
+  {
+    "id": "imp-g12-bom-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Business Management",
+    "chapterNumber": 7,
+    "chapterTitle": "Controlling",
+    "chapterTitleGujarati": "અંકુશ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the steps of the controlling process.",
+    "questionTextGujarati": "અંકુશ પ્રક્રિયાનાં સોપાનો સમજાવો.",
+    "modelAnswer": "(1) Setting performance standards: targets are fixed in measurable terms. (2) Measuring actual performance and comparing it with the standards to find deviations. (3) Analysing the deviations and taking corrective action so that performance returns to plan.",
+    "modelAnswerGujarati": "(1) કામગીરીનાં ધોરણો નક્કી કરવાં: લક્ષ્યો માપી શકાય તેવા સ્વરૂપમાં નક્કી થાય છે. (2) વાસ્તવિક કામગીરીનું માપન કરી તેની ધોરણો સાથે તુલના કરી વિચલનો શોધવાં. (3) વિચલનોનું વિશ્લેષણ કરી સુધારાત્મક પગલાં લેવાં જેથી કામગીરી યોજના મુજબ થાય.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Setting performance standards",
+        "textGujarati": "કામગીરીનાં ધોરણો નક્કી કરવાં"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Measuring actual performance and comparing with standards",
+        "textGujarati": "વાસ્તવિક કામગીરીનું માપન અને ધોરણો સાથે તુલના"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Analysing deviations and taking corrective action",
+        "textGujarati": "વિચલનોનું વિશ્લેષણ અને સુધારાત્મક પગલાં"
+      }
+    ],
+    "examinerTips": "Keep the steps in the correct order and add one line of explanation for each.",
+    "examinerTipsGujarati": "સોપાનો સાચા ક્રમમાં લખો અને દરેક માટે એક લીટીની સમજૂતી ઉમેરો."
+  },
+  {
+    "id": "imp-g12-bom-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Business Management",
+    "chapterNumber": 6,
+    "chapterTitle": "Directing",
+    "chapterTitleGujarati": "દોરવણી",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain Maslow's need hierarchy theory of motivation.",
+    "questionTextGujarati": "માસ્લોનો પ્રેરણાનો જરૂરિયાત શ્રેણી સિદ્ધાંત સમજાવો.",
+    "modelAnswer": "Abraham Maslow arranged human needs in a hierarchy of five levels. (1) Physiological needs: food, clothing, shelter – the most basic. (2) Safety needs: job security, protection from danger. (3) Social needs: love, friendship, belonging. (4) Esteem needs: respect, recognition, status; and at the top, self-actualisation needs: becoming what one is capable of. A satisfied need no longer motivates, so a person moves to the next higher need.",
+    "modelAnswerGujarati": "અબ્રાહમ માસ્લોએ માનવીની જરૂરિયાતોને પાંચ સ્તરની શ્રેણીમાં ગોઠવી. (1) શારીરિક જરૂરિયાતો: ખોરાક, કપડાં, આશ્રય — સૌથી પાયાની. (2) સલામતીની જરૂરિયાતો: નોકરીની સલામતી, જોખમથી રક્ષણ. (3) સામાજિક જરૂરિયાતો: પ્રેમ, મિત્રતા, જૂથમાં સ્વીકાર. (4) સન્માનની જરૂરિયાતો: આદર, માન્યતા, દરજ્જો; અને સૌથી ટોચે આત્મસિદ્ધિની જરૂરિયાત: પોતાની ક્ષમતા મુજબ શ્રેષ્ઠ બનવું. સંતોષાયેલી જરૂરિયાત પ્રેરણા આપતી નથી, તેથી વ્યક્તિ પછીની ઉચ્ચ જરૂરિયાત તરફ જાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Physiological needs – basic needs such as food, clothing, shelter",
+        "textGujarati": "શારીરિક જરૂરિયાતો — ખોરાક, કપડાં, આશ્રય જેવી પાયાની જરૂરિયાતો"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Safety needs – security of job and protection from danger",
+        "textGujarati": "સલામતીની જરૂરિયાતો — નોકરીની સલામતી અને જોખમથી રક્ષણ"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Social needs – love, friendship, belonging",
+        "textGujarati": "સામાજિક જરૂરિયાતો — પ્રેમ, મિત્રતા, જૂથમાં સ્વીકાર"
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Esteem and self-actualisation needs; a satisfied need stops motivating",
+        "textGujarati": "સન્માન અને આત્મસિદ્ધિની જરૂરિયાતો; સંતોષાયેલી જરૂરિયાત પ્રેરણા આપતી નથી"
+      }
+    ],
+    "examinerTips": "A neat pyramid diagram with the five levels in the correct order earns credit.",
+    "examinerTipsGujarati": "પાંચ સ્તર સાચા ક્રમમાં દર્શાવતી પિરામિડ આકૃતિ દોરવાથી ગુણ મળે છે."
+  },
+  {
+    "id": "imp-g12-stat-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 2,
+    "chapterTitle": "Linear Correlation",
+    "chapterTitleGujarati": "સુરેખ સહસંબંધ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "State the range of the correlation coefficient r.",
+    "questionTextGujarati": "સહસંબંધાંક r ની કિંમતની મર્યાદા જણાવો.",
+    "modelAnswer": "The correlation coefficient lies between −1 and +1, i.e. −1 ≤ r ≤ 1.",
+    "modelAnswerGujarati": "સહસંબંધાંકની કિંમત −1 અને +1 ની વચ્ચે હોય છે, એટલે કે −1 ≤ r ≤ 1.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "−1 ≤ r ≤ 1",
+        "textGujarati": "−1 ≤ r ≤ 1"
+      }
+    ],
+    "examinerTips": "Use the ≤ signs; both −1 and +1 are possible values.",
+    "examinerTipsGujarati": "≤ ચિહ્નનો ઉપયોગ કરો; −1 અને +1 બંને શક્ય કિંમતો છે."
+  },
+  {
+    "id": "imp-g12-stat-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 1,
+    "chapterTitle": "Index Numbers",
+    "chapterTitleGujarati": "સૂચક આંક",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Laspeyres' price index is 128 and Paasche's price index is 112.5. Find Fisher's price index.",
+    "questionTextGujarati": "લાસ્પેયરનો ભાવ સૂચક આંક 128 અને પાશ્ચેનો ભાવ સૂચક આંક 112.5 છે. ફિશરનો ભાવ સૂચક આંક શોધો.",
+    "modelAnswer": "I_F = √(I_L × I_P) = √(128 × 112.5) = √14400 = 120.",
+    "modelAnswerGujarati": "I_F = √(I_L × I_P) = √(128 × 112.5) = √14400 = 120.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Formula: I_F = √(I_L × I_P)",
+        "textGujarati": "સૂત્ર: I_F = √(I_L × I_P)"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "√(128 × 112.5) = √14400 = 120",
+        "textGujarati": "√(128 × 112.5) = √14400 = 120"
+      }
+    ],
+    "examinerTips": "Fisher's index always lies between Laspeyres' and Paasche's indices; use this to check your answer.",
+    "examinerTipsGujarati": "ફિશરનો સૂચક આંક હંમેશાં લાસ્પેયર અને પાશ્ચેના સૂચક આંકની વચ્ચે હોય છે; જવાબ ચકાસવા તેનો ઉપયોગ કરો."
+  },
+  {
+    "id": "imp-g12-stat-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 2,
+    "chapterTitle": "Linear Correlation",
+    "chapterTitleGujarati": "સુરેખ સહસંબંધ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "For 6 pairs of observations, the sum of squares of rank differences is Σd² = 14. Find Spearman's rank correlation coefficient and interpret it.",
+    "questionTextGujarati": "6 જોડ અવલોકનો માટે ક્રમાંકના તફાવતના વર્ગોનો સરવાળો Σd² = 14 છે. સ્પિયરમેનનો ક્રમાંક સહસંબંધાંક શોધો અને તેનું અર્થઘટન કરો.",
+    "modelAnswer": "R = 1 − 6Σd² / [n(n² − 1)] = 1 − (6 × 14) / (6 × 35) = 1 − 84/210 = 1 − 0.4 = 0.6. There is a moderate positive correlation between the two rankings.",
+    "modelAnswerGujarati": "R = 1 − 6Σd² / [n(n² − 1)] = 1 − (6 × 14) / (6 × 35) = 1 − 84/210 = 1 − 0.4 = 0.6. બંને ક્રમાંકો વચ્ચે મધ્યમ કક્ષાનો ધન સહસંબંધ છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Formula R = 1 − 6Σd² / [n(n² − 1)]",
+        "textGujarati": "સૂત્ર R = 1 − 6Σd² / [n(n² − 1)]"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Substitution: 1 − 84/210",
+        "textGujarati": "કિંમત મૂકતાં: 1 − 84/210"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "R = 0.6, moderate positive correlation",
+        "textGujarati": "R = 0.6, મધ્યમ ધન સહસંબંધ"
+      }
+    ],
+    "examinerTips": "n(n² − 1) = 6 × 35 = 210; a slip here is the most common error.",
+    "examinerTipsGujarati": "n(n² − 1) = 6 × 35 = 210; અહીં ભૂલ સૌથી વધુ થાય છે."
+  },
+  {
+    "id": "imp-g12-stat-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Statistics",
+    "chapterNumber": 6,
+    "chapterTitle": "Random Variable and Discrete Probability Distribution (Part 2)",
+    "chapterTitleGujarati": "યાદૃચ્છિક ચલ અને અસતત સંભાવના-વિતરણ (ભાગ 2)",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "A fair coin is tossed 4 times. If X is the number of heads, find P(X = 2), and the mean and variance of X.",
+    "questionTextGujarati": "એક સમતોલ સિક્કો 4 વખત ઉછાળવામાં આવે છે. X = મળતી છાપની સંખ્યા હોય તો P(X = 2), X નો મધ્યક અને વિચરણ શોધો.",
+    "modelAnswer": "X follows a binomial distribution with n = 4, p = 1/2, q = 1/2. P(X = x) = 4Cx (1/2)^x (1/2)^(4−x). P(X = 2) = 4C2 (1/2)^4 = 6/16 = 3/8. Mean = np = 4 × 1/2 = 2. Variance = npq = 4 × 1/2 × 1/2 = 1.",
+    "modelAnswerGujarati": "X દ્વિપદી વિતરણને અનુસરે છે, જ્યાં n = 4, p = 1/2, q = 1/2. P(X = x) = 4Cx (1/2)^x (1/2)^(4−x). P(X = 2) = 4C2 (1/2)^4 = 6/16 = 3/8. મધ્યક = np = 4 × 1/2 = 2. વિચરણ = npq = 4 × 1/2 × 1/2 = 1.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Binomial with n = 4, p = 1/2, q = 1/2",
+        "textGujarati": "દ્વિપદી વિતરણ: n = 4, p = 1/2, q = 1/2"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "P(X = x) = nCx p^x q^(n−x)",
+        "textGujarati": "P(X = x) = nCx p^x q^(n−x)"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "P(X = 2) = 6 × 1/16 = 3/8",
+        "textGujarati": "P(X = 2) = 6 × 1/16 = 3/8"
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Mean = np = 2, Variance = npq = 1",
+        "textGujarati": "મધ્યક = np = 2, વિચરણ = npq = 1"
+      }
+    ],
+    "examinerTips": "State n, p and q clearly before using the formula; simplify the probability to its lowest form.",
+    "examinerTipsGujarati": "સૂત્ર વાપરતાં પહેલાં n, p અને q સ્પષ્ટ લખો; સંભાવનાને અતિસંક્ષિપ્ત સ્વરૂપમાં લખો."
+  },
+  {
+    "id": "imp-g12-eco-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 4,
+    "chapterTitle": "Banking and Monetary Policy",
+    "chapterTitleGujarati": "બેન્કિંગ અને નાણાકીય નીતિ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "When was the Reserve Bank of India established?",
+    "questionTextGujarati": "ભારતીય રિઝર્વ બેન્કની સ્થાપના ક્યારે થઈ?",
+    "modelAnswer": "The Reserve Bank of India was established on 1 April 1935.",
+    "modelAnswerGujarati": "ભારતીય રિઝર્વ બેન્કની સ્થાપના 1 એપ્રિલ, 1935ના રોજ થઈ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "1 April 1935",
+        "textGujarati": "1 એપ્રિલ, 1935"
+      }
+    ],
+    "examinerTips": "Do not confuse with 1949, the year the RBI was nationalised.",
+    "examinerTipsGujarati": "1949 સાથે ગૂંચવશો નહિ; 1949માં રિઝર્વ બેન્કનું રાષ્ટ્રીયકરણ થયું હતું."
+  },
+  {
+    "id": "imp-g12-eco-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 2,
+    "chapterTitle": "Indicators of Growth and Development",
+    "chapterTitleGujarati": "વૃદ્ધિ અને વિકાસના નિર્દેશકો",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Distinguish between economic growth and economic development (any two points).",
+    "questionTextGujarati": "આર્થિક વૃદ્ધિ અને આર્થિક વિકાસ વચ્ચેનો તફાવત જણાવો (કોઈ પણ બે મુદ્દા).",
+    "modelAnswer": "(1) Economic growth is a quantitative concept showing an increase in national or per capita income; economic development is a qualitative concept that also includes improvement in health, education and living standards. (2) Growth is a narrow concept; development is broader and includes growth along with structural and social change.",
+    "modelAnswerGujarati": "(1) આર્થિક વૃદ્ધિ રાષ્ટ્રીય કે માથાદીઠ આવકમાં વધારો દર્શાવતો સંખ્યાત્મક ખ્યાલ છે; આર્થિક વિકાસ ગુણાત્મક ખ્યાલ છે, જેમાં સ્વાસ્થ્ય, શિક્ષણ અને જીવનધોરણમાં સુધારો પણ આવે છે. (2) વૃદ્ધિ સંકુચિત ખ્યાલ છે; વિકાસ વિશાળ ખ્યાલ છે, જેમાં વૃદ્ધિ સાથે માળખાકીય અને સામાજિક પરિવર્તનનો સમાવેશ થાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Quantitative (growth) vs qualitative (development)",
+        "textGujarati": "સંખ્યાત્મક (વૃદ્ધિ) વિરુદ્ધ ગુણાત્મક (વિકાસ)"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Narrow (growth) vs broad, includes structural change (development)",
+        "textGujarati": "સંકુચિત (વૃદ્ધિ) વિરુદ્ધ વિશાળ, માળખાકીય પરિવર્તન સહિત (વિકાસ)"
+      }
+    ],
+    "examinerTips": "Present the difference in a two-column table; each point must compare both terms.",
+    "examinerTipsGujarati": "તફાવત બે કૉલમના કોષ્ટકમાં લખો; દરેક મુદ્દામાં બંને ખ્યાલની તુલના હોવી જોઈએ."
+  },
+  {
+    "id": "imp-g12-eco-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 3,
+    "chapterTitle": "Money and Inflation",
+    "chapterTitleGujarati": "નાણું અને ફુગાવો",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "What is inflation? Explain demand-pull and cost-push inflation.",
+    "questionTextGujarati": "ફુગાવો એટલે શું? માંગપ્રેરિત અને ખર્ચપ્રેરિત ફુગાવો સમજાવો.",
+    "modelAnswer": "Inflation is a continuous rise in the general price level, which reduces the purchasing power of money. Demand-pull inflation occurs when aggregate demand exceeds aggregate supply, for example due to rising incomes, government spending or money supply. Cost-push inflation occurs when the cost of production rises, for example due to higher wages, raw material or fuel prices, and producers pass this on as higher prices.",
+    "modelAnswerGujarati": "સામાન્ય ભાવસપાટીમાં સતત થતા વધારાને ફુગાવો કહે છે; તેનાથી નાણાંની ખરીદશક્તિ ઘટે છે. માંગપ્રેરિત ફુગાવો: આવક, સરકારી ખર્ચ કે નાણાંના પુરવઠામાં વધારો થવાથી કુલ માંગ કુલ પુરવઠા કરતાં વધી જાય ત્યારે ભાવો વધે છે. ખર્ચપ્રેરિત ફુગાવો: વેતન, કાચા માલ કે બળતણના ભાવ વધવાથી ઉત્પાદન ખર્ચ વધે અને ઉત્પાદકો તે ઊંચા ભાવ રૂપે ગ્રાહકો પર નાખે ત્યારે ફુગાવો થાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Definition: continuous rise in general price level",
+        "textGujarati": "વ્યાખ્યા: સામાન્ય ભાવસપાટીમાં સતત વધારો"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Demand-pull: aggregate demand exceeds aggregate supply, with a cause",
+        "textGujarati": "માંગપ્રેરિત: કુલ માંગ કુલ પુરવઠા કરતાં વધુ, કારણ સાથે"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Cost-push: rise in production costs passed on as higher prices",
+        "textGujarati": "ખર્ચપ્રેરિત: વધેલો ઉત્પાદન ખર્ચ ઊંચા ભાવ રૂપે"
+      }
+    ],
+    "examinerTips": "Give one cause as an example for each type of inflation.",
+    "examinerTipsGujarati": "ફુગાવાના દરેક પ્રકાર માટે એક કારણ ઉદાહરણ રૂપે આપો."
+  },
+  {
+    "id": "imp-g12-eco-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Economics",
+    "chapterNumber": 6,
+    "chapterTitle": "Unemployment",
+    "chapterTitleGujarati": "બેરોજગારી",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain the main types of unemployment found in India.",
+    "questionTextGujarati": "ભારતમાં જોવા મળતા બેરોજગારીના મુખ્ય પ્રકારો સમજાવો.",
+    "modelAnswer": "(1) Disguised unemployment: more workers are engaged than required, so the marginal productivity of extra workers is zero; common in agriculture. (2) Seasonal unemployment: work is available only in certain seasons, as in agriculture. (3) Structural unemployment: arises from changes in the structure of the economy or lack of capital, so the economy cannot absorb the labour force. (4) Educated unemployment: educated persons do not get jobs matching their qualifications.",
+    "modelAnswerGujarati": "(1) છૂપી બેરોજગારી: જરૂર કરતાં વધુ શ્રમિકો કામમાં રોકાયેલા હોય, તેથી વધારાના શ્રમિકોની સીમાંત ઉત્પાદકતા શૂન્ય હોય; ખેતીમાં વધુ જોવા મળે. (2) મોસમી બેરોજગારી: ખેતી જેવી પ્રવૃત્તિમાં અમુક ઋતુમાં જ કામ મળે. (3) માળખાગત બેરોજગારી: અર્થતંત્રના માળખામાં ફેરફાર કે મૂડીની અછતને કારણે શ્રમબળને કામ આપી શકાતું નથી. (4) શિક્ષિત બેરોજગારી: શિક્ષિત વ્યક્તિઓને તેમની લાયકાત મુજબ કામ મળતું નથી.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Disguised unemployment – marginal productivity zero",
+        "textGujarati": "છૂપી બેરોજગારી — સીમાંત ઉત્પાદકતા શૂન્ય"
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Seasonal unemployment – work only in some seasons",
+        "textGujarati": "મોસમી બેરોજગારી — અમુક ઋતુમાં જ કામ"
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Structural unemployment – structural change or lack of capital",
+        "textGujarati": "માળખાગત બેરોજગારી — માળખાકીય ફેરફાર કે મૂડીની અછત"
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Educated unemployment – no work matching qualifications",
+        "textGujarati": "શિક્ષિત બેરોજગારી — લાયકાત મુજબ કામ નહિ"
+      }
+    ],
+    "examinerTips": "Write each type as a sub-heading with a one-line explanation and an Indian example.",
+    "examinerTipsGujarati": "દરેક પ્રકારને પેટાશીર્ષક તરીકે લખી એક લીટીની સમજૂતી અને ભારતનું ઉદાહરણ આપો."
+  },
+  {
+    "id": "imp-g11-his-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 7,
+    "chapterTitle": "The Mauryan Age",
+    "chapterTitleGujarati": "મૌર્યયુગ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Who founded the Mauryan empire?",
+    "questionTextGujarati": "મૌર્ય સામ્રાજ્યની સ્થાપના કોણે કરી?",
+    "modelAnswer": "Chandragupta Maurya founded the Mauryan empire (with the help of Chanakya).",
+    "modelAnswerGujarati": "ચંદ્રગુપ્ત મૌર્યે (ચાણક્યની સહાયથી) મૌર્ય સામ્રાજ્યની સ્થાપના કરી.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Name: Chandragupta Maurya.",
+        "textGujarati": "નામ: ચંદ્રગુપ્ત મૌર્ય."
+      }
+    ],
+    "examinerTips": "Write the full name; 'Chandragupta' alone can be confused with the Gupta kings.",
+    "examinerTipsGujarati": "પૂરું નામ લખો; માત્ર 'ચંદ્રગુપ્ત' લખવાથી ગુપ્ત રાજાઓ સાથે ગેરસમજ થઈ શકે."
+  },
+  {
+    "id": "imp-g11-his-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 2,
+    "chapterTitle": "The Harappan Civilisation",
+    "chapterTitleGujarati": "હડપ્પીય સભ્યતા",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Write two features of the town planning of the Harappan civilisation.",
+    "questionTextGujarati": "હડપ્પીય સભ્યતાના નગર-આયોજનની બે વિશેષતાઓ લખો.",
+    "modelAnswer": "(1) Roads were straight, wide and cut each other at right angles, dividing the city into blocks. (2) There was a well-planned covered drainage system, and houses were built of baked bricks.",
+    "modelAnswerGujarati": "(1) રસ્તા સીધા, પહોળા અને એકબીજાને કાટખૂણે છેદતા હતા, જેથી નગર વિભાગોમાં વહેંચાતું. (2) ઢાંકેલી ગટરની સુઆયોજિત વ્યવસ્થા હતી અને મકાનો પાકી ઈંટોનાં બનેલાં હતાં.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Straight roads crossing at right angles.",
+        "textGujarati": "કાટખૂણે છેદતા સીધા રસ્તા."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Covered drainage system / baked-brick houses.",
+        "textGujarati": "ઢાંકેલી ગટર વ્યવસ્થા / પાકી ઈંટોનાં મકાનો."
+      }
+    ],
+    "examinerTips": "Give two distinct features; an example site (Mohenjo-daro, Dholavira) adds value.",
+    "examinerTipsGujarati": "બે અલગ વિશેષતાઓ લખો; મોહેં-જો-દડો કે ધોળાવીરા જેવાં સ્થળનું ઉદાહરણ ઉપયોગી છે."
+  },
+  {
+    "id": "imp-g11-his-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 7,
+    "chapterTitle": "The Mauryan Age",
+    "chapterTitleGujarati": "મૌર્યયુગ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Why did Ashoka adopt the policy of dhamma? Write its main features.",
+    "questionTextGujarati": "અશોકે ધમ્મની નીતિ શા માટે અપનાવી? તેનાં મુખ્ય લક્ષણો લખો.",
+    "modelAnswer": "After the Kalinga war, the massive bloodshed and suffering filled Ashoka with remorse, so he gave up conquest by war and adopted dhamma. Dhamma taught non-violence, respect for parents, elders and teachers, kindness to slaves and servants, and tolerance towards all sects. Ashoka spread it through rock and pillar edicts (such as the Girnar edict) and by appointing Dhamma Mahamatras.",
+    "modelAnswerGujarati": "કલિંગ યુદ્ધમાં થયેલા ભયંકર રક્તપાત અને લોકોની વેદનાથી અશોકને પશ્ચાત્તાપ થયો, તેથી તેણે યુદ્ધ દ્વારા વિજયની નીતિ છોડીને ધમ્મ અપનાવ્યો. ધમ્મમાં અહિંસા, માતા-પિતા, વડીલો અને ગુરુઓનો આદર, દાસો અને સેવકો પ્રત્યે દયા તથા બધા સંપ્રદાયો પ્રત્યે સહિષ્ણુતાનો ઉપદેશ હતો. અશોકે શિલાલેખો અને સ્તંભલેખો (જેમ કે ગિરનાર શિલાલેખ) દ્વારા અને ધમ્મમહામાત્રોની નિમણૂક કરીને તેનો પ્રચાર કર્યો.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Reason: remorse after the Kalinga war.",
+        "textGujarati": "કારણ: કલિંગ યુદ્ધ પછીનો પશ્ચાત્તાપ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Features: non-violence, respect for elders, tolerance.",
+        "textGujarati": "લક્ષણો: અહિંસા, વડીલોનો આદર, સહિષ્ણુતા."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Spread through edicts and Dhamma Mahamatras.",
+        "textGujarati": "શિલાલેખો અને ધમ્મમહામાત્રો દ્વારા પ્રચાર."
+      }
+    ],
+    "examinerTips": "Link the reason (Kalinga) clearly before listing features; mentioning the Girnar edict connects it to Gujarat.",
+    "examinerTipsGujarati": "લક્ષણો લખતાં પહેલાં કારણ (કલિંગ યુદ્ધ) સ્પષ્ટ લખો; ગિરનાર શિલાલેખનો ઉલ્લેખ ગુજરાત સાથે જોડાણ દર્શાવે છે."
+  },
+  {
+    "id": "imp-g11-his-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 9,
+    "chapterTitle": "India in the Gupta Age",
+    "chapterTitleGujarati": "ગુપ્તકાલીન ભારત",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Why is the Gupta age called the 'Golden Age' of Indian history?",
+    "questionTextGujarati": "ગુપ્તયુગને ભારતીય ઇતિહાસનો 'સુવર્ણયુગ' શા માટે કહેવામાં આવે છે?",
+    "modelAnswer": "(1) Political unity and stable administration were established under rulers like Samudragupta and Chandragupta II. (2) Literature flourished — Kalidasa wrote Abhijnana Shakuntalam and Meghadutam. (3) Science and mathematics advanced — Aryabhata wrote the Aryabhatiya and stated that the earth rotates on its axis; Varahamihira worked in astronomy. (4) Art, architecture and education developed — the Ajanta paintings, temple architecture and Nalanda university are examples.",
+    "modelAnswerGujarati": "(1) સમુદ્રગુપ્ત અને ચંદ્રગુપ્ત બીજા જેવા શાસકો હેઠળ રાજકીય એકતા અને સ્થિર વહીવટ સ્થપાયો. (2) સાહિત્યનો વિકાસ થયો - કાલિદાસે 'અભિજ્ઞાન શાકુન્તલમ્' અને 'મેઘદૂતમ્' રચ્યાં. (3) વિજ્ઞાન અને ગણિતમાં પ્રગતિ થઈ - આર્યભટ્ટે 'આર્યભટીય' લખ્યું અને પૃથ્વી પોતાની ધરી પર ફરે છે એમ જણાવ્યું; વરાહમિહિરે ખગોળશાસ્ત્રમાં કાર્ય કર્યું. (4) કલા, સ્થાપત્ય અને શિક્ષણનો વિકાસ થયો - અજંતાનાં ચિત્રો, મંદિર સ્થાપત્ય અને નાલંદા વિદ્યાપીઠ તેનાં ઉદાહરણ છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Political unity and stable administration.",
+        "textGujarati": "રાજકીય એકતા અને સ્થિર વહીવટ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Literature: Kalidasa.",
+        "textGujarati": "સાહિત્ય: કાલિદાસ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Science: Aryabhata, Varahamihira.",
+        "textGujarati": "વિજ્ઞાન: આર્યભટ્ટ, વરાહમિહિર."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Art, architecture and education: Ajanta, Nalanda.",
+        "textGujarati": "કલા, સ્થાપત્ય અને શિક્ષણ: અજંતા, નાલંદા."
+      }
+    ],
+    "examinerTips": "Write four separate points, each with one named example.",
+    "examinerTipsGujarati": "ચાર અલગ મુદ્દા લખો અને દરેકમાં એક નામ સાથેનું ઉદાહરણ આપો."
+  },
+  {
+    "id": "imp-g11-geo-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 4,
+    "chapterTitle": "Earthquakes and Volcanoes",
+    "chapterTitleGujarati": "ભૂકંપ અને જ્વાળામુખી",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "What is an epicentre?",
+    "questionTextGujarati": "અધિકેન્દ્ર એટલે શું?",
+    "modelAnswer": "The point on the earth's surface directly above the focus (place of origin) of an earthquake is called the epicentre.",
+    "modelAnswerGujarati": "ભૂકંપ જ્યાં ઉદ્ભવે છે તે ભૂકંપ કેન્દ્રની બરાબર ઉપર પૃથ્વીની સપાટી પર આવેલા બિંદુને અધિકેન્દ્ર કહે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Surface point directly above the focus.",
+        "textGujarati": "ભૂકંપ કેન્દ્રની બરાબર ઉપરનું સપાટી પરનું બિંદુ."
+      }
+    ],
+    "examinerTips": "Do not confuse epicentre (on the surface) with focus (inside the earth).",
+    "examinerTipsGujarati": "અધિકેન્દ્ર (સપાટી પર) અને ભૂકંપ કેન્દ્ર (પૃથ્વીની અંદર) વચ્ચે ગૂંચવાશો નહીં."
+  },
+  {
+    "id": "imp-g11-geo-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 3,
+    "chapterTitle": "The Interior Structure of the Earth",
+    "chapterTitleGujarati": "પૃથ્વીની આંતરિક સંરચના",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "What are the Moho and Gutenberg discontinuities?",
+    "questionTextGujarati": "મોહો અસાતત્ય અને ગુટેનબર્ગ અસાતત્ય એટલે શું?",
+    "modelAnswer": "The Mohorovičić (Moho) discontinuity is the boundary between the crust and the mantle. The Gutenberg discontinuity is the boundary between the mantle and the core.",
+    "modelAnswerGujarati": "પોપડા અને પ્રાવાર (મેન્ટલ) વચ્ચેની સીમાને મોહોરોવિસિક (મોહો) અસાતત્ય કહે છે. પ્રાવાર અને ભૂગર્ભ (કોર) વચ્ચેની સીમાને ગુટેનબર્ગ અસાતત્ય કહે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Moho: crust–mantle boundary.",
+        "textGujarati": "મોહો: પોપડો-પ્રાવાર સીમા."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Gutenberg: mantle–core boundary.",
+        "textGujarati": "ગુટેનબર્ગ: પ્રાવાર-ભૂગર્ભ સીમા."
+      }
+    ],
+    "examinerTips": "A neat labelled diagram of the earth's layers can support the answer.",
+    "examinerTipsGujarati": "પૃથ્વીનાં સ્તરોની નામનિર્દેશવાળી સ્વચ્છ આકૃતિ ઉત્તરને મજબૂત બનાવે છે."
+  },
+  {
+    "id": "imp-g11-geo-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 6,
+    "chapterTitle": "Rocks, Minerals and Soil",
+    "chapterTitleGujarati": "ખડકો, ખનીજો અને જમીન",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the three types of rocks with examples.",
+    "questionTextGujarati": "ખડકોના ત્રણ પ્રકાર ઉદાહરણ સહિત સમજાવો.",
+    "modelAnswer": "(1) Igneous rocks form when molten magma or lava cools and solidifies, e.g. granite and basalt. (2) Sedimentary rocks form when sediments are deposited in layers and compacted, e.g. sandstone, shale and limestone. (3) Metamorphic rocks form when existing rocks are changed by heat and pressure, e.g. limestone changes into marble and shale into slate.",
+    "modelAnswerGujarati": "(1) અગ્નિકૃત ખડકો પીગળેલો મેગ્મા કે લાવા ઠરીને ઘન બને ત્યારે રચાય છે, દા.ત. ગ્રેનાઇટ અને બેસાલ્ટ. (2) જળકૃત (પ્રસ્તર) ખડકો કાંપના સ્તરો જમા થઈ દબાઈને બને છે, દા.ત. રેતીનો ખડક, શેલ અને ચૂનાનો ખડક. (3) રૂપાંતરિત ખડકો મૂળ ખડકો પર ગરમી અને દબાણની અસરથી બને છે, દા.ત. ચૂનાના ખડકમાંથી આરસપહાણ અને શેલમાંથી સ્લેટ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Igneous: cooling of magma/lava; granite, basalt.",
+        "textGujarati": "અગ્નિકૃત: મેગ્મા/લાવા ઠરવાથી; ગ્રેનાઇટ, બેસાલ્ટ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Sedimentary: layers of sediments; sandstone, limestone.",
+        "textGujarati": "જળકૃત: કાંપના સ્તરો; રેતીનો ખડક, ચૂનાનો ખડક."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Metamorphic: heat and pressure; marble, slate.",
+        "textGujarati": "રૂપાંતરિત: ગરમી અને દબાણ; આરસપહાણ, સ્લેટ."
+      }
+    ],
+    "examinerTips": "Each type needs both a formation process and an example to earn its mark.",
+    "examinerTipsGujarati": "દરેક પ્રકાર માટે રચનાની પ્રક્રિયા અને ઉદાહરણ બંને લખવાથી જ પૂરો ગુણ મળે છે."
+  },
+  {
+    "id": "imp-g11-geo-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 8,
+    "chapterTitle": "The Atmosphere",
+    "chapterTitleGujarati": "વાતાવરણ",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Describe the layers of the atmosphere.",
+    "questionTextGujarati": "વાતાવરણનાં સ્તરોનું વર્ણન કરો.",
+    "modelAnswer": "(1) Troposphere: the lowest layer; temperature falls with height (about 6.5°C per 1000 m) and all weather phenomena occur here. (2) Stratosphere: lies above the troposphere and contains the ozone layer, which absorbs ultraviolet rays. (3) Mesosphere: temperature decreases with height; meteors burn up in this layer. (4) Thermosphere (with the ionosphere) and exosphere: temperature rises with height; the ionosphere reflects radio waves, and the exosphere is the outermost, very thin layer.",
+    "modelAnswerGujarati": "(1) ક્ષોભમંડળ: સૌથી નીચેનું સ્તર; ઊંચાઈ વધતાં તાપમાન ઘટે છે (દર 1000 મીટરે આશરે 6.5° સે.) અને હવામાનની બધી ઘટનાઓ અહીં બને છે. (2) સમતાપમંડળ: ક્ષોભમંડળની ઉપર આવેલું છે અને તેમાં ઓઝોન સ્તર છે, જે પારજાંબલી કિરણો શોષે છે. (3) મધ્યાવરણ: ઊંચાઈ સાથે તાપમાન ઘટે છે; ઉલ્કાઓ આ સ્તરમાં સળગી જાય છે. (4) ઉષ્માવરણ (આયનમંડળ સહિત) અને બાહ્યાવરણ: ઊંચાઈ સાથે તાપમાન વધે છે; આયનમંડળ રેડિયો તરંગોનું પરાવર્તન કરે છે અને બાહ્યાવરણ સૌથી બહારનું અત્યંત પાતળું સ્તર છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Troposphere: weather, lapse rate.",
+        "textGujarati": "ક્ષોભમંડળ: હવામાન, તાપ-ઘટાડા દર."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Stratosphere: ozone layer.",
+        "textGujarati": "સમતાપમંડળ: ઓઝોન સ્તર."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Mesosphere: meteors burn up.",
+        "textGujarati": "મધ્યાવરણ: ઉલ્કાઓ સળગી જાય છે."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Thermosphere/ionosphere and exosphere: radio waves reflected; outermost layer.",
+        "textGujarati": "ઉષ્માવરણ/આયનમંડળ અને બાહ્યાવરણ: રેડિયો તરંગોનું પરાવર્તન; સૌથી બહારનું સ્તર."
+      }
+    ],
+    "examinerTips": "Keep the layers in the correct order from the earth's surface upwards; a labelled diagram helps.",
+    "examinerTipsGujarati": "સ્તરો પૃથ્વીની સપાટીથી ઉપર તરફના સાચા ક્રમમાં લખો; નામનિર્દેશવાળી આકૃતિ મદદરૂપ થાય છે."
+  },
+  {
+    "id": "imp-g11-psy-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 1,
+    "chapterTitle": "Psychology: A Science",
+    "chapterTitleGujarati": "મનોવિજ્ઞાન : એક વિજ્ઞાન",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Who set up the first psychology laboratory, and where?",
+    "questionTextGujarati": "પ્રથમ મનોવૈજ્ઞાનિક પ્રયોગશાળા કોણે અને ક્યાં સ્થાપી?",
+    "modelAnswer": "Wilhelm Wundt set up the first psychology laboratory at Leipzig, Germany, in 1879.",
+    "modelAnswerGujarati": "વિલ્હેમ વુન્ટે ઈ.સ. 1879માં જર્મનીના લાઇપઝિગમાં પ્રથમ મનોવૈજ્ઞાનિક પ્રયોગશાળા સ્થાપી.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Wilhelm Wundt, Leipzig (1879).",
+        "textGujarati": "વિલ્હેમ વુન્ટ, લાઇપઝિગ (1879)."
+      }
+    ],
+    "examinerTips": "Mention both the person and the place for full credit.",
+    "examinerTipsGujarati": "પૂરો ગુણ મેળવવા વ્યક્તિ અને સ્થળ બંને લખો."
+  },
+  {
+    "id": "imp-g11-psy-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 6,
+    "chapterTitle": "Memory and Forgetting",
+    "chapterTitleGujarati": "સ્મરણ અને વિસ્મરણ",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Distinguish between short-term memory and long-term memory.",
+    "questionTextGujarati": "ટૂંકા ગાળાની સ્મૃતિ અને લાંબા ગાળાની સ્મૃતિ વચ્ચેનો તફાવત લખો.",
+    "modelAnswer": "(1) Capacity: short-term memory holds a limited amount (about 7±2 items), whereas long-term memory has a practically unlimited capacity. (2) Duration: short-term memory lasts only a few seconds without rehearsal, whereas long-term memory can last for years or a lifetime.",
+    "modelAnswerGujarati": "(1) ક્ષમતા: ટૂંકા ગાળાની સ્મૃતિની ક્ષમતા મર્યાદિત (આશરે 7±2 એકમ) છે, જ્યારે લાંબા ગાળાની સ્મૃતિની ક્ષમતા લગભગ અમર્યાદિત છે. (2) સમયગાળો: પુનરાવર્તન વિના ટૂંકા ગાળાની સ્મૃતિ થોડી સેકન્ડ જ ટકે છે, જ્યારે લાંબા ગાળાની સ્મૃતિ વર્ષો કે જીવનભર ટકી શકે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Capacity: limited (7±2) vs practically unlimited.",
+        "textGujarati": "ક્ષમતા: મર્યાદિત (7±2) વિરુદ્ધ લગભગ અમર્યાદિત."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Duration: a few seconds vs years.",
+        "textGujarati": "સમયગાળો: થોડી સેકન્ડ વિરુદ્ધ વર્ષો."
+      }
+    ],
+    "examinerTips": "Present differences point-by-point on the same basis (capacity, duration); a two-column table works well.",
+    "examinerTipsGujarati": "તફાવત એક જ આધાર (ક્ષમતા, સમયગાળો) પર મુદ્દાસર લખો; બે કૉલમનું કોષ્ટક સારું રહે છે."
+  },
+  {
+    "id": "imp-g11-psy-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 8,
+    "chapterTitle": "Personality",
+    "chapterTitleGujarati": "વ્યક્તિત્વ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the three components of personality according to Freud.",
+    "questionTextGujarati": "ફ્રોઇડ મુજબ વ્યક્તિત્વના ત્રણ ઘટકો સમજાવો.",
+    "modelAnswer": "(1) Id: the inborn, unconscious part that seeks immediate satisfaction of desires; it works on the pleasure principle. (2) Ego: the rational part that balances the demands of the id with reality; it works on the reality principle. (3) Superego: the moral part, formed from the values of parents and society; it works as the conscience on the morality principle.",
+    "modelAnswerGujarati": "(1) ઇડ: જન્મજાત અને અજાગ્રત ભાગ, જે ઇચ્છાઓની તાત્કાલિક પૂર્તિ ઇચ્છે છે; તે આનંદના સિદ્ધાંત પર કાર્ય કરે છે. (2) ઇગો: તર્કશીલ ભાગ, જે ઇડની માંગણીઓ અને વાસ્તવિકતા વચ્ચે સમતોલન જાળવે છે; તે વાસ્તવિકતાના સિદ્ધાંત પર કાર્ય કરે છે. (3) સુપરઇગો: નૈતિક ભાગ, જે માતા-પિતા અને સમાજનાં મૂલ્યોમાંથી ઘડાય છે; તે અંતરાત્મા તરીકે નૈતિકતાના સિદ્ધાંત પર કાર્ય કરે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Id: pleasure principle.",
+        "textGujarati": "ઇડ: આનંદનો સિદ્ધાંત."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Ego: reality principle.",
+        "textGujarati": "ઇગો: વાસ્તવિકતાનો સિદ્ધાંત."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Superego: morality principle / conscience.",
+        "textGujarati": "સુપરઇગો: નૈતિકતાનો સિદ્ધાંત / અંતરાત્મા."
+      }
+    ],
+    "examinerTips": "State the principle each component works on — examiners look for these key terms.",
+    "examinerTipsGujarati": "દરેક ઘટક કયા સિદ્ધાંત પર કાર્ય કરે છે તે અવશ્ય લખો - પરીક્ષક આ મુખ્ય શબ્દો શોધે છે."
+  },
+  {
+    "id": "imp-g11-psy-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 9,
+    "chapterTitle": "Motivation and Emotion",
+    "chapterTitleGujarati": "પ્રેરણા અને આવેગ",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain Maslow's hierarchy of needs.",
+    "questionTextGujarati": "માસ્લોનો જરૂરિયાતોનો શ્રેણીક્રમ સમજાવો.",
+    "modelAnswer": "Abraham Maslow arranged human needs in a hierarchy (pyramid); a higher need becomes important only after lower needs are reasonably met. (1) Physiological needs: food, water, sleep — at the base. (2) Safety needs: security and protection from danger. (3) Love and belongingness needs, followed by esteem needs: affection, acceptance, respect and recognition. (4) Self-actualisation: realising one's full potential — at the top of the hierarchy.",
+    "modelAnswerGujarati": "અબ્રાહમ માસ્લોએ માનવ જરૂરિયાતોને શ્રેણીક્રમ (પિરામિડ)માં ગોઠવી; નીચેની જરૂરિયાતો યોગ્ય રીતે સંતોષાય પછી જ ઉપરની જરૂરિયાત મહત્ત્વની બને છે. (1) શારીરિક જરૂરિયાતો: ખોરાક, પાણી, ઊંઘ - સૌથી નીચે. (2) સલામતીની જરૂરિયાતો: સુરક્ષા અને જોખમથી રક્ષણ. (3) પ્રેમ અને સંબંધની જરૂરિયાતો, ત્યાર બાદ આદરની જરૂરિયાતો: સ્નેહ, સ્વીકાર, માન અને પ્રતિષ્ઠા. (4) સ્વ-વાસ્તવિકીકરણ: પોતાની સંપૂર્ણ ક્ષમતાઓનો વિકાસ - શ્રેણીક્રમમાં સૌથી ઉપર.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Hierarchy idea and physiological needs at the base.",
+        "textGujarati": "શ્રેણીક્રમનો ખ્યાલ અને સૌથી નીચે શારીરિક જરૂરિયાતો."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Safety needs.",
+        "textGujarati": "સલામતીની જરૂરિયાતો."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Love/belongingness and esteem needs.",
+        "textGujarati": "પ્રેમ/સંબંધ અને આદરની જરૂરિયાતો."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Self-actualisation at the top.",
+        "textGujarati": "સૌથી ઉપર સ્વ-વાસ્તવિકીકરણ."
+      }
+    ],
+    "examinerTips": "Keep the levels in the correct order; drawing the pyramid earns presentation credit.",
+    "examinerTipsGujarati": "સ્તરો સાચા ક્રમમાં લખો; પિરામિડની આકૃતિ દોરવાથી રજૂઆત સારી બને છે."
+  },
+  {
+    "id": "imp-g11-socio-1m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 1,
+    "chapterTitle": "Sociology: An Introduction",
+    "chapterTitleGujarati": "સમાજશાસ્ત્ર : પરિચય",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Who is known as the father of sociology?",
+    "questionTextGujarati": "સમાજશાસ્ત્રના પિતા તરીકે કોણ ઓળખાય છે?",
+    "modelAnswer": "Auguste Comte is known as the father of sociology.",
+    "modelAnswerGujarati": "ઓગસ્ટ કોમ્ત સમાજશાસ્ત્રના પિતા તરીકે ઓળખાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Auguste Comte.",
+        "textGujarati": "ઓગસ્ટ કોમ્ત."
+      }
+    ],
+    "examinerTips": "Spell the name correctly; he also coined the term 'sociology'.",
+    "examinerTipsGujarati": "નામની જોડણી સાચી લખો; 'Sociology' શબ્દ પણ તેમણે જ પ્રયોજ્યો હતો."
+  },
+  {
+    "id": "imp-g11-socio-2m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 2,
+    "chapterTitle": "Basic Concepts of Sociology",
+    "chapterTitleGujarati": "સમાજશાસ્ત્રના મૂળભૂત ખ્યાલો (વિભાવના)",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Distinguish between ascribed status and achieved status.",
+    "questionTextGujarati": "પ્રદત્ત દરજ્જો અને અર્જિત દરજ્જો વચ્ચેનો તફાવત લખો.",
+    "modelAnswer": "Ascribed status is given to a person by birth or by society without personal effort, e.g. gender, caste or being a son/daughter. Achieved status is earned through one's own ability, effort and education, e.g. doctor, teacher or elected leader.",
+    "modelAnswerGujarati": "પ્રદત્ત દરજ્જો વ્યક્તિને જન્મથી કે સમાજ દ્વારા પોતાના પ્રયત્ન વિના મળે છે, દા.ત. જાતિ (સ્ત્રી/પુરુષ), જ્ઞાતિ કે પુત્ર/પુત્રી હોવું. અર્જિત દરજ્જો વ્યક્તિ પોતાની યોગ્યતા, પ્રયત્ન અને શિક્ષણ દ્વારા મેળવે છે, દા.ત. ડૉક્ટર, શિક્ષક કે ચૂંટાયેલો આગેવાન.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Ascribed: by birth, no effort; example.",
+        "textGujarati": "પ્રદત્ત: જન્મથી, પ્રયત્ન વિના; ઉદાહરણ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Achieved: by effort and ability; example.",
+        "textGujarati": "અર્જિત: પ્રયત્ન અને યોગ્યતાથી; ઉદાહરણ."
+      }
+    ],
+    "examinerTips": "Always give one example for each type.",
+    "examinerTipsGujarati": "દરેક પ્રકાર માટે એક ઉદાહરણ અવશ્ય આપો."
+  },
+  {
+    "id": "imp-g11-socio-3m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 5,
+    "chapterTitle": "Culture and Socialisation",
+    "chapterTitleGujarati": "સંસ્કૃતિ અને સામાજિકીકરણ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain any three agencies of socialisation.",
+    "questionTextGujarati": "સામાજિકીકરણનાં કોઈપણ ત્રણ માધ્યમો સમજાવો.",
+    "modelAnswer": "(1) Family: the first and most important agency; the child learns language, habits, values and customs from parents and relatives. (2) School: teaches knowledge, discipline, cooperation and the rules of wider society. (3) Peer group: friends of the same age teach equality, sharing and new behaviour patterns, and strongly influence adolescents.",
+    "modelAnswerGujarati": "(1) કુટુંબ: પ્રથમ અને સૌથી મહત્ત્વનું માધ્યમ; બાળક માતા-પિતા અને સગાં પાસેથી ભાષા, ટેવો, મૂલ્યો અને રીતરિવાજ શીખે છે. (2) શાળા: જ્ઞાન, શિસ્ત, સહકાર અને વિશાળ સમાજના નિયમો શીખવે છે. (3) સમવયસ્ક જૂથ: સમાન વયના મિત્રો સમાનતા, વહેંચણી અને નવી વર્તનભાતો શીખવે છે અને તરુણો પર તેની ઊંડી અસર થાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Family.",
+        "textGujarati": "કુટુંબ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "School.",
+        "textGujarati": "શાળા."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Peer group (or mass media / religion).",
+        "textGujarati": "સમવયસ્ક જૂથ (અથવા સમૂહ માધ્યમો / ધર્મ)."
+      }
+    ],
+    "examinerTips": "Name the agency and add one line on what it teaches; mass media or religion are also acceptable.",
+    "examinerTipsGujarati": "માધ્યમનું નામ લખી તે શું શીખવે છે તે એક વાક્યમાં લખો; સમૂહ માધ્યમો કે ધર્મ પણ સ્વીકાર્ય છે."
+  },
+  {
+    "id": "imp-g11-socio-4m-1",
+    "grade": "11",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 6,
+    "chapterTitle": "Basic Social Institutions of India",
+    "chapterTitleGujarati": "ભારતની મૂળભૂત સામાજિક સંસ્થાઓ",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain the main characteristics of the caste system in India.",
+    "questionTextGujarati": "ભારતમાં જ્ઞાતિપ્રથાનાં મુખ્ય લક્ષણો સમજાવો.",
+    "modelAnswer": "(1) Membership by birth: a person's caste is decided by birth and cannot normally be changed. (2) Endogamy: members marry within their own caste. (3) Hereditary occupation: traditionally each caste followed a fixed occupation passed down through generations. (4) Hierarchy and restrictions: castes were ranked high and low, with restrictions on food, drink and social interaction between castes.",
+    "modelAnswerGujarati": "(1) જન્મથી સભ્યપદ: વ્યક્તિની જ્ઞાતિ જન્મથી નક્કી થાય છે અને સામાન્ય રીતે બદલી શકાતી નથી. (2) અંતર્લગ્ન: સભ્યો પોતાની જ્ઞાતિમાં જ લગ્ન કરે છે. (3) પરંપરાગત વ્યવસાય: પરંપરાગત રીતે દરેક જ્ઞાતિનો નિશ્ચિત વ્યવસાય પેઢી દર પેઢી ચાલતો. (4) ઊંચ-નીચનો ક્રમ અને નિયંત્રણો: જ્ઞાતિઓ ઊંચી-નીચી ગણાતી અને જ્ઞાતિઓ વચ્ચે ખાનપાન તથા સામાજિક વ્યવહાર પર નિયંત્રણો હતાં.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Membership by birth.",
+        "textGujarati": "જન્મથી સભ્યપદ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Endogamy.",
+        "textGujarati": "અંતર્લગ્ન."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Hereditary occupation.",
+        "textGujarati": "પરંપરાગત વ્યવસાય."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Hierarchy and restrictions on food/interaction.",
+        "textGujarati": "ઊંચ-નીચનો ક્રમ અને ખાનપાન/વ્યવહારનાં નિયંત્રણો."
+      }
+    ],
+    "examinerTips": "Write four headed points; you may add that these features have weakened due to education, urbanisation and law.",
+    "examinerTipsGujarati": "ચાર શીર્ષકવાળા મુદ્દા લખો; શિક્ષણ, શહેરીકરણ અને કાયદાને કારણે આ લક્ષણો નબળાં પડ્યાં છે તે ઉમેરી શકાય."
+  },
+  {
+    "id": "imp-g12-his-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 8,
+    "chapterTitle": "National Movements (1857–1919)",
+    "chapterTitleGujarati": "રાષ્ટ્રીય આંદોલનો (1857–1919)",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "When and where was the first session of the Indian National Congress held?",
+    "questionTextGujarati": "ભારતીય રાષ્ટ્રીય કૉંગ્રેસનું પ્રથમ અધિવેશન ક્યારે અને ક્યાં મળ્યું હતું?",
+    "modelAnswer": "The first session of the Indian National Congress was held in Bombay (Mumbai) in December 1885, presided over by W. C. Bonnerjee.",
+    "modelAnswerGujarati": "ભારતીય રાષ્ટ્રીય કૉંગ્રેસનું પ્રથમ અધિવેશન ડિસેમ્બર 1885માં મુંબઈમાં વ્યોમેશચંદ્ર બેનરજીના પ્રમુખપદે મળ્યું હતું.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Year 1885 and place Bombay (president W. C. Bonnerjee).",
+        "textGujarati": "વર્ષ 1885 અને સ્થળ મુંબઈ (પ્રમુખ વ્યોમેશચંદ્ર બેનરજી)."
+      }
+    ],
+    "examinerTips": "Write both the year and the place; the president's name is a bonus.",
+    "examinerTipsGujarati": "વર્ષ અને સ્થળ બંને લખો; પ્રમુખનું નામ લખવાથી જવાબ વધુ સંપૂર્ણ બને છે."
+  },
+  {
+    "id": "imp-g12-his-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 9,
+    "chapterTitle": "The Struggle for Swaraj (1919–1947)",
+    "chapterTitleGujarati": "સ્વરાજ માટેનો સંઘર્ષ (ઈ. સ. 1919–1947)",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Write a short note on the Dandi March.",
+    "questionTextGujarati": "દાંડીકૂચ વિશે ટૂંકનોંધ લખો.",
+    "modelAnswer": "On 12 March 1930 Gandhiji started the Dandi March from Sabarmati Ashram, Ahmedabad, with 78 satyagrahis to oppose the British salt law. On 6 April 1930 he broke the salt law at Dandi by making salt, which started the Civil Disobedience Movement across India.",
+    "modelAnswerGujarati": "અંગ્રેજોના મીઠાના કાયદાના વિરોધમાં ગાંધીજીએ 12 માર્ચ, 1930ના રોજ 78 સત્યાગ્રહીઓ સાથે અમદાવાદના સાબરમતી આશ્રમથી દાંડીકૂચ શરૂ કરી. 6 એપ્રિલ, 1930ના રોજ દાંડીમાં મીઠું બનાવી તેમણે મીઠાનો કાયદો તોડ્યો અને સમગ્ર દેશમાં સવિનય કાનૂનભંગની ચળવળ શરૂ થઈ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Start: 12 March 1930 from Sabarmati Ashram with 78 satyagrahis against the salt law.",
+        "textGujarati": "શરૂઆત: મીઠાના કાયદા વિરુદ્ધ 12 માર્ચ, 1930ના રોજ 78 સત્યાગ્રહીઓ સાથે સાબરમતી આશ્રમથી."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "6 April 1930: salt law broken at Dandi; Civil Disobedience Movement began.",
+        "textGujarati": "6 એપ્રિલ, 1930: દાંડીમાં મીઠાનો કાયદો તોડ્યો; સવિનય કાનૂનભંગની ચળવળ શરૂ થઈ."
+      }
+    ],
+    "examinerTips": "Dates (12 March and 6 April 1930) and the link to Civil Disobedience carry the marks.",
+    "examinerTipsGujarati": "તારીખો (12 માર્ચ અને 6 એપ્રિલ, 1930) અને સવિનય કાનૂનભંગ સાથેનો સંબંધ ગુણ અપાવે છે."
+  },
+  {
+    "id": "imp-g12-his-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 5,
+    "chapterTitle": "The Revolt of 1857",
+    "chapterTitleGujarati": "1857 નો સંગ્રામ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the main causes of the Revolt of 1857.",
+    "questionTextGujarati": "1857ના સંગ્રામનાં મુખ્ય કારણો સમજાવો.",
+    "modelAnswer": "(1) Political: Dalhousie's Doctrine of Lapse annexed states like Jhansi and Satara, and Awadh was annexed in 1856, angering rulers. (2) Economic and social: heavy land revenue ruined farmers, handicrafts declined, and people feared interference in their religion and customs. (3) Military and immediate cause: Indian sepoys faced discrimination in pay and promotion, and the new Enfield rifle cartridges were believed to be greased with cow and pig fat, which hurt both Hindus and Muslims.",
+    "modelAnswerGujarati": "(1) રાજકીય કારણ: ડેલહાઉસીની ખાલસાનીતિથી ઝાંસી, સતારા જેવાં રાજ્યો ખાલસા થયાં અને 1856માં અવધ ખાલસા કરાયું; તેથી રાજાઓ નારાજ થયા. (2) આર્થિક-સામાજિક કારણ: ભારે જમીન-મહેસૂલથી ખેડૂતો પાયમાલ થયા, હસ્તઉદ્યોગો પડી ભાંગ્યા અને ધર્મ તથા રીતરિવાજોમાં દખલનો ભય ફેલાયો. (3) લશ્કરી અને તાત્કાલિક કારણ: હિંદી સૈનિકો સાથે પગાર અને બઢતીમાં ભેદભાવ થતો; એનફિલ્ડ રાઇફલની કારતૂસો પર ગાય અને ડુક્કરની ચરબી હોવાની વાતથી હિંદુ અને મુસ્લિમ બંને સૈનિકોની લાગણી દુભાઈ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Political cause: Doctrine of Lapse and annexation of Awadh.",
+        "textGujarati": "રાજકીય કારણ: ખાલસાનીતિ અને અવધનું ખાલસા થવું."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Economic and social causes: heavy revenue, ruined crafts, fear for religion.",
+        "textGujarati": "આર્થિક-સામાજિક કારણો: ભારે મહેસૂલ, હસ્તઉદ્યોગોની પડતી, ધર્મ પર જોખમનો ભય."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Military and immediate cause: discrimination against sepoys and greased cartridges.",
+        "textGujarati": "લશ્કરી અને તાત્કાલિક કારણ: સૈનિકો સાથે ભેદભાવ અને ચરબીવાળી કારતૂસો."
+      }
+    ],
+    "examinerTips": "Group the causes under headings (political, economic-social, military) and always mention the greased cartridges as the immediate cause.",
+    "examinerTipsGujarati": "કારણોને શીર્ષકો (રાજકીય, આર્થિક-સામાજિક, લશ્કરી) હેઠળ લખો અને તાત્કાલિક કારણ તરીકે ચરબીવાળી કારતૂસોનો ઉલ્લેખ અવશ્ય કરો."
+  },
+  {
+    "id": "imp-g12-his-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "History",
+    "chapterNumber": 10,
+    "chapterTitle": "The Path of Progress and Building a Strong Nation",
+    "chapterTitleGujarati": "પ્રગતિનો પંથ અને સુદૃઢ રાષ્ટ્રનિર્માણની પ્રક્રિયા",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Describe the role of Sardar Vallabhbhai Patel in the integration of the princely states.",
+    "questionTextGujarati": "દેશી રાજ્યોના એકીકરણમાં સરદાર વલ્લભભાઈ પટેલની ભૂમિકા વર્ણવો.",
+    "modelAnswer": "(1) At independence there were more than 560 princely states, and after British paramountcy ended they were free to join India or Pakistan or stay independent, which threatened India's unity. (2) As Deputy Prime Minister and Home Minister, Sardar Patel, assisted by V. P. Menon, appealed to the rulers' patriotism and got almost all states to sign the Instrument of Accession before 15 August 1947. (3) Difficult cases were handled firmly: Junagadh's Nawab chose Pakistan, but after popular protest the state joined India and a plebiscite in 1948 confirmed it; Hyderabad was integrated through police action in September 1948; Kashmir's ruler signed the Instrument of Accession in October 1947. (4) Through his tact and firmness India became politically united, so Sardar Patel is remembered as the 'Iron Man of India'.",
+    "modelAnswerGujarati": "(1) સ્વતંત્રતા સમયે 560થી વધુ દેશી રાજ્યો હતાં. અંગ્રેજોની સર્વોપરિતાનો અંત આવતાં તેઓ ભારત કે પાકિસ્તાનમાં જોડાવા અથવા સ્વતંત્ર રહેવા મુક્ત હતાં, જેથી દેશની એકતા જોખમમાં હતી. (2) નાયબ વડાપ્રધાન અને ગૃહપ્રધાન સરદાર પટેલે વી. પી. મેનનની મદદથી રાજાઓની દેશભક્તિને અપીલ કરી અને 15 ઑગસ્ટ, 1947 પહેલાં લગભગ બધાં રાજ્યોને જોડાણખત (Instrument of Accession) પર સહી કરાવી. (3) મુશ્કેલ પ્રશ્નો દૃઢતાથી ઉકેલ્યા: જૂનાગઢના નવાબે પાકિસ્તાનમાં જોડાણ જાહેર કર્યું, પરંતુ પ્રજાના વિરોધ પછી રાજ્ય ભારતમાં જોડાયું અને 1948ના લોકમતે તેને સમર્થન આપ્યું; હૈદરાબાદ સપ્ટેમ્બર 1948માં પોલીસ પગલાં દ્વારા જોડાયું; કાશ્મીરના રાજાએ ઑક્ટોબર 1947માં જોડાણખત પર સહી કરી. (4) તેમની કુનેહ અને દૃઢતાથી ભારત રાજકીય રીતે એક બન્યું, તેથી સરદાર પટેલ 'ભારતના લોખંડી પુરુષ' તરીકે ઓળખાય છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Problem: more than 560 princely states free to choose after independence.",
+        "textGujarati": "સમસ્યા: સ્વતંત્રતા પછી 560થી વધુ દેશી રાજ્યો નિર્ણય લેવા મુક્ત હતાં."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Patel's method: appeal to rulers and the Instrument of Accession, with V. P. Menon's help.",
+        "textGujarati": "પટેલની પદ્ધતિ: વી. પી. મેનનની મદદથી રાજાઓને અપીલ અને જોડાણખત."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Difficult cases: Junagadh (plebiscite), Hyderabad (police action 1948), Kashmir (accession 1947).",
+        "textGujarati": "મુશ્કેલ પ્રશ્નો: જૂનાગઢ (લોકમત), હૈદરાબાદ (પોલીસ પગલાં 1948), કાશ્મીર (જોડાણ 1947)."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Result: political unity of India; Patel called the 'Iron Man of India'.",
+        "textGujarati": "પરિણામ: ભારતની રાજકીય એકતા; પટેલ 'લોખંડી પુરુષ' કહેવાયા."
+      }
+    ],
+    "examinerTips": "Mention Junagadh specifically, as it is close to Gujarat students' syllabus; give one line each for Hyderabad and Kashmir.",
+    "examinerTipsGujarati": "જૂનાગઢનો ઉલ્લેખ ખાસ કરો; હૈદરાબાદ અને કાશ્મીર માટે એક-એક વાક્ય લખો."
+  },
+  {
+    "id": "imp-g12-geo-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 4,
+    "chapterTitle": "Tertiary, Quaternary and Quinary Activities",
+    "chapterTitleGujarati": "માનવીની તૃતીયક, ચતુર્થક અને પંચમ પ્રવૃત્તિઓ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "What are quaternary activities?",
+    "questionTextGujarati": "ચતુર્થક પ્રવૃત્તિઓ એટલે શું?",
+    "modelAnswer": "Quaternary activities are knowledge-based services concerned with research, development and the collection, processing and sharing of information.",
+    "modelAnswerGujarati": "સંશોધન, વિકાસ તથા માહિતીના સંગ્રહ, પ્રક્રિયા અને આદાન-પ્રદાન સાથે સંકળાયેલી જ્ઞાન-આધારિત સેવાઓને ચતુર્થક પ્રવૃત્તિઓ કહે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Knowledge-based services: research and information processing.",
+        "textGujarati": "જ્ઞાન-આધારિત સેવાઓ: સંશોધન અને માહિતી પ્રક્રિયા."
+      }
+    ],
+    "examinerTips": "Use the key word 'knowledge-based'; an example like research or IT helps.",
+    "examinerTipsGujarati": "'જ્ઞાન-આધારિત' શબ્દ અવશ્ય વાપરો; સંશોધન કે IT જેવું ઉદાહરણ ઉપયોગી છે."
+  },
+  {
+    "id": "imp-g12-geo-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 2,
+    "chapterTitle": "Human Population",
+    "chapterTitleGujarati": "માનવ વસ્તી",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "What is population density? How is it calculated?",
+    "questionTextGujarati": "વસ્તી ગીચતા એટલે શું? તે કેવી રીતે ગણાય છે?",
+    "modelAnswer": "Population density is the number of people living per unit area (usually per square kilometre). It is calculated as: Population density = Total population ÷ Total area.",
+    "modelAnswerGujarati": "એકમ ક્ષેત્રફળ (સામાન્ય રીતે એક ચોરસ કિલોમીટર)માં રહેતી વ્યક્તિઓની સંખ્યાને વસ્તી ગીચતા કહે છે. વસ્તી ગીચતા = કુલ વસ્તી ÷ કુલ ક્ષેત્રફળ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Definition: people per unit area (per sq km).",
+        "textGujarati": "વ્યાખ્યા: એકમ ક્ષેત્રફળ (ચો. કિમી) દીઠ વ્યક્તિઓ."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Formula: total population ÷ total area.",
+        "textGujarati": "સૂત્ર: કુલ વસ્તી ÷ કુલ ક્ષેત્રફળ."
+      }
+    ],
+    "examinerTips": "Write the unit (persons per sq km) along with the formula.",
+    "examinerTipsGujarati": "સૂત્ર સાથે એકમ (વ્યક્તિ પ્રતિ ચો. કિમી) પણ લખો."
+  },
+  {
+    "id": "imp-g12-geo-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 5,
+    "chapterTitle": "Transport",
+    "chapterTitleGujarati": "પરિવહન",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the importance of the Suez Canal.",
+    "questionTextGujarati": "સુએઝ નહેરનું મહત્ત્વ સમજાવો.",
+    "modelAnswer": "(1) The Suez Canal in Egypt was opened in 1869. It is about 160 km long and joins Port Said on the Mediterranean Sea with Port Suez on the Red Sea. (2) It gave Europe a direct sea route to Asia and East Africa, so ships no longer had to go around the Cape of Good Hope; this greatly reduced distance, time and cost. (3) It is a sea-level canal without locks and is one of the busiest routes for world trade, especially for oil from West Asia.",
+    "modelAnswerGujarati": "(1) ઇજિપ્તમાં આવેલી સુએઝ નહેર 1869માં ખુલ્લી મુકાઈ. તે આશરે 160 કિમી લાંબી છે અને ભૂમધ્ય સમુદ્ર પરના પોર્ટ સઈદને રાતા સમુદ્ર પરના પોર્ટ સુએઝ સાથે જોડે છે. (2) તેનાથી યુરોપને એશિયા અને પૂર્વ આફ્રિકા સુધીનો સીધો દરિયાઈ માર્ગ મળ્યો; જહાજોને કેપ ઑફ ગુડ હોપની પ્રદક્ષિણા કરવી પડતી નથી, તેથી અંતર, સમય અને ખર્ચમાં ઘણો ઘટાડો થયો. (3) તે લૉક (જળદ્વાર) વગરની સમુદ્ર-સપાટીની નહેર છે અને ખાસ કરીને પશ્ચિમ એશિયાના ખનિજ તેલના વેપાર માટે વિશ્વનો અત્યંત વ્યસ્ત માર્ગ છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Location and facts: Egypt, opened 1869, links Port Said and Port Suez.",
+        "textGujarati": "સ્થાન અને હકીકતો: ઇજિપ્ત, 1869, પોર્ટ સઈદ અને પોર્ટ સુએઝને જોડે છે."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Shorter Europe–Asia route avoiding the Cape of Good Hope.",
+        "textGujarati": "કેપ ઑફ ગુડ હોપ ટાળી યુરોપ-એશિયાનો ટૂંકો માર્ગ."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Sea-level canal without locks; busy route for world trade and oil.",
+        "textGujarati": "લૉક વગરની નહેર; વિશ્વવેપાર અને ખનિજ તેલ માટે વ્યસ્ત માર્ગ."
+      }
+    ],
+    "examinerTips": "A small sketch map showing the Mediterranean and Red Sea can earn credit; do not confuse it with the Panama Canal.",
+    "examinerTipsGujarati": "ભૂમધ્ય અને રાતો સમુદ્ર દર્શાવતો નાનો નકશો ઉપયોગી છે; પનામા નહેર સાથે ગૂંચવણ ન કરો."
+  },
+  {
+    "id": "imp-g12-geo-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Geography",
+    "chapterNumber": 1,
+    "chapterTitle": "Human Geography: Introduction",
+    "chapterTitleGujarati": "માનવ ભૂગોળ : પરિચય",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain the approaches of environmental determinism, possibilism and neo-determinism in human geography.",
+    "questionTextGujarati": "માનવ ભૂગોળમાં પર્યાવરણ નિયતિવાદ, સંભવવાદ અને નવનિયતિવાદના અભિગમો સમજાવો.",
+    "modelAnswer": "(1) Human geography studies the relationship between humans and their natural environment; geographers have explained this relationship through different approaches. (2) Environmental determinism: nature is all-powerful and controls human life, activities and culture; humans simply adapt. Ratzel and Ellen Churchill Semple supported this view. (3) Possibilism: nature offers many possibilities and humans, using technology and culture, choose among them and change the environment. It is linked with Vidal de la Blache. (4) Neo-determinism: given by Griffith Taylor, it is a middle path; humans can develop by following nature's limits, like traffic signals — they may go ahead but must stop where nature warns. Hence it is also called 'stop and go determinism'.",
+    "modelAnswerGujarati": "(1) માનવ ભૂગોળ માનવી અને કુદરતી પર્યાવરણ વચ્ચેના સંબંધનો અભ્યાસ કરે છે; ભૂગોળવેત્તાઓએ આ સંબંધ જુદા જુદા અભિગમોથી સમજાવ્યો છે. (2) પર્યાવરણ નિયતિવાદ: કુદરત સર્વશક્તિમાન છે અને માનવજીવન, પ્રવૃત્તિઓ તથા સંસ્કૃતિને નિયંત્રિત કરે છે; માનવી ફક્ત અનુકૂલન સાધે છે. રેટ્ઝેલ અને એલન ચર્ચિલ સેમ્પલે આ મતનું સમર્થન કર્યું. (3) સંભવવાદ: કુદરત અનેક શક્યતાઓ આપે છે અને માનવી ટેક્નોલૉજી તથા સંસ્કૃતિની મદદથી તેમાંથી પસંદગી કરી પર્યાવરણમાં ફેરફાર કરે છે. આ વિચાર વિડાલ-દ-લા-બ્લાશ સાથે સંકળાયેલો છે. (4) નવનિયતિવાદ: ગ્રિફિથ ટેલરે રજૂ કરેલો આ મધ્યમ માર્ગ છે; માનવી કુદરતની મર્યાદાઓનું પાલન કરીને વિકાસ કરી શકે — ટ્રાફિક સિગ્નલની જેમ આગળ વધી શકે, પણ કુદરત ચેતવે ત્યાં અટકવું પડે. તેથી તેને 'અટકો અને આગળ વધો નિયતિવાદ' પણ કહે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Introduction: human–environment relationship explained by different approaches.",
+        "textGujarati": "પ્રસ્તાવના: માનવ-પર્યાવરણ સંબંધ વિવિધ અભિગમોથી સમજાવાયો છે."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Environmental determinism: nature controls humans (Ratzel, Semple).",
+        "textGujarati": "પર્યાવરણ નિયતિવાદ: કુદરત માનવીને નિયંત્રિત કરે છે (રેટ્ઝેલ, સેમ્પલ)."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Possibilism: humans choose among nature's possibilities (Vidal de la Blache).",
+        "textGujarati": "સંભવવાદ: માનવી કુદરતની શક્યતાઓમાંથી પસંદગી કરે છે (વિડાલ-દ-લા-બ્લાશ)."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Neo-determinism: middle path, 'stop and go determinism' (Griffith Taylor).",
+        "textGujarati": "નવનિયતિવાદ: મધ્યમ માર્ગ, 'અટકો અને આગળ વધો નિયતિવાદ' (ગ્રિફિથ ટેલર)."
+      }
+    ],
+    "examinerTips": "Name the geographer linked to each approach; the traffic-signal example for neo-determinism is commonly rewarded.",
+    "examinerTipsGujarati": "દરેક અભિગમ સાથે સંકળાયેલા ભૂગોળવેત્તાનું નામ લખો; નવનિયતિવાદ માટે ટ્રાફિક સિગ્નલનું ઉદાહરણ આપવું ફાયદાકારક છે."
+  },
+  {
+    "id": "imp-g12-psy-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 3,
+    "chapterTitle": "Intelligence",
+    "chapterTitleGujarati": "બુદ્ધિ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Write the formula for Intelligence Quotient (IQ).",
+    "questionTextGujarati": "બુદ્ધિઆંક (IQ)નું સૂત્ર લખો.",
+    "modelAnswer": "IQ = (Mental Age ÷ Chronological Age) × 100.",
+    "modelAnswerGujarati": "બુદ્ધિઆંક (IQ) = (માનસિક વય ÷ શારીરિક વય) × 100.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Correct formula with ×100.",
+        "textGujarati": "×100 સાથેનું સાચું સૂત્ર."
+      }
+    ],
+    "examinerTips": "Do not forget to multiply by 100, and write MA and CA in full.",
+    "examinerTipsGujarati": "100 વડે ગુણાકાર ભૂલશો નહીં અને માનસિક વય તથા શારીરિક વય પૂરા શબ્દોમાં લખો."
+  },
+  {
+    "id": "imp-g12-psy-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 2,
+    "chapterTitle": "Learning",
+    "chapterTitleGujarati": "શીખવાની ક્રિયા",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "Explain classical conditioning with Pavlov's experiment.",
+    "questionTextGujarati": "પાવલોવના પ્રયોગ દ્વારા પ્રશિષ્ટ અભિસંધાન સમજાવો.",
+    "modelAnswer": "Ivan Pavlov showed that a dog naturally salivates when food (unconditioned stimulus) is given. He rang a bell (neutral stimulus) just before giving food many times. After repeated pairing, the dog began to salivate at the sound of the bell alone; the bell became a conditioned stimulus and salivation to it a conditioned response. This learning by association is classical conditioning.",
+    "modelAnswerGujarati": "ઈવાન પાવલોવે જોયું કે ખોરાક (અનભિસંધિત ઉદ્દીપક) આપતાં કૂતરાને સ્વાભાવિક રીતે લાળ ઝરે છે. તેમણે ખોરાક આપતાં પહેલાં વારંવાર ઘંટડી (તટસ્થ ઉદ્દીપક) વગાડી. વારંવારના જોડાણ પછી ફક્ત ઘંટડીના અવાજથી જ કૂતરાને લાળ ઝરવા લાગી; ઘંટડી અભિસંધિત ઉદ્દીપક અને તેનાથી થતો લાળસ્રાવ અભિસંધિત પ્રતિક્રિયા બની. સાહચર્ય દ્વારા થતું આ શિક્ષણ પ્રશિષ્ટ અભિસંધાન છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Experiment: food causes salivation; bell rung before food repeatedly.",
+        "textGujarati": "પ્રયોગ: ખોરાકથી લાળ ઝરે; ખોરાક પહેલાં વારંવાર ઘંટડી."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Result: bell alone produces salivation (conditioned response) — learning by association.",
+        "textGujarati": "પરિણામ: ફક્ત ઘંટડીથી લાળ (અભિસંધિત પ્રતિક્રિયા) — સાહચર્યથી શિક્ષણ."
+      }
+    ],
+    "examinerTips": "Use the terms unconditioned stimulus, conditioned stimulus and conditioned response correctly.",
+    "examinerTipsGujarati": "અનભિસંધિત ઉદ્દીપક, અભિસંધિત ઉદ્દીપક અને અભિસંધિત પ્રતિક્રિયા શબ્દો સાચી રીતે વાપરો."
+  },
+  {
+    "id": "imp-g12-psy-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 5,
+    "chapterTitle": "Stress and Health",
+    "chapterTitleGujarati": "મનોભાર અને સ્વાસ્થ્ય",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "Explain the three stages of Hans Selye's General Adaptation Syndrome (GAS).",
+    "questionTextGujarati": "હાન્સ સેલેના સામાન્ય અનુકૂલન સંલક્ષણ (GAS)ના ત્રણ તબક્કા સમજાવો.",
+    "modelAnswer": "(1) Alarm reaction: when a stressor appears, the body recognises the threat and becomes ready for 'fight or flight'; heart rate and blood pressure rise and energy is mobilised. (2) Resistance: if stress continues, the body tries to adapt and cope with it; it appears normal but uses up its resources. (3) Exhaustion: if stress lasts a long time, the body's resources are used up, resistance falls and the person becomes vulnerable to illness.",
+    "modelAnswerGujarati": "(1) ચેતવણી (એલાર્મ) પ્રતિક્રિયા: મનોભાર આવતાં શરીર જોખમ ઓળખી 'લડો કે ભાગો' માટે તૈયાર થાય છે; હૃદયના ધબકારા અને રક્તદબાણ વધે છે અને ઊર્જા એકત્ર થાય છે. (2) પ્રતિકાર: મનોભાર ચાલુ રહે તો શરીર તેની સાથે અનુકૂલન સાધી સામનો કરવા પ્રયત્ન કરે છે; બહારથી સામાન્ય લાગે પણ શરીરનાં સંસાધનો વપરાતાં રહે છે. (3) થાક (ક્ષીણતા): મનોભાર લાંબો સમય રહે તો શરીરનાં સંસાધનો ખૂટી જાય છે, પ્રતિકારશક્તિ ઘટે છે અને વ્યક્તિ બીમારીનો ભોગ બની શકે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Alarm reaction: body prepares for fight or flight.",
+        "textGujarati": "ચેતવણી પ્રતિક્રિયા: શરીર 'લડો કે ભાગો' માટે તૈયાર થાય છે."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Resistance: body adapts and copes, using resources.",
+        "textGujarati": "પ્રતિકાર: શરીર અનુકૂલન સાધી સામનો કરે છે, સંસાધનો વપરાય છે."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Exhaustion: resources used up, illness becomes likely.",
+        "textGujarati": "થાક: સંસાધનો ખૂટે છે, બીમારીની શક્યતા વધે છે."
+      }
+    ],
+    "examinerTips": "Write the stages in the correct order; a simple flow diagram earns credit.",
+    "examinerTipsGujarati": "તબક્કા સાચા ક્રમમાં લખો; સાદી પ્રવાહ-આકૃતિ દોરવાથી ફાયદો થાય છે."
+  },
+  {
+    "id": "imp-g12-psy-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Psychology",
+    "chapterNumber": 9,
+    "chapterTitle": "Organisational Psychology",
+    "chapterTitleGujarati": "સંસ્થાકીય મનોવિજ્ઞાન",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain Maslow's hierarchy of needs.",
+    "questionTextGujarati": "મેસ્લોનો જરૂરિયાતોનો શ્રેણીક્રમ સમજાવો.",
+    "modelAnswer": "(1) Abraham Maslow arranged human needs in a pyramid from lower to higher; according to him, higher needs motivate a person only after lower needs are reasonably satisfied. (2) Lower needs: physiological needs (food, water, sleep, shelter) form the base, followed by safety needs (security, job security, freedom from danger). (3) Middle needs: love and belonging (friendship, acceptance by a group) and esteem needs (self-respect, recognition, status). (4) The highest need is self-actualisation — realising one's full potential. At the workplace, managers can motivate employees by satisfying these needs step by step.",
+    "modelAnswerGujarati": "(1) અબ્રાહમ મેસ્લોએ માનવીની જરૂરિયાતોને નીચલાથી ઉચ્ચ સ્તર સુધી પિરામિડરૂપે ગોઠવી; તેમના મતે નીચલી જરૂરિયાતો યોગ્ય પ્રમાણમાં સંતોષાય પછી જ ઉચ્ચ જરૂરિયાતો વ્યક્તિને પ્રેરિત કરે છે. (2) નીચલી જરૂરિયાતો: પાયામાં શારીરિક જરૂરિયાતો (ખોરાક, પાણી, ઊંઘ, આશ્રય) અને ત્યારબાદ સલામતીની જરૂરિયાતો (સુરક્ષા, નોકરીની સલામતી, જોખમથી મુક્તિ). (3) મધ્યમ જરૂરિયાતો: પ્રેમ અને સંબંધની જરૂરિયાત (મિત્રતા, જૂથમાં સ્વીકાર) અને આત્મસન્માનની જરૂરિયાત (સ્વમાન, માન્યતા, દરજ્જો). (4) સૌથી ઉચ્ચ જરૂરિયાત આત્મવાસ્તવિકીકરણ — પોતાની સંપૂર્ણ ક્ષમતાને સાકાર કરવી. કાર્યસ્થળે સંચાલકો આ જરૂરિયાતો ક્રમશઃ સંતોષીને કર્મચારીઓને પ્રેરિત કરી શકે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Idea of the hierarchy: lower needs first, then higher needs motivate.",
+        "textGujarati": "શ્રેણીક્રમનો વિચાર: પહેલાં નીચલી, પછી ઉચ્ચ જરૂરિયાતો પ્રેરિત કરે."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Physiological and safety needs explained.",
+        "textGujarati": "શારીરિક અને સલામતીની જરૂરિયાતો સમજાવી."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Love-belonging and esteem needs explained.",
+        "textGujarati": "પ્રેમ-સંબંધ અને આત્મસન્માનની જરૂરિયાતો સમજાવી."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Self-actualisation and its use in work motivation.",
+        "textGujarati": "આત્મવાસ્તવિકીકરણ અને કાર્ય-પ્રેરણામાં ઉપયોગ."
+      }
+    ],
+    "examinerTips": "Draw the pyramid with all five levels in the correct order; it is the quickest way to secure marks.",
+    "examinerTipsGujarati": "પાંચેય સ્તર સાચા ક્રમમાં દર્શાવતો પિરામિડ દોરો; ગુણ મેળવવાની આ સૌથી ઝડપી રીત છે."
+  },
+  {
+    "id": "imp-g12-socio-1m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 5,
+    "chapterTitle": "Socio-Cultural Processes of Change",
+    "chapterTitleGujarati": "પરિવર્તનની સામાજિક-સાંસ્કૃતિક પ્રક્રિયાઓ",
+    "marks": 1,
+    "marksCategory": "1-Mark Objective / VSA",
+    "questionText": "Who gave the concept of sanskritisation?",
+    "questionTextGujarati": "સંસ્કૃતિકરણનો ખ્યાલ કોણે આપ્યો?",
+    "modelAnswer": "The concept of sanskritisation was given by the Indian sociologist M. N. Srinivas.",
+    "modelAnswerGujarati": "સંસ્કૃતિકરણનો ખ્યાલ ભારતીય સમાજશાસ્ત્રી એમ. એન. શ્રીનિવાસે આપ્યો.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "M. N. Srinivas.",
+        "textGujarati": "એમ. એન. શ્રીનિવાસ."
+      }
+    ],
+    "examinerTips": "Write the full name with initials, M. N. Srinivas.",
+    "examinerTipsGujarati": "આદ્યાક્ષરો સાથે પૂરું નામ, એમ. એન. શ્રીનિવાસ, લખો."
+  },
+  {
+    "id": "imp-g12-socio-2m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 3,
+    "chapterTitle": "Scheduled Castes, Scheduled Tribes and Other Backward Classes",
+    "chapterTitleGujarati": "અનુસૂચિત જાતિ, અનુસૂચિત જનજાતિ અને અન્ય પછાત વર્ગો",
+    "marks": 2,
+    "marksCategory": "2-Mark Short Answer",
+    "questionText": "State any two constitutional provisions for Scheduled Castes and Scheduled Tribes.",
+    "questionTextGujarati": "અનુસૂચિત જાતિ અને અનુસૂચિત જનજાતિ માટેની કોઈ પણ બે બંધારણીય જોગવાઈઓ જણાવો.",
+    "modelAnswer": "(1) Article 17 abolishes untouchability and makes its practice in any form an offence. (2) Article 46 directs the State to promote the educational and economic interests of the weaker sections, especially SCs and STs, and protect them from social injustice. (Seats are also reserved for them in the Lok Sabha and state assemblies.)",
+    "modelAnswerGujarati": "(1) અનુચ્છેદ 17 અસ્પૃશ્યતા નાબૂદ કરે છે અને તેના કોઈ પણ સ્વરૂપના આચરણને ગુનો ગણે છે. (2) અનુચ્છેદ 46 રાજ્યને નબળા વર્ગો, ખાસ કરીને SC અને STના શૈક્ષણિક અને આર્થિક હિતોને પ્રોત્સાહન આપવા અને તેમને સામાજિક અન્યાયથી બચાવવાનો નિર્દેશ કરે છે. (ઉપરાંત લોકસભા અને વિધાનસભાઓમાં તેમના માટે બેઠકો અનામત છે.)",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Article 17: abolition of untouchability.",
+        "textGujarati": "અનુચ્છેદ 17: અસ્પૃશ્યતા નાબૂદી."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Article 46 (or reservation of seats in legislatures).",
+        "textGujarati": "અનુચ્છેદ 46 (અથવા ધારાસભાઓમાં બેઠકોની અનામત)."
+      }
+    ],
+    "examinerTips": "Mention the Article number along with the provision for full marks.",
+    "examinerTipsGujarati": "પૂરા ગુણ માટે જોગવાઈ સાથે અનુચ્છેદ નંબર પણ લખો."
+  },
+  {
+    "id": "imp-g12-socio-3m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 8,
+    "chapterTitle": "Panchayati Raj in India",
+    "chapterTitleGujarati": "ભારતમાં પંચાયતી રાજ",
+    "marks": 3,
+    "marksCategory": "3-Mark Medium Answer",
+    "questionText": "State the main provisions of the 73rd Constitutional Amendment.",
+    "questionTextGujarati": "73મા બંધારણીય સુધારાની મુખ્ય જોગવાઈઓ જણાવો.",
+    "modelAnswer": "(1) The 73rd Amendment (1992, in force from 24 April 1993) gave constitutional status to Panchayati Raj and provided a three-tier structure — village, intermediate (taluka) and district level — and a Gram Sabha in every village. (2) Elections to panchayats must be held every five years, conducted by a State Election Commission. (3) Seats are reserved for SCs and STs in proportion to their population, and at least one-third of seats (including chairperson posts) are reserved for women; a State Finance Commission reviews panchayat finances.",
+    "modelAnswerGujarati": "(1) 73મા સુધારા (1992, 24 એપ્રિલ 1993થી અમલ)થી પંચાયતી રાજને બંધારણીય દરજ્જો મળ્યો અને ગ્રામ, મધ્યસ્થ (તાલુકા) અને જિલ્લા એમ ત્રિસ્તરીય માળખું તથા દરેક ગામમાં ગ્રામસભાની જોગવાઈ થઈ. (2) પંચાયતોની ચૂંટણી દર પાંચ વર્ષે રાજ્ય ચૂંટણી આયોગ દ્વારા યોજવી ફરજિયાત બની. (3) SC અને ST માટે વસ્તીના પ્રમાણમાં બેઠકો અને સ્ત્રીઓ માટે ઓછામાં ઓછી એક-તૃતીયાંશ બેઠકો (અધ્યક્ષપદ સહિત) અનામત રખાઈ; પંચાયતોની નાણાકીય સ્થિતિની સમીક્ષા માટે રાજ્ય નાણાપંચની જોગવાઈ થઈ.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Constitutional status, three-tier structure and Gram Sabha.",
+        "textGujarati": "બંધારણીય દરજ્જો, ત્રિસ્તરીય માળખું અને ગ્રામસભા."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Elections every five years by the State Election Commission.",
+        "textGujarati": "રાજ્ય ચૂંટણી આયોગ દ્વારા દર પાંચ વર્ષે ચૂંટણી."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Reservation for SC/ST and at least one-third for women; State Finance Commission.",
+        "textGujarati": "SC/ST માટે અનામત અને સ્ત્રીઓ માટે ઓછામાં ઓછી એક-તૃતીયાંશ; રાજ્ય નાણાપંચ."
+      }
+    ],
+    "examinerTips": "Write the year 1992 and the words 'at least one-third' for women's reservation; Gujarat's own higher reservation can be mentioned only as an extra.",
+    "examinerTipsGujarati": "વર્ષ 1992 અને સ્ત્રીઓની અનામત માટે 'ઓછામાં ઓછી એક-તૃતીયાંશ' શબ્દો લખો; ગુજરાતની વધુ અનામતનો ઉલ્લેખ વધારાની માહિતી તરીકે જ કરો."
+  },
+  {
+    "id": "imp-g12-socio-4m-1",
+    "grade": "12",
+    "board": "GSEB",
+    "subject": "Sociology",
+    "chapterNumber": 4,
+    "chapterTitle": "Women Empowerment",
+    "chapterTitleGujarati": "સ્ત્રી-સશક્તિકરણ",
+    "marks": 4,
+    "marksCategory": "4-Mark Long Answer",
+    "questionText": "Explain the measures taken for women empowerment in India.",
+    "questionTextGujarati": "ભારતમાં સ્ત્રી-સશક્તિકરણ માટે લેવાયેલાં પગલાં સમજાવો.",
+    "modelAnswer": "(1) Constitutional measures: the Constitution guarantees equality before law (Article 14) and prohibits discrimination on the basis of sex (Article 15); the 73rd and 74th Amendments reserved at least one-third of seats in local bodies for women. (2) Legal measures: the Dowry Prohibition Act (1961) and the Protection of Women from Domestic Violence Act (2005) protect women from exploitation and violence. (3) Institutional measures: the National Commission for Women (1992) protects women's rights and examines complaints. (4) Government schemes and education: schemes such as Beti Bachao Beti Padhao (2015), girls' education, self-help groups and skill training promote women's education, health and economic independence.",
+    "modelAnswerGujarati": "(1) બંધારણીય પગલાં: બંધારણ કાયદા સમક્ષ સમાનતા (અનુચ્છેદ 14) આપે છે અને જાતિ (લિંગ)ના આધારે ભેદભાવનો નિષેધ કરે છે (અનુચ્છેદ 15); 73મા અને 74મા સુધારાથી સ્થાનિક સ્વરાજની સંસ્થાઓમાં સ્ત્રીઓ માટે ઓછામાં ઓછી એક-તૃતીયાંશ બેઠકો અનામત થઈ. (2) કાનૂની પગલાં: દહેજ પ્રતિબંધ અધિનિયમ (1961) અને ઘરેલુ હિંસાથી સ્ત્રીઓનું રક્ષણ અધિનિયમ (2005) સ્ત્રીઓને શોષણ અને હિંસાથી રક્ષણ આપે છે. (3) સંસ્થાકીય પગલાં: રાષ્ટ્રીય મહિલા આયોગ (1992) સ્ત્રીઓના અધિકારોનું રક્ષણ કરે છે અને ફરિયાદોની તપાસ કરે છે. (4) સરકારી યોજનાઓ અને શિક્ષણ: 'બેટી બચાવો, બેટી પઢાવો' (2015), કન્યા કેળવણી, સ્વસહાય જૂથો અને કૌશલ્ય તાલીમ જેવી યોજનાઓ સ્ત્રીઓના શિક્ષણ, આરોગ્ય અને આર્થિક સ્વાવલંબનને પ્રોત્સાહન આપે છે.",
+    "stepWiseMarking": [
+      {
+        "stepNumber": 1,
+        "marksAllocated": "1 Mark",
+        "text": "Constitutional measures: Articles 14 and 15; one-third reservation in local bodies.",
+        "textGujarati": "બંધારણીય પગલાં: અનુચ્છેદ 14 અને 15; સ્થાનિક સંસ્થાઓમાં એક-તૃતીયાંશ અનામત."
+      },
+      {
+        "stepNumber": 2,
+        "marksAllocated": "1 Mark",
+        "text": "Legal measures: Dowry Prohibition Act 1961, Domestic Violence Act 2005.",
+        "textGujarati": "કાનૂની પગલાં: દહેજ પ્રતિબંધ અધિનિયમ 1961, ઘરેલુ હિંસા અધિનિયમ 2005."
+      },
+      {
+        "stepNumber": 3,
+        "marksAllocated": "1 Mark",
+        "text": "Institutional measure: National Commission for Women 1992.",
+        "textGujarati": "સંસ્થાકીય પગલું: રાષ્ટ્રીય મહિલા આયોગ 1992."
+      },
+      {
+        "stepNumber": 4,
+        "marksAllocated": "1 Mark",
+        "text": "Schemes and education: Beti Bachao Beti Padhao, self-help groups, skill training.",
+        "textGujarati": "યોજનાઓ અને શિક્ષણ: બેટી બચાવો બેટી પઢાવો, સ્વસહાય જૂથો, કૌશલ્ય તાલીમ."
+      }
+    ],
+    "examinerTips": "Organise the answer under headings (constitutional, legal, institutional, schemes) and give at least one year or Act in each.",
+    "examinerTipsGujarati": "જવાબ શીર્ષકો (બંધારણીય, કાનૂની, સંસ્થાકીય, યોજનાઓ) હેઠળ ગોઠવો અને દરેકમાં ઓછામાં ઓછો એક કાયદો કે વર્ષ લખો."
+  }
+]

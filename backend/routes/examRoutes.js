@@ -5,6 +5,9 @@ const Question = require('../models/Question');
 const ExamResult = require('../models/ExamResult');
 const User = require('../models/User');
 
+// Class 11/12 Commerce and Arts questions are shared with the app (constants/streamQuestions.ts).
+const STREAM_QUESTIONS = require('../data/stream_questions.json');
+
 const SEED_QUESTIONS = [
   {
     "id": 101,
@@ -17,18 +20,18 @@ const SEED_QUESTIONS = [
     "questionText": "સૌથી નાની ૫-અંકની સંખ્યા (૧૦,૦૦૦) ની પુરોગામી સંખ્યા કઈ છે?",
     "questionTextGujarati": "સૌથી નાની ૫-અંકની સંખ્યા (૧૦,૦૦૦) ની પુરોગામી સંખ્યા કઈ છે?",
     "options": [
-      "૯,૯૯૯",
       "૧૦,૦૦૧",
       "૯,૯૯૦",
+      "૯,૯૯૯",
       "૯,૯૦૦"
     ],
     "optionsGujarati": [
-      "૯,૯૯૯",
       "૧૦,૦૦૧",
       "૯,૯૯૦",
+      "૯,૯૯૯",
       "૯,૯૦૦"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "પુરોગામી એટલે આપેલી સંખ્યામાંથી ૧ બાદ કરવું: ૧૦,૦૦૦ - ૧ = ૯,૯૯૯.",
     "explanationGujarati": "પુરોગામી એટલે આપેલી સંખ્યામાંથી ૧ બાદ કરવું: ૧૦,૦૦૦ - ૧ = ૯,૯૯૯.",
     "targetCompany": "School",
@@ -45,18 +48,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કઈ સંખ્યા 6 વડે વિભાજ્ય છે?",
     "questionTextGujarati": "નીચેનામાંથી કઈ સંખ્યા 6 વડે વિભાજ્ય છે?",
     "options": [
-      "124",
-      "138",
+      "143",
       "215",
-      "143"
+      "138",
+      "124"
     ],
     "optionsGujarati": [
-      "124",
-      "138",
+      "143",
       "215",
-      "143"
+      "138",
+      "124"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "જો સંખ્યા બેકી હોય અને તેના અંકોનો સરવાળો 3 વડે ભાગી શકાય તો તે 6 વડે વિભાજ્ય બને છે. 138 માટે: બેકી અને 1+3+8=12 (3 વડે વિભાજ્ય).",
     "explanationGujarati": "જો સંખ્યા બેકી હોય અને તેના અંકોનો સરવાળો 3 વડે ભાગી શકાય તો તે 6 વડે વિભાજ્ય બને છે. 138 માટે: બેકી અને 1+3+8=12 (3 વડે વિભાજ્ય).",
     "targetCompany": "School",
@@ -101,18 +104,18 @@ const SEED_QUESTIONS = [
     "questionText": "અપૂર્ણાંક 36/54 નું અતિસંક્ષિપ્ત રૂપ શું થાય?",
     "questionTextGujarati": "અપૂર્ણાંક 36/54 નું અતિસંક્ષિપ્ત રૂપ શું થાય?",
     "options": [
+      "4/6",
       "2/3",
       "3/4",
-      "4/6",
       "1/2"
     ],
     "optionsGujarati": [
+      "4/6",
       "2/3",
       "3/4",
-      "4/6",
       "1/2"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "અંશ અને છેદ બંનેને 18 વડે ભાગતાં 2/3 મળે છે.",
     "explanationGujarati": "અંશ અને છેદ બંનેને 18 વડે ભાગતાં 2/3 મળે છે.",
     "targetCompany": "School",
@@ -130,17 +133,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "5 સેમી બાજુ ધરાવતા નિયમિત ષટ્કોણની પરિમિતિ કેટલી થાય?",
     "options": [
       "25 સેમી",
+      "20 સેમી",
       "30 સેમી",
-      "35 સેમી",
-      "20 સેમી"
+      "35 સેમી"
     ],
     "optionsGujarati": [
       "25 સેમી",
+      "20 સેમી",
       "30 સેમી",
-      "35 સેમી",
-      "20 સેમી"
+      "35 સેમી"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "નિયમિત ષટ્કોણની પરિમિતિ = 6 × બાજુ = 6 × 5 = 30 સેમી.",
     "explanationGujarati": "નિયમિત ષટ્કોણની પરિમિતિ = 6 × બાજુ = 6 × 5 = 30 સેમી.",
     "targetCompany": "School",
@@ -157,18 +160,18 @@ const SEED_QUESTIONS = [
     "questionText": "જે ખૂણાનું માપ 90° થી વધુ પરંતુ 180° થી ઓછું હોય તેને શું કહેવાય?",
     "questionTextGujarati": "જે ખૂણાનું માપ 90° થી વધુ પરંતુ 180° થી ઓછું હોય તેને શું કહેવાય?",
     "options": [
+      "સરળકોણ",
       "લઘુકોણ",
       "ગુરુકોણ",
-      "કાટકોણ",
-      "સરળકોણ"
+      "કાટકોણ"
     ],
     "optionsGujarati": [
+      "સરળકોણ",
       "લઘુકોણ",
       "ગુરુકોણ",
-      "કાટકોણ",
-      "સરળકોણ"
+      "કાટકોણ"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "90° થી મોટા અને 180° થી નાના ખૂણાને ગુરુકોણ કહેવાય છે.",
     "explanationGujarati": "90° થી મોટા અને 180° થી નાના ખૂણાને ગુરુકોણ કહેવાય છે.",
     "targetCompany": "School",
@@ -186,17 +189,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "સમીકરણ ઉકેલો: x - 7 = 15. x ની કિંમત કેટલી થશે?",
     "options": [
       "8",
+      "21",
       "22",
-      "105",
-      "21"
+      "105"
     ],
     "optionsGujarati": [
       "8",
+      "21",
       "22",
-      "105",
-      "21"
+      "105"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "x = 15 + 7 = 22.",
     "explanationGujarati": "x = 15 + 7 = 22.",
     "targetCompany": "School",
@@ -214,15 +217,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "કયા વિટામિનની ઉણપથી સ્કર્વી (Scurvy) રોગ થાય છે?",
     "options": [
       "વિટામિન A",
-      "વિટામિન B1",
+      "વિટામિન D",
       "વિટામિન C",
-      "વિટામિન D"
+      "વિટામિન B1"
     ],
     "optionsGujarati": [
       "વિટામિન A",
-      "વિટામિન B1",
+      "વિટામિન D",
       "વિટામિન C",
-      "વિટામિન D"
+      "વિટામિન B1"
     ],
     "correctAnswer": 2,
     "explanation": "વિટામિન C ની ઉણપથી પેઢામાંથી લોહી નીકળવું અને સ્કર્વી રોગ થાય છે.",
@@ -241,18 +244,18 @@ const SEED_QUESTIONS = [
     "questionText": "રતાંધળાપણું (Night Blindness) કયા વિટામિનની ખામીથી થાય છે?",
     "questionTextGujarati": "રતાંધળાપણું (Night Blindness) કયા વિટામિનની ખામીથી થાય છે?",
     "options": [
-      "વિટામિન A",
-      "વિટામિન C",
       "વિટામિન D",
-      "વિટામિન K"
+      "વિટામિન K",
+      "વિટામિન C",
+      "વિટામિન A"
     ],
     "optionsGujarati": [
-      "વિટામિન A",
-      "વિટામિન C",
       "વિટામિન D",
-      "વિટામિન K"
+      "વિટામિન K",
+      "વિટામિન C",
+      "વિટામિન A"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "વિટામિન A ની ખામીથી આંખોનું તેજ ઘટે છે અને રતાંધળાપણું આવે છે.",
     "explanationGujarati": "વિટામિન A ની ખામીથી આંખોનું તેજ ઘટે છે અને રતાંધળાપણું આવે છે.",
     "targetCompany": "School",
@@ -269,18 +272,18 @@ const SEED_QUESTIONS = [
     "questionText": "વનસ્પતિનો કયો ભાગ જમીનમાંથી પાણી અને ક્ષારોનું શોષણ કરે છે?",
     "questionTextGujarati": "વનસ્પતિનો કયો ભાગ જમીનમાંથી પાણી અને ક્ષારોનું શોષણ કરે છે?",
     "options": [
+      "પર્ણ",
       "પ્રકાંડ",
       "મૂળ",
-      "પર્ણ",
       "પુષ્પ"
     ],
     "optionsGujarati": [
+      "પર્ણ",
       "પ્રકાંડ",
       "મૂળ",
-      "પર્ણ",
       "પુષ્પ"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "મૂળ જમીનમાંથી પાણી અને ખનીજ ક્ષારોનું શોષણ કરે છે.",
     "explanationGujarati": "મૂળ જમીનમાંથી પાણી અને ખનીજ ક્ષારોનું શોષણ કરે છે.",
     "targetCompany": "School",
@@ -297,18 +300,18 @@ const SEED_QUESTIONS = [
     "questionText": "દહીં કે છાશનું મંથન કરી (વલોવીને) માખણ અલગ કરવાની પદ્ધતિને શું કહેવાય?",
     "questionTextGujarati": "દહીં કે છાશનું મંથન કરી (વલોવીને) માખણ અલગ કરવાની પદ્ધતિને શું કહેવાય?",
     "options": [
-      "ગાળણ (Filtration)",
-      "બાષ્પીભવન (Evaporation)",
+      "નિતારણ (Decantation)",
       "સેન્ટ્રિફ્યુગેશન / વલોવવું (Churning)",
-      "નિતારણ (Decantation)"
+      "બાષ્પીભવન (Evaporation)",
+      "ગાળણ (Filtration)"
     ],
     "optionsGujarati": [
-      "ગાળણ (Filtration)",
-      "બાષ્પીભવન (Evaporation)",
+      "નિતારણ (Decantation)",
       "સેન્ટ્રિફ્યુગેશન / વલોવવું (Churning)",
-      "નિતારણ (Decantation)"
+      "બાષ્પીભવન (Evaporation)",
+      "ગાળણ (Filtration)"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 1,
     "explanation": "મંથન અથવા સેન્ટ્રિફ્યુગેશન દ્વારા ભારે અને હલકા ઘટકો અલગ પડે છે.",
     "explanationGujarati": "મંથન અથવા સેન્ટ્રિફ્યુગેશન દ્વારા ભારે અને હલકા ઘટકો અલગ પડે છે.",
     "targetCompany": "School",
@@ -326,17 +329,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "નીચેનામાંથી કયો પ્રકાશિત (પ્રકાશ આપતો) પદાર્થ છે?",
     "options": [
       "ચંદ્ર",
-      "સૂર્ય",
       "અરીસો",
+      "સૂર્ય",
       "લાકડું"
     ],
     "optionsGujarati": [
       "ચંદ્ર",
-      "સૂર્ય",
       "અરીસો",
+      "સૂર્ય",
       "લાકડું"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "સૂર્ય સ્વયંપ્રકાશિત પદાર્થ છે, જ્યારે ચંદ્ર સૂર્યના પ્રકાશથી ચમકે છે.",
     "explanationGujarati": "સૂર્ય સ્વયંપ્રકાશિત પદાર્થ છે, જ્યારે ચંદ્ર સૂર્યના પ્રકાશથી ચમકે છે.",
     "targetCompany": "School",
@@ -353,16 +356,16 @@ const SEED_QUESTIONS = [
     "questionText": "વિદ્યુત બલ્બમાં પ્રકાશ આપતા પાતળા તારને શું કહેવાય છે?",
     "questionTextGujarati": "વિદ્યુત બલ્બમાં પ્રકાશ આપતા પાતળા તારને શું કહેવાય છે?",
     "options": [
-      "ટર્મિનલ",
+      "વાયર",
       "ફિલામેન્ટ",
-      "સ્વિચ",
-      "વાયર"
+      "ટર્મિનલ",
+      "સ્વિચ"
     ],
     "optionsGujarati": [
-      "ટર્મિનલ",
+      "વાયર",
       "ફિલામેન્ટ",
-      "સ્વિચ",
-      "વાયર"
+      "ટર્મિનલ",
+      "સ્વિચ"
     ],
     "correctAnswer": 1,
     "explanation": "બલ્બમાં ટંગસ્ટન ધાતુનો બનેલો પાતળો તાર પ્રકાશ આપે છે જેને ફિલામેન્ટ કહે છે.",
@@ -381,18 +384,18 @@ const SEED_QUESTIONS = [
     "questionText": "હાડકાં હલનચલન ન કરી શકે તેવા સાંધા (જેમ કે ખોપરીના હાડકાં વચ્ચે) ને શું કહે છે?",
     "questionTextGujarati": "હાડકાં હલનચલન ન કરી શકે તેવા સાંધા (જેમ કે ખોપરીના હાડકાં વચ્ચે) ને શું કહે છે?",
     "options": [
+      "મિજાગરા સાંધો (Hinge Joint)",
       "અચલ સાંધા (Fixed Joints)",
       "ઊખળી સાંધો (Pivot Joint)",
-      "મિજાગરા સાંધો (Hinge Joint)",
       "ખલ-દસ્તો સાંધો (Ball and Socket Joint)"
     ],
     "optionsGujarati": [
+      "મિજાગરા સાંધો (Hinge Joint)",
       "અચલ સાંધા (Fixed Joints)",
       "ઊખળી સાંધો (Pivot Joint)",
-      "મિજાગરા સાંધો (Hinge Joint)",
       "ખલ-દસ્તો સાંધો (Ball and Socket Joint)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ખોપરીના અસ્થિઓ અચલ સાંધા વડે જોડાયેલા હોવાથી હલી શકતા નથી.",
     "explanationGujarati": "ખોપરીના અસ્થિઓ અચલ સાંધા વડે જોડાયેલા હોવાથી હલી શકતા નથી.",
     "targetCompany": "School",
@@ -409,18 +412,18 @@ const SEED_QUESTIONS = [
     "questionText": "વિશાળ સ્નાનાગાર કયા પ્રાચીન હડપ્પીય નગરમાંથી મળી આવ્યું હતું?",
     "questionTextGujarati": "વિશાળ સ્નાનાગાર કયા પ્રાચીન હડપ્પીય નગરમાંથી મળી આવ્યું હતું?",
     "options": [
-      "હડપ્પા",
       "મોહેં-જો-દડો",
-      "કાલીબંગન",
-      "ધોળાવીરા"
+      "હડપ્પા",
+      "ધોળાવીરા",
+      "કાલીબંગન"
     ],
     "optionsGujarati": [
-      "હડપ્પા",
       "મોહેં-જો-દડો",
-      "કાલીબંગન",
-      "ધોળાવીરા"
+      "હડપ્પા",
+      "ધોળાવીરા",
+      "કાલીબંગન"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "મોહેં-જો-દડો નગરમાંથી ઇંટોથી ચણેલું વિશાળ જાહેર સ્નાનાગાર મળી આવ્યું છે.",
     "explanationGujarati": "મોહેં-જો-દડો નગરમાંથી ઇંટોથી ચણેલું વિશાળ જાહેર સ્નાનાગાર મળી આવ્યું છે.",
     "targetCompany": "School",
@@ -437,18 +440,18 @@ const SEED_QUESTIONS = [
     "questionText": "ગુજરાતમાં આવેલું પ્રાચીન ભારતનું પ્રસિદ્ધ બંદર અને ધક્કો (ડૉકયાર્ડ) કયું હતું?",
     "questionTextGujarati": "ગુજરાતમાં આવેલું પ્રાચીન ભારતનું પ્રસિદ્ધ બંદર અને ધક્કો (ડૉકયાર્ડ) કયું હતું?",
     "options": [
-      "લોથલ",
+      "હસ્તિનાપુર",
       "કાશી",
-      "પાટલિપુત્ર",
-      "હસ્તિનાપુર"
+      "લોથલ",
+      "પાટલિપુત્ર"
     ],
     "optionsGujarati": [
-      "લોથલ",
+      "હસ્તિનાપુર",
       "કાશી",
-      "પાટલિપુત્ર",
-      "હસ્તિનાપુર"
+      "લોથલ",
+      "પાટલિપુત્ર"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "લોથલ અમદાવાદ જિલ્લામાં ભોગાવો નદી કિનારે આવેલું પ્રાચીન હડપ્પીય બંદર હતું.",
     "explanationGujarati": "લોથલ અમદાવાદ જિલ્લામાં ભોગાવો નદી કિનારે આવેલું પ્રાચીન હડપ્પીય બંદર હતું.",
     "targetCompany": "School",
@@ -465,18 +468,18 @@ const SEED_QUESTIONS = [
     "questionText": "0° રેખાંશવૃત્ત (0° Meridian) ને બીજા કયા નામે ઓળખવામાં આવે છે?",
     "questionTextGujarati": "0° રેખાંશવૃત્ત (0° Meridian) ને બીજા કયા નામે ઓળખવામાં આવે છે?",
     "options": [
-      "કર્કવૃત્ત",
-      "મકરવૃત્ત",
       "મુખ્ય રેખાંશવૃત્ત / ગ્રીનિચ રેખા (Prime Meridian)",
+      "મકરવૃત્ત",
+      "કર્કવૃત્ત",
       "વિષુવવૃત્ત"
     ],
     "optionsGujarati": [
-      "કર્કવૃત્ત",
-      "મકરવૃત્ત",
       "મુખ્ય રેખાંશવૃત્ત / ગ્રીનિચ રેખા (Prime Meridian)",
+      "મકરવૃત્ત",
+      "કર્કવૃત્ત",
       "વિષુવવૃત્ત"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 0,
     "explanation": "0° રેખાંશવૃત્ત ઇંગ્લેન્ડના ગ્રીનિચ શહેર પરથી પસાર થાય છે જેને ગ્રીનિચ રેખા અથવા મુખ્ય રેખાંશવૃત્ત કહે છે.",
     "explanationGujarati": "0° રેખાંશવૃત્ત ઇંગ્લેન્ડના ગ્રીનિચ શહેર પરથી પસાર થાય છે જેને ગ્રીનિચ રેખા અથવા મુખ્ય રેખાંશવૃત્ત કહે છે.",
     "targetCompany": "School",
@@ -494,17 +497,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "પૃથ્વીને સૂર્યની આસપાસ એક પરિક્રમણ પૂરું કરતાં કેટલો સમય લાગે છે?",
     "options": [
       "૩૬૫ દિવસ",
-      "૩૬૫ દિવસ અને ૬ કલાક",
+      "૨૪ કલાક",
       "૩૬૦ દિવસ",
-      "૨૪ કલાક"
+      "૩૬૫ દિવસ અને ૬ કલાક"
     ],
     "optionsGujarati": [
       "૩૬૫ દિવસ",
-      "૩૬૫ દિવસ અને ૬ કલાક",
+      "૨૪ કલાક",
       "૩૬૦ દિવસ",
-      "૨૪ કલાક"
+      "૩૬૫ દિવસ અને ૬ કલાક"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "પૃથ્વીને સૂર્યની આસપાસ એક ચક્ર લગાવતાં ૩૬૫ દિવસ અને લગભગ ૬ કલાક (૧ વર્ષ) લાગે છે.",
     "explanationGujarati": "પૃથ્વીને સૂર્યની આસપાસ એક ચક્ર લગાવતાં ૩૬૫ દિવસ અને લગભગ ૬ કલાક (૧ વર્ષ) લાગે છે.",
     "targetCompany": "School",
@@ -521,18 +524,18 @@ const SEED_QUESTIONS = [
     "questionText": "ગામડામાં સ્થાનિક સ્વરાજ્યની ચૂંટાયેલી વહીવટી સંસ્થા કયા નામે ઓળખાય છે?",
     "questionTextGujarati": "ગામડામાં સ્થાનિક સ્વરાજ્યની ચૂંટાયેલી વહીવટી સંસ્થા કયા નામે ઓળખાય છે?",
     "options": [
-      "ગ્રામ પંચાયત",
       "નગરપાલિકા",
-      "મહાનગરપાલિકા",
-      "વિધાનસભા"
+      "વિધાનસભા",
+      "ગ્રામ પંચાયત",
+      "મહાનગરપાલિકા"
     ],
     "optionsGujarati": [
-      "ગ્રામ પંચાયત",
       "નગરપાલિકા",
-      "મહાનગરપાલિકા",
-      "વિધાનસભા"
+      "વિધાનસભા",
+      "ગ્રામ પંચાયત",
+      "મહાનગરપાલિકા"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ગ્રામ પંચાયત એ ગામડાના સ્તરે સ્થાનિક કારભાર સંભાળતી મૂળભૂત લોકશાહી સંસ્થા છે.",
     "explanationGujarati": "ગ્રામ પંચાયત એ ગામડાના સ્તરે સ્થાનિક કારભાર સંભાળતી મૂળભૂત લોકશાહી સંસ્થા છે.",
     "targetCompany": "School",
@@ -549,18 +552,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતીય બંધારણના ઘડવૈયા / પિતા તરીકે કોણ ઓળખાય છે?",
     "questionTextGujarati": "ભારતીય બંધારણના ઘડવૈયા / પિતા તરીકે કોણ ઓળખાય છે?",
     "options": [
-      "મહાત્મા ગાંધી",
       "ડૉ. બાબાસાહેબ આંબેડકર",
-      "સરદાર વલ્લભભાઈ પટેલ",
-      "પંડિત જવાહરલાલ નેહરુ"
+      "પંડિત જવાહરલાલ નેહરુ",
+      "મહાત્મા ગાંધી",
+      "સરદાર વલ્લભભાઈ પટેલ"
     ],
     "optionsGujarati": [
-      "મહાત્મા ગાંધી",
       "ડૉ. બાબાસાહેબ આંબેડકર",
-      "સરદાર વલ્લભભાઈ પટેલ",
-      "પંડિત જવાહરલાલ નેહરુ"
+      "પંડિત જવાહરલાલ નેહરુ",
+      "મહાત્મા ગાંધી",
+      "સરદાર વલ્લભભાઈ પટેલ"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "ડૉ. ભીમરાવ બાબાસાહેબ આંબેડકર બંધારણ નિર્માણની મુસદ્દા (ખરડા) સમિતિના અધ્યક્ષ હતા.",
     "explanationGujarati": "ડૉ. ભીમરાવ બાબાસાહેબ આંબેડકર બંધારણ નિર્માણની મુસદ્દા (ખરડા) સમિતિના અધ્યક્ષ હતા.",
     "targetCompany": "School",
@@ -577,18 +580,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેના વાક્યમાંથી ભાવવાચક સંજ્ઞા (Abstract Noun) ઓળખો: 'Honesty is the best policy.'",
     "questionTextGujarati": "નીચેના વાક્યમાંથી ભાવવાચક સંજ્ઞા (Abstract Noun) ઓળખો: 'Honesty is the best policy.'",
     "options": [
+      "Is",
       "Honesty",
       "Best",
-      "Policy",
-      "Is"
+      "Policy"
     ],
     "optionsGujarati": [
+      "Is",
       "Honesty",
       "Best",
-      "Policy",
-      "Is"
+      "Policy"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "'Honesty' (પ્રામાણિકતા) એ એક ગુણ અને ભાવ દર્શાવતું Abstract Noun છે.",
     "explanationGujarati": "'Honesty' (પ્રામાણિકતા) એ એક ગુણ અને ભાવ દર્શાવતું Abstract Noun છે.",
     "targetCompany": "School",
@@ -605,18 +608,18 @@ const SEED_QUESTIONS = [
     "questionText": "યોગ્ય પ્રેપોઝિશન (Preposition) પસંદ કરો: 'The cat jumped ______ the fence.'",
     "questionTextGujarati": "યોગ્ય પ્રેપોઝિશન (Preposition) પસંદ કરો: 'The cat jumped ______ the fence.'",
     "options": [
-      "under",
-      "over",
+      "at",
       "in",
-      "at"
+      "under",
+      "over"
     ],
     "optionsGujarati": [
-      "under",
-      "over",
+      "at",
       "in",
-      "at"
+      "under",
+      "over"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "વાડની ઉપરથી કૂદકો મારવા માટે 'over' પ્રેપોઝિશન વપરાય છે.",
     "explanationGujarati": "વાડની ઉપરથી કૂદકો મારવા માટે 'over' પ્રેપોઝિશન વપરાય છે.",
     "targetCompany": "School",
@@ -633,18 +636,18 @@ const SEED_QUESTIONS = [
     "questionText": "‘ANCIENT’ (પ્રાચીન) શબ્દનો સાચો વિરોધી (Antonym) શબ્દ કયો છે?",
     "questionTextGujarati": "‘ANCIENT’ (પ્રાચીન) શબ્દનો સાચો વિરોધી (Antonym) શબ્દ કયો છે?",
     "options": [
-      "Old",
       "Modern",
       "Historic",
+      "Old",
       "Past"
     ],
     "optionsGujarati": [
-      "Old",
       "Modern",
       "Historic",
+      "Old",
       "Past"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "'Ancient' એટલે પ્રાચીન અને 'Modern' એટલે આધુનિક.",
     "explanationGujarati": "'Ancient' એટલે પ્રાચીન અને 'Modern' એટલે આધુનિક.",
     "targetCompany": "School",
@@ -661,18 +664,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેના વાક્યમાંથી ક્રિયાવિશેષણ (Adverb) શોધો: 'He ran quickly to catch the school bus.'",
     "questionTextGujarati": "નીચેના વાક્યમાંથી ક્રિયાવિશેષણ (Adverb) શોધો: 'He ran quickly to catch the school bus.'",
     "options": [
-      "He",
-      "Ran",
+      "School",
       "Quickly",
-      "School"
+      "Ran",
+      "He"
     ],
     "optionsGujarati": [
-      "He",
-      "Ran",
+      "School",
       "Quickly",
-      "School"
+      "Ran",
+      "He"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 1,
     "explanation": "'Quickly' શબ્દ દોડવાની ક્રિયા કેવી રીતે થઈ તે દર્શાવે છે, તેથી તે Adverb છે.",
     "explanationGujarati": "'Quickly' શબ્દ દોડવાની ક્રિયા કેવી રીતે થઈ તે દર્શાવે છે, તેથી તે Adverb છે.",
     "targetCompany": "School",
@@ -689,18 +692,18 @@ const SEED_QUESTIONS = [
     "questionText": "સાચા વિરામચિહ્નો (Punctuation) ધરાવતું યોગ્ય વાક્ય પસંદ કરો:",
     "questionTextGujarati": "સાચા વિરામચિહ્નો (Punctuation) ધરાવતું યોગ્ય વાક્ય પસંદ કરો:",
     "options": [
+      "Where, are you going!",
       "Where are you going?",
       "where are you going.",
-      "Where are you going.",
-      "Where, are you going!"
+      "Where are you going."
     ],
     "optionsGujarati": [
+      "Where, are you going!",
       "Where are you going?",
       "where are you going.",
-      "Where are you going.",
-      "Where, are you going!"
+      "Where are you going."
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પ્રશ્નાર્થ વાક્યનો પ્રથમ અક્ષર કેપિટલ હોવો જોઈએ અને છેલ્લે પ્રશ્નાર્થચિહ્ન (?) આવવું જોઈએ.",
     "explanationGujarati": "પ્રશ્નાર્થ વાક્યનો પ્રથમ અક્ષર કેપિટલ હોવો જોઈએ અને છેલ્લે પ્રશ્નાર્થચિહ્ન (?) આવવું જોઈએ.",
     "targetCompany": "School",
@@ -717,18 +720,18 @@ const SEED_QUESTIONS = [
     "questionText": "'સૂર્ય' શબ્દનો સમાનાર્થી શબ્દ નીચેનામાંથી કયો છે?",
     "questionTextGujarati": "'સૂર્ય' શબ્દનો સમાનાર્થી શબ્દ નીચેનામાંથી કયો છે?",
     "options": [
-      "રવિ",
+      "નીર",
       "શશી",
-      "પાવક",
-      "નીર"
+      "રવિ",
+      "પાવક"
     ],
     "optionsGujarati": [
-      "રવિ",
+      "નીર",
       "શશી",
-      "પાવક",
-      "નીર"
+      "રવિ",
+      "પાવક"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "'રવિ', 'દિનકર', 'ભાસ્કર' એ સૂર્યના સમાનાર્થી શબ્દો છે. શશી એટલે ચંદ્ર, પાવક એટલે અગ્નિ અને નીર એટલે પાણી.",
     "explanationGujarati": "'રવિ', 'દિનકર', 'ભાસ્કર' એ સૂર્યના સમાનાર્થી શબ્દો છે. શશી એટલે ચંદ્ર, પાવક એટલે અગ્નિ અને નીર એટલે પાણી.",
     "targetCompany": "School",
@@ -745,18 +748,18 @@ const SEED_QUESTIONS = [
     "questionText": "'સત્ય' શબ્દનો સાચો વિરોધી શબ્દ કયો થાય?",
     "questionTextGujarati": "'સત્ય' શબ્દનો સાચો વિરોધી શબ્દ કયો થાય?",
     "options": [
-      "અસત્ય",
+      "પુણ્ય",
       "ન્યાય",
       "ધર્મ",
-      "પુણ્ય"
+      "અસત્ય"
     ],
     "optionsGujarati": [
-      "અસત્ય",
+      "પુણ્ય",
       "ન્યાય",
       "ધર્મ",
-      "પુણ્ય"
+      "અસત્ય"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'સત્ય' નો વિરોધી શબ્દ 'અસત્ય' અથવા 'જૂઠ' થાય છે.",
     "explanationGujarati": "'સત્ય' નો વિરોધી શબ્દ 'અસત્ય' અથવા 'જૂઠ' થાય છે.",
     "targetCompany": "School",
@@ -773,15 +776,15 @@ const SEED_QUESTIONS = [
     "questionText": "'આકાશ' માંથી નીચે પડતા પાણીના ટીપાંને શું કહેવાય?",
     "questionTextGujarati": "'આકાશ' માંથી નીચે પડતા પાણીના ટીપાંને શું કહેવાય?",
     "options": [
-      "ઝાકળ",
-      "વરસાદ",
       "બરફ",
+      "વરસાદ",
+      "ઝાકળ",
       "ધૂમ્મસ"
     ],
     "optionsGujarati": [
-      "ઝાકળ",
-      "વરસાદ",
       "બરફ",
+      "વરસાદ",
+      "ઝાકળ",
       "ધૂમ્મસ"
     ],
     "correctAnswer": 1,
@@ -802,17 +805,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "નીચેનામાંથી કઈ જોડણી સાચી છે?",
     "options": [
       "નિયમીત",
-      "નિયમિત",
+      "નીયમિત",
       "નીયમીત",
-      "નીયમિત"
+      "નિયમિત"
     ],
     "optionsGujarati": [
       "નિયમીત",
-      "નિયમિત",
+      "નીયમિત",
       "નીયમીત",
-      "નીયમિત"
+      "નિયમિત"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "'નિયમિત' એ શુદ્ધ જોડણી છે જેમાં 'નિ' અને 'મિ' બંને હ્રસ્વ આવે છે.",
     "explanationGujarati": "'નિયમિત' એ શુદ્ધ જોડણી છે જેમાં 'નિ' અને 'મિ' બંને હ્રસ્વ આવે છે.",
     "targetCompany": "School",
@@ -831,14 +834,14 @@ const SEED_QUESTIONS = [
     "options": [
       "ધ્યાન ન આપવું / અવગણવું",
       "ખૂબ ગુસ્સે થવું",
-      "સાવચેત રહેવું",
-      "કાનમાં દવા નાખવી"
+      "કાનમાં દવા નાખવી",
+      "સાવચેત રહેવું"
     ],
     "optionsGujarati": [
       "ધ્યાન ન આપવું / અવગણવું",
       "ખૂબ ગુસ્સે થવું",
-      "સાવચેત રહેવું",
-      "કાનમાં દવા નાખવી"
+      "કાનમાં દવા નાખવી",
+      "સાવચેત રહેવું"
     ],
     "correctAnswer": 0,
     "explanation": "'આંખ આડા કાન કરવા' એટલે જાણી જોઈને વાત ધ્યાને ન લેવી કે વાતની અવગણના કરવી.",
@@ -859,14 +862,14 @@ const SEED_QUESTIONS = [
     "options": [
       "3",
       "5",
-      "7",
-      "15"
+      "15",
+      "7"
     ],
     "optionsGujarati": [
       "3",
       "5",
-      "7",
-      "15"
+      "15",
+      "7"
     ],
     "correctAnswer": 1,
     "explanation": "3x = 22 - 7 = 15 => x = 15 / 3 = 5.",
@@ -887,14 +890,14 @@ const SEED_QUESTIONS = [
     "options": [
       "-13",
       "-33",
-      "-17",
-      "+7"
+      "+7",
+      "-17"
     ],
     "optionsGujarati": [
       "-13",
       "-33",
-      "-17",
-      "+7"
+      "+7",
+      "-17"
     ],
     "correctAnswer": 0,
     "explanation": "(-15) + (-8) - (-10) = -23 + 10 = -13.",
@@ -913,18 +916,18 @@ const SEED_QUESTIONS = [
     "questionText": "કાટકોણ ત્રિકોણમાં જો પાયો = 6 સેમી અને વેધ = 8 સેમી હોય, તો કર્ણનું માપ કેટલું થાય?",
     "questionTextGujarati": "કાટકોણ ત્રિકોણમાં જો પાયો = 6 સેમી અને વેધ = 8 સેમી હોય, તો કર્ણનું માપ કેટલું થાય?",
     "options": [
-      "10 સેમી",
       "14 સેમી",
+      "10 સેમી",
       "12 સેમી",
       "48 સેમી"
     ],
     "optionsGujarati": [
-      "10 સેમી",
       "14 સેમી",
+      "10 સેમી",
       "12 સેમી",
       "48 સેમી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પાયથાગોરસ પ્રમેય મુજબ: કર્ણ² = 6² + 8² = 36 + 64 = 100 => કર્ણ = 10 સેમી.",
     "explanationGujarati": "પાયથાગોરસ પ્રમેય મુજબ: કર્ણ² = 6² + 8² = 36 + 64 = 100 => કર્ણ = 10 સેમી.",
     "targetCompany": "School",
@@ -941,18 +944,18 @@ const SEED_QUESTIONS = [
     "questionText": "ગુણાકાર શોધો: 0.04 × 0.2 = ?",
     "questionTextGujarati": "ગુણાકાર શોધો: 0.04 × 0.2 = ?",
     "options": [
-      "0.8",
-      "0.08",
+      "0.0008",
       "0.008",
-      "0.0008"
+      "0.8",
+      "0.08"
     ],
     "optionsGujarati": [
-      "0.8",
-      "0.08",
+      "0.0008",
       "0.008",
-      "0.0008"
+      "0.8",
+      "0.08"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 1,
     "explanation": "4 × 2 = 8. દશાંશ ચિહ્ન પછી કુલ 3 અંક આવે (2 + 1 = 3), તેથી જવાબ 0.008 થાય.",
     "explanationGujarati": "4 × 2 = 8. દશાંશ ચિહ્ન પછી કુલ 3 અંક આવે (2 + 1 = 3), તેથી જવાબ 0.008 થાય.",
     "targetCompany": "School",
@@ -969,18 +972,18 @@ const SEED_QUESTIONS = [
     "questionText": "65° માપ ધરાવતા ખૂણાના પૂરકકોણનું માપ કેટલું થાય?",
     "questionTextGujarati": "65° માપ ધરાવતા ખૂણાના પૂરકકોણનું માપ કેટલું થાય?",
     "options": [
-      "25°",
       "115°",
+      "25°",
       "35°",
       "125°"
     ],
     "optionsGujarati": [
-      "25°",
       "115°",
+      "25°",
       "35°",
       "125°"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "બે પૂરકકોણનો સરવાળો 180° થાય છે: 180° - 65° = 115°.",
     "explanationGujarati": "બે પૂરકકોણનો સરવાળો 180° થાય છે: 180° - 65° = 115°.",
     "targetCompany": "School",
@@ -997,18 +1000,18 @@ const SEED_QUESTIONS = [
     "questionText": "₹1,000 નું વાર્ષિક 5% ના દરે 2 વર્ષનું સાદું વ્યાજ (I) કેટલું થાય?",
     "questionTextGujarati": "₹1,000 નું વાર્ષિક 5% ના દરે 2 વર્ષનું સાદું વ્યાજ (I) કેટલું થાય?",
     "options": [
-      "₹50",
       "₹100",
+      "₹150",
       "₹200",
-      "₹150"
+      "₹50"
     ],
     "optionsGujarati": [
-      "₹50",
       "₹100",
+      "₹150",
       "₹200",
-      "₹150"
+      "₹50"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "I = (P × R × N) / 100 = (1000 × 5 × 2) / 100 = ₹100.",
     "explanationGujarati": "I = (P × R × N) / 100 = (1000 × 5 × 2) / 100 = ₹100.",
     "targetCompany": "School",
@@ -1025,18 +1028,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો વર્તુળની ત્રિજ્યા 7 સેમી હોય, તો તેનો પરિઘ કેટલો થાય? (π = 22/7 લો)",
     "questionTextGujarati": "જો વર્તુળની ત્રિજ્યા 7 સેમી હોય, તો તેનો પરિઘ કેટલો થાય? (π = 22/7 લો)",
     "options": [
-      "22 સેમી",
       "44 સેમી",
+      "22 સેમી",
       "154 સેમી",
       "88 સેમી"
     ],
     "optionsGujarati": [
-      "22 સેમી",
       "44 સેમી",
+      "22 સેમી",
       "154 સેમી",
       "88 સેમી"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "પરિઘ = 2πr = 2 × (22/7) × 7 = 44 સેમી.",
     "explanationGujarati": "પરિઘ = 2πr = 2 × (22/7) × 7 = 44 સેમી.",
     "targetCompany": "School",
@@ -1053,18 +1056,18 @@ const SEED_QUESTIONS = [
     "questionText": "પર્ણોમાં સૂર્યપ્રકાશ શોષી પ્રકાશસંશ્લેષણ કરવામાં મદદ કરતું લીલું રંજકદ્રવ્ય કયું છે?",
     "questionTextGujarati": "પર્ણોમાં સૂર્યપ્રકાશ શોષી પ્રકાશસંશ્લેષણ કરવામાં મદદ કરતું લીલું રંજકદ્રવ્ય કયું છે?",
     "options": [
-      "ક્લોરોફિલ (હરિદ્રવ્ય)",
-      "હિમોગ્લોબિન",
       "કેરોટીન",
-      "ઝેન્થોફિલ"
+      "ઝેન્થોફિલ",
+      "હિમોગ્લોબિન",
+      "ક્લોરોફિલ (હરિદ્રવ્ય)"
     ],
     "optionsGujarati": [
-      "ક્લોરોફિલ (હરિદ્રવ્ય)",
-      "હિમોગ્લોબિન",
       "કેરોટીન",
-      "ઝેન્થોફિલ"
+      "ઝેન્થોફિલ",
+      "હિમોગ્લોબિન",
+      "ક્લોરોફિલ (હરિદ્રવ્ય)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "હરિદ્રવ્ય (ક્લોરોફિલ) સૂર્યઊર્જા શોષી વનસ્પતિમાં ખોરાક બનાવવામાં સહાય કરે છે.",
     "explanationGujarati": "હરિદ્રવ્ય (ક્લોરોફિલ) સૂર્યઊર્જા શોષી વનસ્પતિમાં ખોરાક બનાવવામાં સહાય કરે છે.",
     "targetCompany": "School",
@@ -1081,18 +1084,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભૂરા લિટમસ પેપરને લીંબુના રસમાં (એસિડિક દ્રાવણમાં) ડૂબાડતાં તેનો રંગ કેવો બને છે?",
     "questionTextGujarati": "ભૂરા લિટમસ પેપરને લીંબુના રસમાં (એસિડિક દ્રાવણમાં) ડૂબાડતાં તેનો રંગ કેવો બને છે?",
     "options": [
+      "કોઈ ફેરફાર નહીં",
       "લાલ",
-      "પીળો",
       "લીલો",
-      "કોઈ ફેરફાર નહીં"
+      "પીળો"
     ],
     "optionsGujarati": [
+      "કોઈ ફેરફાર નહીં",
       "લાલ",
-      "પીળો",
       "લીલો",
-      "કોઈ ફેરફાર નહીં"
+      "પીળો"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "એસિડ ભૂરા લિટમસ પેપરને લાલ બનાવે છે.",
     "explanationGujarati": "એસિડ ભૂરા લિટમસ પેપરને લાલ બનાવે છે.",
     "targetCompany": "School",
@@ -1109,18 +1112,18 @@ const SEED_QUESTIONS = [
     "questionText": "સ્વસ્થ મનુષ્યના શરીરનું સામાન્ય તાપમાન કેટલા સેલ્સિયસ હોય છે?",
     "questionTextGujarati": "સ્વસ્થ મનુષ્યના શરીરનું સામાન્ય તાપમાન કેટલા સેલ્સિયસ હોય છે?",
     "options": [
+      "100°C",
       "98.6°C",
-      "37°C",
       "32°C",
-      "100°C"
+      "37°C"
     ],
     "optionsGujarati": [
+      "100°C",
       "98.6°C",
-      "37°C",
       "32°C",
-      "100°C"
+      "37°C"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "સામાન્ય શરીરનું તાપમાન 37° સેલ્સિયસ (અથવા 98.6° ફેરનહીટ) હોય છે.",
     "explanationGujarati": "સામાન્ય શરીરનું તાપમાન 37° સેલ્સિયસ (અથવા 98.6° ફેરનહીટ) હોય છે.",
     "targetCompany": "School",
@@ -1139,14 +1142,14 @@ const SEED_QUESTIONS = [
     "options": [
       "શિરાઓ (Veins)",
       "ધમનીઓ (Arteries)",
-      "રુધિરકેશિકાઓ (Capillaries)",
-      "વાલ્વ"
+      "વાલ્વ",
+      "રુધિરકેશિકાઓ (Capillaries)"
     ],
     "optionsGujarati": [
       "શિરાઓ (Veins)",
       "ધમનીઓ (Arteries)",
-      "રુધિરકેશિકાઓ (Capillaries)",
-      "વાલ્વ"
+      "વાલ્વ",
+      "રુધિરકેશિકાઓ (Capillaries)"
     ],
     "correctAnswer": 1,
     "explanation": "ધમનીઓ હૃદયમાંથી શુદ્ધ (ઓક્સિજનયુક્ત) રુધિર સમગ્ર શરીરમાં પહોંચાડે છે.",
@@ -1165,18 +1168,18 @@ const SEED_QUESTIONS = [
     "questionText": "લોખંડને કાટ લાગવો એ કયા પ્રકારનો ફેરફાર છે?",
     "questionTextGujarati": "લોખંડને કાટ લાગવો એ કયા પ્રકારનો ફેરફાર છે?",
     "options": [
-      "ભૌતિક ફેરફાર",
       "રાસાયણિક ફેરફાર",
+      "સામયિક ફેરફાર",
       "ઉલટાવી શકાય તેવો ફેરફાર",
-      "સામયિક ફેરફાર"
+      "ભૌતિક ફેરફાર"
     ],
     "optionsGujarati": [
-      "ભૌતિક ફેરફાર",
       "રાસાયણિક ફેરફાર",
+      "સામયિક ફેરફાર",
       "ઉલટાવી શકાય તેવો ફેરફાર",
-      "સામયિક ફેરફાર"
+      "ભૌતિક ફેરફાર"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "કાટ લાગવો એ રાસાયણિક ફેરફાર છે કારણ કે તેમાં આયર્ન ઓક્સાઇડ નામનો નવો પદાર્થ બને છે.",
     "explanationGujarati": "કાટ લાગવો એ રાસાયણિક ફેરફાર છે કારણ કે તેમાં આયર્ન ઓક્સાઇડ નામનો નવો પદાર્થ બને છે.",
     "targetCompany": "School",
@@ -1193,18 +1196,18 @@ const SEED_QUESTIONS = [
     "questionText": "વનસ્પતિમાં પાણી અને ખનીજ ક્ષારોનું ઊર્ધ્વગમન (વહન) કઈ પેશી દ્વારા થાય છે?",
     "questionTextGujarati": "વનસ્પતિમાં પાણી અને ખનીજ ક્ષારોનું ઊર્ધ્વગમન (વહન) કઈ પેશી દ્વારા થાય છે?",
     "options": [
-      "જલવાહક પેશી (Xylem)",
-      "અન્નવાહક પેશી (Phloem)",
       "મૂળરોમ",
-      "રક્ષક કોષો"
+      "અન્નવાહક પેશી (Phloem)",
+      "રક્ષક કોષો",
+      "જલવાહક પેશી (Xylem)"
     ],
     "optionsGujarati": [
-      "જલવાહક પેશી (Xylem)",
-      "અન્નવાહક પેશી (Phloem)",
       "મૂળરોમ",
-      "રક્ષક કોષો"
+      "અન્નવાહક પેશી (Phloem)",
+      "રક્ષક કોષો",
+      "જલવાહક પેશી (Xylem)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "જલવાહક પેશી મૂળ દ્વારા શોષાયેલું પાણી અને ક્ષારો પર્ણો સુધી પહોંચાડે છે.",
     "explanationGujarati": "જલવાહક પેશી મૂળ દ્વારા શોષાયેલું પાણી અને ક્ષારો પર્ણો સુધી પહોંચાડે છે.",
     "targetCompany": "School",
@@ -1221,18 +1224,18 @@ const SEED_QUESTIONS = [
     "questionText": "ચળકતી કે લીસી સપાટી પરથી પ્રકાશના પાછા ફેંકાવાની ઘટનાને શું કહે છે?",
     "questionTextGujarati": "ચળકતી કે લીસી સપાટી પરથી પ્રકાશના પાછા ફેંકાવાની ઘટનાને શું કહે છે?",
     "options": [
+      "પ્રકાશનું શોષણ",
       "પ્રકાશનું વક્રીભવન",
-      "પ્રકાશનું પરાવર્તન",
       "પ્રકાશનું વિભાજન",
-      "પ્રકાશનું શોષણ"
+      "પ્રકાશનું પરાવર્તન"
     ],
     "optionsGujarati": [
+      "પ્રકાશનું શોષણ",
       "પ્રકાશનું વક્રીભવન",
-      "પ્રકાશનું પરાવર્તન",
       "પ્રકાશનું વિભાજન",
-      "પ્રકાશનું શોષણ"
+      "પ્રકાશનું પરાવર્તન"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "લીસી સપાટી પરથી પ્રકાશ અથડાઈને પાછો વળે તેને પ્રકાશનું પરાવર્તન કહેવાય છે.",
     "explanationGujarati": "લીસી સપાટી પરથી પ્રકાશ અથડાઈને પાછો વળે તેને પ્રકાશનું પરાવર્તન કહેવાય છે.",
     "targetCompany": "School",
@@ -1249,18 +1252,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતમાં મુઘલ સામ્રાજ્યનો સ્થાપક કોણ હતો?",
     "questionTextGujarati": "ભારતમાં મુઘલ સામ્રાજ્યનો સ્થાપક કોણ હતો?",
     "options": [
-      "અકબર",
-      "બાબર",
       "હુમાયૂં",
-      "શાહજહાં"
+      "શાહજહાં",
+      "અકબર",
+      "બાબર"
     ],
     "optionsGujarati": [
-      "અકબર",
-      "બાબર",
       "હુમાયૂં",
-      "શાહજહાં"
+      "શાહજહાં",
+      "અકબર",
+      "બાબર"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "ઇ.સ. 1526 માં પાણીપતના પ્રથમ યુદ્ધમાં ઇબ્રાહિમ લોદીને હરાવી બાબરે મુઘલ સામ્રાજ્યની સ્થાપના કરી હતી.",
     "explanationGujarati": "ઇ.સ. 1526 માં પાણીપતના પ્રથમ યુદ્ધમાં ઇબ્રાહિમ લોદીને હરાવી બાબરે મુઘલ સામ્રાજ્યની સ્થાપના કરી હતી.",
     "targetCompany": "School",
@@ -1277,18 +1280,18 @@ const SEED_QUESTIONS = [
     "questionText": "દિલ્હી સલ્તનતના શાસનકાળ દરમિયાન એકમાત્ર મહિલા શાસક કોણ બની હતી?",
     "questionTextGujarati": "દિલ્હી સલ્તનતના શાસનકાળ દરમિયાન એકમાત્ર મહિલા શાસક કોણ બની હતી?",
     "options": [
+      "રાણી લક્ષ્મીબાઈ",
       "રઝિયા સુલતાના",
       "ચાંદબીબી",
-      "નૂરજહાં",
-      "રાણી લક્ષ્મીબાઈ"
+      "નૂરજહાં"
     ],
     "optionsGujarati": [
+      "રાણી લક્ષ્મીબાઈ",
       "રઝિયા સુલતાના",
       "ચાંદબીબી",
-      "નૂરજહાં",
-      "રાણી લક્ષ્મીબાઈ"
+      "નૂરજહાં"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ઇલ્તુત્મિશની પુત્રી રઝિયા સુલતાના દિલ્હીની ગાદી પર બેસનાર પ્રથમ મહિલા શાસક હતી.",
     "explanationGujarati": "ઇલ્તુત્મિશની પુત્રી રઝિયા સુલતાના દિલ્હીની ગાદી પર બેસનાર પ્રથમ મહિલા શાસક હતી.",
     "targetCompany": "School",
@@ -1305,18 +1308,18 @@ const SEED_QUESTIONS = [
     "questionText": "વાતાવરણનું કયું સ્તર ઓઝોન વાયુ ધરાવે છે જે સૂર્યના પારજાંબલી (UV) કિરણો સામે રક્ષણ આપે છે?",
     "questionTextGujarati": "વાતાવરણનું કયું સ્તર ઓઝોન વાયુ ધરાવે છે જે સૂર્યના પારજાંબલી (UV) કિરણો સામે રક્ષણ આપે છે?",
     "options": [
-      "ક્ષોભ આવરણ (Troposphere)",
       "સમતાપ આવરણ (Stratosphere)",
+      "ઉષ્માવરણ (Thermosphere)",
       "મધ્યાવરણ (Mesosphere)",
-      "ઉષ્માવરણ (Thermosphere)"
+      "ક્ષોભ આવરણ (Troposphere)"
     ],
     "optionsGujarati": [
-      "ક્ષોભ આવરણ (Troposphere)",
       "સમતાપ આવરણ (Stratosphere)",
+      "ઉષ્માવરણ (Thermosphere)",
       "મધ્યાવરણ (Mesosphere)",
-      "ઉષ્માવરણ (Thermosphere)"
+      "ક્ષોભ આવરણ (Troposphere)"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "સમતાપ આવરણમાં ઓઝોન વાયુ આવેલો છે જે સૂર્યના હાનિકારક પારજાંબલી કિરણોને શોષી લે છે.",
     "explanationGujarati": "સમતાપ આવરણમાં ઓઝોન વાયુ આવેલો છે જે સૂર્યના હાનિકારક પારજાંબલી કિરણોને શોષી લે છે.",
     "targetCompany": "School",
@@ -1333,18 +1336,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમુદ્રમાં ભરતી અને ઓટ આવવાનું મુખ્ય કારણ શું છે?",
     "questionTextGujarati": "સમુદ્રમાં ભરતી અને ઓટ આવવાનું મુખ્ય કારણ શું છે?",
     "options": [
-      "પૃથ્વીનું ધરીભ્રમણ",
-      "સૂર્ય અને ચંદ્રનું ગુરુત્વાકર્ષણ બળ",
       "સમુદ્રી પવનો",
-      "ભૂકંપ"
+      "પૃથ્વીનું ધરીભ્રમણ",
+      "ભૂકંપ",
+      "સૂર્ય અને ચંદ્રનું ગુરુત્વાકર્ષણ બળ"
     ],
     "optionsGujarati": [
-      "પૃથ્વીનું ધરીભ્રમણ",
-      "સૂર્ય અને ચંદ્રનું ગુરુત્વાકર્ષણ બળ",
       "સમુદ્રી પવનો",
-      "ભૂકંપ"
+      "પૃથ્વીનું ધરીભ્રમણ",
+      "ભૂકંપ",
+      "સૂર્ય અને ચંદ્રનું ગુરુત્વાકર્ષણ બળ"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "સૂર્ય અને ચંદ્રના સંયુક્ત ગુરુત્વાકર્ષણ ખેંચાણના કારણે દરિયામાં ભરતી-ઓટ આવે છે.",
     "explanationGujarati": "સૂર્ય અને ચંદ્રના સંયુક્ત ગુરુત્વાકર્ષણ ખેંચાણના કારણે દરિયામાં ભરતી-ઓટ આવે છે.",
     "targetCompany": "School",
@@ -1362,17 +1365,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "ભારતમાં રાજ્ય સરકારના બંધારણીય અને કારોબારી વડા કોણ હોય છે?",
     "options": [
       "મુખ્યમંત્રી",
-      "રાજ્યપાલ (Governor)",
       "રાષ્ટ્રપતિ",
+      "રાજ્યપાલ (Governor)",
       "મુખ્ય ન્યાયાધીશ"
     ],
     "optionsGujarati": [
       "મુખ્યમંત્રી",
-      "રાજ્યપાલ (Governor)",
       "રાષ્ટ્રપતિ",
+      "રાજ્યપાલ (Governor)",
       "મુખ્ય ન્યાયાધીશ"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "રાજ્યના બંધારણીય વડા રાજ્યપાલ હોય છે, જેમની નિમણૂક રાષ્ટ્રપતિ દ્વારા થાય છે.",
     "explanationGujarati": "રાજ્યના બંધારણીય વડા રાજ્યપાલ હોય છે, જેમની નિમણૂક રાષ્ટ્રપતિ દ્વારા થાય છે.",
     "targetCompany": "School",
@@ -1389,18 +1392,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતીય બંધારણની કઈ કલમ કાયદા સમક્ષ સમાનતાનો અધિકાર આપે છે?",
     "questionTextGujarati": "ભારતીય બંધારણની કઈ કલમ કાયદા સમક્ષ સમાનતાનો અધિકાર આપે છે?",
     "options": [
-      "કલમ ૧૪",
-      "કલમ ૧૯",
+      "કલમ ૩૨",
       "કલમ ૨૧",
-      "કલમ ૩૨"
+      "કલમ ૧૯",
+      "કલમ ૧૪"
     ],
     "optionsGujarati": [
-      "કલમ ૧૪",
-      "કલમ ૧૯",
+      "કલમ ૩૨",
       "કલમ ૨૧",
-      "કલમ ૩૨"
+      "કલમ ૧૯",
+      "કલમ ૧૪"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "બંધારણની કલમ ૧૪ કાયદા સમક્ષ સૌ સમાન અને કાયદાનું સમાન રક્ષણ સુનિશ્ચિત કરે છે.",
     "explanationGujarati": "બંધારણની કલમ ૧૪ કાયદા સમક્ષ સૌ સમાન અને કાયદાનું સમાન રક્ષણ સુનિશ્ચિત કરે છે.",
     "targetCompany": "School",
@@ -1418,17 +1421,17 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "યોગ્ય ચાલુ ભૂતકાળ (Past Continuous) નું રૂપ પસંદ કરો: 'They ______ in the ground when it rained.'",
     "options": [
       "played",
-      "were playing",
       "are playing",
-      "will play"
+      "will play",
+      "were playing"
     ],
     "optionsGujarati": [
       "played",
-      "were playing",
       "are playing",
-      "will play"
+      "will play",
+      "were playing"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "'They' સાથે ભૂતકાળમાં 'were playing' વપરાય છે.",
     "explanationGujarati": "'They' સાથે ભૂતકાળમાં 'were playing' વપરાય છે.",
     "targetCompany": "School",
@@ -1445,18 +1448,18 @@ const SEED_QUESTIONS = [
     "questionText": "‘GOOD’ શબ્દનું તુલનાત્મક રૂપ (Comparative Degree) શું થાય?",
     "questionTextGujarati": "‘GOOD’ શબ્દનું તુલનાત્મક રૂપ (Comparative Degree) શું થાય?",
     "options": [
-      "Gooder",
-      "Better",
       "Best",
-      "More good"
+      "Gooder",
+      "More good",
+      "Better"
     ],
     "optionsGujarati": [
-      "Gooder",
-      "Better",
       "Best",
-      "More good"
+      "Gooder",
+      "More good",
+      "Better"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "Good નું Comparative રૂપ 'Better' અને Superlative રૂપ 'Best' થાય છે.",
     "explanationGujarati": "Good નું Comparative રૂપ 'Better' અને Superlative રૂપ 'Best' થાય છે.",
     "targetCompany": "School",
@@ -1473,16 +1476,16 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેના વાક્યમાંથી સંયોજક (Conjunction) ઓળખો: 'We stayed indoors because it was raining heavily.'",
     "questionTextGujarati": "નીચેના વાક્યમાંથી સંયોજક (Conjunction) ઓળખો: 'We stayed indoors because it was raining heavily.'",
     "options": [
-      "indoors",
+      "heavily",
       "because",
       "raining",
-      "heavily"
+      "indoors"
     ],
     "optionsGujarati": [
-      "indoors",
+      "heavily",
       "because",
       "raining",
-      "heavily"
+      "indoors"
     ],
     "correctAnswer": 1,
     "explanation": "'Because' બે વાક્યોને કારણ દર્શાવી જોડે છે તેથી તે Conjunction છે.",
@@ -1501,18 +1504,18 @@ const SEED_QUESTIONS = [
     "questionText": "‘CHILD’ શબ્દનું સાચું બહુવચનનું રૂપ (Plural form) પસંદ કરો:",
     "questionTextGujarati": "‘CHILD’ શબ્દનું સાચું બહુવચનનું રૂપ (Plural form) પસંદ કરો:",
     "options": [
-      "Childs",
-      "Children",
       "Childrens",
-      "Childes"
+      "Childes",
+      "Childs",
+      "Children"
     ],
     "optionsGujarati": [
-      "Childs",
-      "Children",
       "Childrens",
-      "Childes"
+      "Childes",
+      "Childs",
+      "Children"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "Child નું અનિયમિત બહુવચન 'Children' થાય છે.",
     "explanationGujarati": "Child નું અનિયમિત બહુવચન 'Children' થાય છે.",
     "targetCompany": "School",
@@ -1529,18 +1532,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કર્મણિ પ્રયોગ (Passive Voice) વાળું વાક્ય કયું છે?",
     "questionTextGujarati": "નીચેનામાંથી કર્મણિ પ્રયોગ (Passive Voice) વાળું વાક્ય કયું છે?",
     "options": [
+      "He will write a letter.",
       "He wrote a letter.",
       "A letter was written by him.",
-      "He is writing a letter.",
-      "He will write a letter."
+      "He is writing a letter."
     ],
     "optionsGujarati": [
+      "He will write a letter.",
       "He wrote a letter.",
       "A letter was written by him.",
-      "He is writing a letter.",
-      "He will write a letter."
+      "He is writing a letter."
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "'A letter was written by him' માં કર્મ આગળ છે અને ભૂતકૃદંત (was written) વપરાયું છે તેથી તે Passive Voice છે.",
     "explanationGujarati": "'A letter was written by him' માં કર્મ આગળ છે અને ભૂતકૃદંત (was written) વપરાયું છે તેથી તે Passive Voice છે.",
     "targetCompany": "School",
@@ -1557,18 +1560,18 @@ const SEED_QUESTIONS = [
     "questionText": "'આજની ઘડી રળિયામણી' ભક્તિગીતના રચયિતા કોણ છે?",
     "questionTextGujarati": "'આજની ઘડી રળિયામણી' ભક્તિગીતના રચયિતા કોણ છે?",
     "options": [
-      "નરસિંહ મહેતા",
-      "મીરાંબાઈ",
+      "પ્રેમાનંદ",
       "દયારામ",
-      "પ્રેમાનંદ"
+      "નરસિંહ મહેતા",
+      "મીરાંબાઈ"
     ],
     "optionsGujarati": [
-      "નરસિંહ મહેતા",
-      "મીરાંબાઈ",
+      "પ્રેમાનંદ",
       "દયારામ",
-      "પ્રેમાનંદ"
+      "નરસિંહ મહેતા",
+      "મીરાંબાઈ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "'આજની ઘડી રળિયામણી' એ આદિકવિ નરસિંહ મહેતાનું સુંદર ભક્તિગીત છે.",
     "explanationGujarati": "'આજની ઘડી રળિયામણી' એ આદિકવિ નરસિંહ મહેતાનું સુંદર ભક્તિગીત છે.",
     "targetCompany": "School",
@@ -1586,15 +1589,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "'પરીક્ષા' બોધકથાના લેખક કોણ છે?",
     "options": [
       "પન્નાલાલ પટેલ",
+      "ઝવેરચંદ મેઘાણી",
       "ધૂમકેતુ",
-      "રમણભાઈ નીલકંઠ",
-      "ઝવેરચંદ મેઘાણી"
+      "રમણભાઈ નીલકંઠ"
     ],
     "optionsGujarati": [
       "પન્નાલાલ પટેલ",
+      "ઝવેરચંદ મેઘાણી",
       "ધૂમકેતુ",
-      "રમણભાઈ નીલકંઠ",
-      "ઝવેરચંદ મેઘાણી"
+      "રમણભાઈ નીલકંઠ"
     ],
     "correctAnswer": 0,
     "explanation": "'પરીક્ષા' વાર્તાના લેખક સુપ્રસિદ્ધ સાહિત્યકાર પન્નાલાલ પટેલ છે, જેમાં મહાદેવની પ્રામાણિકતા દર્શાવી છે.",
@@ -1613,18 +1616,18 @@ const SEED_QUESTIONS = [
     "questionText": "'રાત-દિવસ' કયો સમાસ દર્શાવે છે?",
     "questionTextGujarati": "'રાત-દિવસ' કયો સમાસ દર્શાવે છે?",
     "options": [
-      "દ્વન્દ્વ સમાસ",
-      "તત્પુરુષ સમાસ",
       "મધ્યમપદલોપી સમાસ",
-      "કર્મધારય સમાસ"
+      "તત્પુરુષ સમાસ",
+      "કર્મધારય સમાસ",
+      "દ્વન્દ્વ સમાસ"
     ],
     "optionsGujarati": [
-      "દ્વન્દ્વ સમાસ",
-      "તત્પુરુષ સમાસ",
       "મધ્યમપદલોપી સમાસ",
-      "કર્મધારય સમાસ"
+      "તત્પુરુષ સમાસ",
+      "કર્મધારય સમાસ",
+      "દ્વન્દ્વ સમાસ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'રાત અને દિવસ' - બંને પદો સ્વતંત્ર અને સમાન મોભાના હોવાથી તે દ્વન્દ્વ સમાસ બને છે.",
     "explanationGujarati": "'રાત અને દિવસ' - બંને પદો સ્વતંત્ર અને સમાન મોભાના હોવાથી તે દ્વન્દ્વ સમાસ બને છે.",
     "targetCompany": "School",
@@ -1641,18 +1644,18 @@ const SEED_QUESTIONS = [
     "questionText": "'ગજાનન' શબ્દની સાચી સંધિ કઈ છે?",
     "questionTextGujarati": "'ગજાનન' શબ્દની સાચી સંધિ કઈ છે?",
     "options": [
+      "ગજાન + ન",
       "ગજ + આનન",
-      "ગજા + અનન",
       "ગજ + અનન",
-      "ગજાન + ન"
+      "ગજા + અનન"
     ],
     "optionsGujarati": [
+      "ગજાન + ન",
       "ગજ + આનન",
-      "ગજા + અનન",
       "ગજ + અનન",
-      "ગજાન + ન"
+      "ગજા + અનન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ગજ + આનન = ગજાનન (અ + આ = આ). આનન એટલે મુખ.",
     "explanationGujarati": "ગજ + આનન = ગજાનન (અ + આ = આ). આનન એટલે મુખ.",
     "targetCompany": "School",
@@ -1669,18 +1672,18 @@ const SEED_QUESTIONS = [
     "questionText": "'દાંત ખાટા કરવા' રૂઢિપ્રયોગનો સાચો અર્થ શોધો:",
     "questionTextGujarati": "'દાંત ખાટા કરવા' રૂઢિપ્રયોગનો સાચો અર્થ શોધો:",
     "options": [
+      "ગુસ્સે થવું",
       "હરાવવું / પરાસ્ત કરવું",
-      "ખાટી વસ્તુ ખાવી",
       "દાંતમાં દુખાવો થવો",
-      "ગુસ્સે થવું"
+      "ખાટી વસ્તુ ખાવી"
     ],
     "optionsGujarati": [
+      "ગુસ્સે થવું",
       "હરાવવું / પરાસ્ત કરવું",
-      "ખાટી વસ્તુ ખાવી",
       "દાંતમાં દુખાવો થવો",
-      "ગુસ્સે થવું"
+      "ખાટી વસ્તુ ખાવી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "'દાંત ખાટા કરવા' એટલે સામી વ્યક્તિ કે શત્રુને સખત હાર આપવી.",
     "explanationGujarati": "'દાંત ખાટા કરવા' એટલે સામી વ્યક્તિ કે શત્રુને સખત હાર આપવી.",
     "targetCompany": "School",
@@ -1699,14 +1702,14 @@ const SEED_QUESTIONS = [
     "options": [
       "24",
       "26",
-      "28",
-      "22"
+      "22",
+      "28"
     ],
     "optionsGujarati": [
       "24",
       "26",
-      "28",
-      "22"
+      "22",
+      "28"
     ],
     "correctAnswer": 0,
     "explanation": "24 × 24 = 576, તેથી 576 નું વર્ગમૂળ 24 થાય.",
@@ -1727,14 +1730,14 @@ const SEED_QUESTIONS = [
     "options": [
       "12",
       "14",
-      "16",
-      "18"
+      "18",
+      "16"
     ],
     "optionsGujarati": [
       "12",
       "14",
-      "16",
-      "18"
+      "18",
+      "16"
     ],
     "correctAnswer": 0,
     "explanation": "12 × 12 × 12 = 1,728, તેથી 1,728 નું ઘનમૂળ 12 થાય.",
@@ -1753,18 +1756,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમીકરણ ઉકેલો: 5x + 9 = 5 + 3x. x ની કિંમત શોધો.",
     "questionTextGujarati": "સમીકરણ ઉકેલો: 5x + 9 = 5 + 3x. x ની કિંમત શોધો.",
     "options": [
-      "-2",
-      "2",
       "-4",
-      "4"
+      "4",
+      "2",
+      "-2"
     ],
     "optionsGujarati": [
-      "-2",
-      "2",
       "-4",
-      "4"
+      "4",
+      "2",
+      "-2"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "5x - 3x = 5 - 9 => 2x = -4 => x = -2.",
     "explanationGujarati": "5x - 3x = 5 - 9 => 2x = -4 => x = -2.",
     "targetCompany": "School",
@@ -1781,18 +1784,18 @@ const SEED_QUESTIONS = [
     "questionText": "ચતુષ્કોણના ચારેય અંદરના ખૂણાઓનો સરવાળો કેટલો થાય?",
     "questionTextGujarati": "ચતુષ્કોણના ચારેય અંદરના ખૂણાઓનો સરવાળો કેટલો થાય?",
     "options": [
-      "180°",
       "360°",
-      "540°",
-      "720°"
+      "720°",
+      "180°",
+      "540°"
     ],
     "optionsGujarati": [
-      "180°",
       "360°",
-      "540°",
-      "720°"
+      "720°",
+      "180°",
+      "540°"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "કોઈપણ ચતુષ્કોણના અંદરના ખૂણાઓનો સરવાળો (4 - 2) × 180° = 360° થાય.",
     "explanationGujarati": "કોઈપણ ચતુષ્કોણના અંદરના ખૂણાઓનો સરવાળો (4 - 2) × 180° = 360° થાય.",
     "targetCompany": "School",
@@ -1809,18 +1812,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમાંતર બાજુઓ 8 સેમી અને 12 સેમી તથા લંબઅંતર 5 સેમી ધરાવતા સમલંબ ચતુષ્કોણનું ક્ષેત્રફળ કેટલું થાય?",
     "questionTextGujarati": "સમાંતર બાજુઓ 8 સેમી અને 12 સેમી તથા લંબઅંતર 5 સેમી ધરાવતા સમલંબ ચતુષ્કોણનું ક્ષેત્રફળ કેટલું થાય?",
     "options": [
-      "50 ચોરસ સેમી",
       "100 ચોરસ સેમી",
       "40 ચોરસ સેમી",
+      "50 ચોરસ સેમી",
       "60 ચોરસ સેમી"
     ],
     "optionsGujarati": [
-      "50 ચોરસ સેમી",
       "100 ચોરસ સેમી",
       "40 ચોરસ સેમી",
+      "50 ચોરસ સેમી",
       "60 ચોરસ સેમી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ક્ષેત્રફળ = 1/2 × (સમાંતર બાજુઓનો સરવાળો) × ઊંચાઈ = 1/2 × (8 + 12) × 5 = 50 ચોરસ સેમી.",
     "explanationGujarati": "ક્ષેત્રફળ = 1/2 × (સમાંતર બાજુઓનો સરવાળો) × ઊંચાઈ = 1/2 × (8 + 12) × 5 = 50 ચોરસ સેમી.",
     "targetCompany": "School",
@@ -1838,14 +1841,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "સાદુરૂપ આપો: (x + 3)(x - 3) = ?",
     "options": [
       "x² - 9",
-      "x² + 9",
       "x² - 6x + 9",
+      "x² + 9",
       "x² + 6x - 9"
     ],
     "optionsGujarati": [
       "x² - 9",
-      "x² + 9",
       "x² - 6x + 9",
+      "x² + 9",
       "x² + 6x - 9"
     ],
     "correctAnswer": 0,
@@ -1865,18 +1868,18 @@ const SEED_QUESTIONS = [
     "questionText": "-5/8 ની વ્યસ્ત સંખ્યા કઈ થાય?",
     "questionTextGujarati": "-5/8 ની વ્યસ્ત સંખ્યા કઈ થાય?",
     "options": [
-      "5/8",
       "-8/5",
       "8/5",
-      "-5/8"
+      "-5/8",
+      "5/8"
     ],
     "optionsGujarati": [
-      "5/8",
       "-8/5",
       "8/5",
-      "-5/8"
+      "-5/8",
+      "5/8"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "જે બે સંખ્યાઓનો ગુણાકાર 1 થાય તે પરસ્પર વ્યસ્ત કહેવાય: (-5/8) × (-8/5) = 1.",
     "explanationGujarati": "જે બે સંખ્યાઓનો ગુણાકાર 1 થાય તે પરસ્પર વ્યસ્ત કહેવાય: (-5/8) × (-8/5) = 1.",
     "targetCompany": "School",
@@ -1894,15 +1897,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "દબાણનો SI એકમ કયો છે?",
     "options": [
       "પાસ્કલ (Pascal)",
-      "ન્યૂટન (Newton)",
+      "વોટ (Watt)",
       "જૂલ (Joule)",
-      "વોટ (Watt)"
+      "ન્યૂટન (Newton)"
     ],
     "optionsGujarati": [
       "પાસ્કલ (Pascal)",
-      "ન્યૂટન (Newton)",
+      "વોટ (Watt)",
       "જૂલ (Joule)",
-      "વોટ (Watt)"
+      "ન્યૂટન (Newton)"
     ],
     "correctAnswer": 0,
     "explanation": "દબાણ = બળ / ક્ષેત્રફળ (N/m²), જેને પાસ્કલ (Pa) કહેવાય છે.",
@@ -1921,18 +1924,18 @@ const SEED_QUESTIONS = [
     "questionText": "કોષનું 'પાવરહાઉસ' (શક્તિઘર) કઈ અંગિકાને કહેવાય છે?",
     "questionTextGujarati": "કોષનું 'પાવરહાઉસ' (શક્તિઘર) કઈ અંગિકાને કહેવાય છે?",
     "options": [
-      "કણાભસૂત્ર (Mitochondria)",
-      "ગોલ્ગીકાય",
       "રીબોઝોમ્સ",
+      "ગોલ્ગીકાય",
+      "કણાભસૂત્ર (Mitochondria)",
       "હરિતકણ"
     ],
     "optionsGujarati": [
-      "કણાભસૂત્ર (Mitochondria)",
-      "ગોલ્ગીકાય",
       "રીબોઝોમ્સ",
+      "ગોલ્ગીકાય",
+      "કણાભસૂત્ર (Mitochondria)",
       "હરિતકણ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "કણાભસૂત્રમાં ATP સ્વરૂપે ઊર્જા ઉત્પન્ન થતી હોવાથી તેને કોષનું શક્તિઘર કહે છે.",
     "explanationGujarati": "કણાભસૂત્રમાં ATP સ્વરૂપે ઊર્જા ઉત્પન્ન થતી હોવાથી તેને કોષનું શક્તિઘર કહે છે.",
     "targetCompany": "School",
@@ -1951,14 +1954,14 @@ const SEED_QUESTIONS = [
     "options": [
       "લેક્ટોબેસિલસ",
       "રાઇઝોબિયમ",
-      "ઇ. કોલી",
-      "સ્પાઇરોગાયરા"
+      "સ્પાઇરોગાયરા",
+      "ઇ. કોલી"
     ],
     "optionsGujarati": [
       "લેક્ટોબેસિલસ",
       "રાઇઝોબિયમ",
-      "ઇ. કોલી",
-      "સ્પાઇરોગાયરા"
+      "સ્પાઇરોગાયરા",
+      "ઇ. કોલી"
     ],
     "correctAnswer": 0,
     "explanation": "લેક્ટોબેસિલસ બેક્ટેરિયા દૂધમાં વૃદ્ધિ પામી તેને દહીંમાં ફેરવે છે.",
@@ -1977,18 +1980,18 @@ const SEED_QUESTIONS = [
     "questionText": "ઓરડાના તાપમાને પ્રવાહી સ્વરૂપમાં રહેતી એકમાત્ર ધાતુ કઈ છે?",
     "questionTextGujarati": "ઓરડાના તાપમાને પ્રવાહી સ્વરૂપમાં રહેતી એકમાત્ર ધાતુ કઈ છે?",
     "options": [
-      "પારો (મર્ક્યુરી)",
-      "બ્રોમિન",
       "સોડિયમ",
-      "મેગ્નેશિયમ"
+      "બ્રોમિન",
+      "મેગ્નેશિયમ",
+      "પારો (મર્ક્યુરી)"
     ],
     "optionsGujarati": [
-      "પારો (મર્ક્યુરી)",
-      "બ્રોમિન",
       "સોડિયમ",
-      "મેગ્નેશિયમ"
+      "બ્રોમિન",
+      "મેગ્નેશિયમ",
+      "પારો (મર્ક્યુરી)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "પારો (Hg) સામાન્ય ઓરડાના તાપમાને પ્રવાહી સ્થિતિમાં રહેતી ધાતુ છે.",
     "explanationGujarati": "પારો (Hg) સામાન્ય ઓરડાના તાપમાને પ્રવાહી સ્થિતિમાં રહેતી ધાતુ છે.",
     "targetCompany": "School",
@@ -2005,18 +2008,18 @@ const SEED_QUESTIONS = [
     "questionText": "ધ્વનિ (અવાજ) નીચેનામાંથી કયા માધ્યમમાં પ્રસરણ પામી શકતો નથી?",
     "questionTextGujarati": "ધ્વનિ (અવાજ) નીચેનામાંથી કયા માધ્યમમાં પ્રસરણ પામી શકતો નથી?",
     "options": [
-      "શૂન્યાવકાશ (Vacuum)",
       "પાણી",
       "હવા",
+      "શૂન્યાવકાશ (Vacuum)",
       "સ્ટીલ"
     ],
     "optionsGujarati": [
-      "શૂન્યાવકાશ (Vacuum)",
       "પાણી",
       "હવા",
+      "શૂન્યાવકાશ (Vacuum)",
       "સ્ટીલ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ધ્વનિ યાંત્રિક તરંગ હોવાથી તેને પ્રસરવા માટે માધ્યમ જરૂરી છે; શૂન્યાવકાશમાં તે પ્રસરતો નથી.",
     "explanationGujarati": "ધ્વનિ યાંત્રિક તરંગ હોવાથી તેને પ્રસરવા માટે માધ્યમ જરૂરી છે; શૂન્યાવકાશમાં તે પ્રસરતો નથી.",
     "targetCompany": "School",
@@ -2061,18 +2064,18 @@ const SEED_QUESTIONS = [
     "questionText": "ઘર્ષણ બળ હંમેશાં પદાર્થની ગતિની કઈ દિશામાં લાગે છે?",
     "questionTextGujarati": "ઘર્ષણ બળ હંમેશાં પદાર્થની ગતિની કઈ દિશામાં લાગે છે?",
     "options": [
-      "ગતિની વિરુદ્ધ દિશામાં",
-      "ગતિની દિશામાં",
       "લંબ દિશામાં",
+      "ગતિની દિશામાં",
+      "ગતિની વિરુદ્ધ દિશામાં",
       "કોઈ ચોક્કસ દિશા નથી"
     ],
     "optionsGujarati": [
-      "ગતિની વિરુદ્ધ દિશામાં",
-      "ગતિની દિશામાં",
       "લંબ દિશામાં",
+      "ગતિની દિશામાં",
+      "ગતિની વિરુદ્ધ દિશામાં",
       "કોઈ ચોક્કસ દિશા નથી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ઘર્ષણ બળ હંમેશાં પદાર્થની સાપેક્ષ ગતિનો વિરોધ કરતું હોવાથી ગતિની વિરુદ્ધ દિશામાં લાગે છે.",
     "explanationGujarati": "ઘર્ષણ બળ હંમેશાં પદાર્થની સાપેક્ષ ગતિનો વિરોધ કરતું હોવાથી ગતિની વિરુદ્ધ દિશામાં લાગે છે.",
     "targetCompany": "School",
@@ -2117,18 +2120,18 @@ const SEED_QUESTIONS = [
     "questionText": "૧૮૫૭ ના સ્વાતંત્ર્ય સંગ્રામમાં બરાકપુર છાવણી ખાતે વિરોધ કરનાર પ્રથમ શહીદ સૈનિક કોણ હતા?",
     "questionTextGujarati": "૧૮૫૭ ના સ્વાતંત્ર્ય સંગ્રામમાં બરાકપુર છાવણી ખાતે વિરોધ કરનાર પ્રથમ શહીદ સૈનિક કોણ હતા?",
     "options": [
-      "મંગલ પાંડે",
       "તાત્યા ટોપે",
+      "મંગલ પાંડે",
       "નાનાસાહેબ પેશ્વા",
       "કુંવરસિંહ"
     ],
     "optionsGujarati": [
-      "મંગલ પાંડે",
       "તાત્યા ટોપે",
+      "મંગલ પાંડે",
       "નાનાસાહેબ પેશ્વા",
       "કુંવરસિંહ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "મંગલ પાંડેએ ચરબીવાળા કારતૂસનો ઉપયોગ કરવાનો ઇનકાર કરી પ્રથમ વિદ્રોહ કર્યો હતો.",
     "explanationGujarati": "મંગલ પાંડેએ ચરબીવાળા કારતૂસનો ઉપયોગ કરવાનો ઇનકાર કરી પ્રથમ વિદ્રોહ કર્યો હતો.",
     "targetCompany": "School",
@@ -2145,18 +2148,18 @@ const SEED_QUESTIONS = [
     "questionText": "પર્વતીય અને ઢોળાવવાળી જમીન પર જમીનનું ધોવાણ અટકાવવા કઈ પદ્ધતિ અપનાવાય છે?",
     "questionTextGujarati": "પર્વતીય અને ઢોળાવવાળી જમીન પર જમીનનું ધોવાણ અટકાવવા કઈ પદ્ધતિ અપનાવાય છે?",
     "options": [
+      "અતિચારણ",
       "પગથિયાં પદ્ધતિ (Terrace Farming)",
-      "રણ રોકવું",
       "ખેડ ન કરવી",
-      "અતિચારણ"
+      "રણ રોકવું"
     ],
     "optionsGujarati": [
+      "અતિચારણ",
       "પગથિયાં પદ્ધતિ (Terrace Farming)",
-      "રણ રોકવું",
       "ખેડ ન કરવી",
-      "અતિચારણ"
+      "રણ રોકવું"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ઢોળાવવાળા વિસ્તારોમાં પગથિયાં આકારના ખેતરો બનાવી પાણીનો પ્રવાહ ધીમો પાડી ધોવાણ અટકાવાય છે.",
     "explanationGujarati": "ઢોળાવવાળા વિસ્તારોમાં પગથિયાં આકારના ખેતરો બનાવી પાણીનો પ્રવાહ ધીમો પાડી ધોવાણ અટકાવાય છે.",
     "targetCompany": "School",
@@ -2173,18 +2176,18 @@ const SEED_QUESTIONS = [
     "questionText": "કેલિફોર્નિયાની 'સિલિકોન વેલી' સમગ્ર વિશ્વમાં કયા ઉદ્યોગ માટે પ્રખ્યાત છે?",
     "questionTextGujarati": "કેલિફોર્નિયાની 'સિલિકોન વેલી' સમગ્ર વિશ્વમાં કયા ઉદ્યોગ માટે પ્રખ્યાત છે?",
     "options": [
-      "માહિતી ટેકનોલોજી (IT)",
       "સુતરાઉ કાપડ",
+      "માહિતી ટેકનોલોજી (IT)",
       "લોખંડ-પોલાદ",
       "ઓટોમોબાઇલ"
     ],
     "optionsGujarati": [
-      "માહિતી ટેકનોલોજી (IT)",
       "સુતરાઉ કાપડ",
+      "માહિતી ટેકનોલોજી (IT)",
       "લોખંડ-પોલાદ",
       "ઓટોમોબાઇલ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "સિલિકોન વેલી ગ્લોબલ ઇન્ફોર્મેશન ટેકનોલોજી અને સોફ્ટવેર કંપનીઓનું વૈશ્વિક કેન્દ્ર છે.",
     "explanationGujarati": "સિલિકોન વેલી ગ્લોબલ ઇન્ફોર્મેશન ટેકનોલોજી અને સોફ્ટવેર કંપનીઓનું વૈશ્વિક કેન્દ્ર છે.",
     "targetCompany": "School",
@@ -2201,18 +2204,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતીય સંસદ રાષ્ટ્રપતિ અને કયા બે ગૃહોની બનેલી છે?",
     "questionTextGujarati": "ભારતીય સંસદ રાષ્ટ્રપતિ અને કયા બે ગૃહોની બનેલી છે?",
     "options": [
-      "લોકસભા અને રાજ્યસભા",
       "વિધાનસભા અને વિધાનપરિષદ",
       "સુપ્રીમ કોર્ટ અને હાઇકોર્ટ",
-      "મંત્રીમંડળ અને સચિવાલય"
+      "મંત્રીમંડળ અને સચિવાલય",
+      "લોકસભા અને રાજ્યસભા"
     ],
     "optionsGujarati": [
-      "લોકસભા અને રાજ્યસભા",
       "વિધાનસભા અને વિધાનપરિષદ",
       "સુપ્રીમ કોર્ટ અને હાઇકોર્ટ",
-      "મંત્રીમંડળ અને સચિવાલય"
+      "મંત્રીમંડળ અને સચિવાલય",
+      "લોકસભા અને રાજ્યસભા"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "સંસદના બે ગૃહો લોકસભા (નીચલું ગૃહ) અને રાજ્યસભા (ઉપલું ગૃહ) છે.",
     "explanationGujarati": "સંસદના બે ગૃહો લોકસભા (નીચલું ગૃહ) અને રાજ્યસભા (ઉપલું ગૃહ) છે.",
     "targetCompany": "School",
@@ -2229,18 +2232,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતીય બંધારણમાં 'બિનસાંપ્રદાયિકતા' (Secularism) નો સાચો અર્થ શું છે?",
     "questionTextGujarati": "ભારતીય બંધારણમાં 'બિનસાંપ્રદાયિકતા' (Secularism) નો સાચો અર્થ શું છે?",
     "options": [
-      "રાજ્ય કોઈ ચોક્કસ ધર્મને પ્રોત્સાહન આપતું નથી અને તમામ ધર્મોને સમાન ગણે છે",
-      "રાજ્ય ધર્મ વિરોધી છે",
       "ફક્ત એક જ ધર્મનું પાલન થાય છે",
-      "ધાર્મિક કાર્યો પર પ્રતિબંધ છે"
+      "ધાર્મિક કાર્યો પર પ્રતિબંધ છે",
+      "રાજ્ય કોઈ ચોક્કસ ધર્મને પ્રોત્સાહન આપતું નથી અને તમામ ધર્મોને સમાન ગણે છે",
+      "રાજ્ય ધર્મ વિરોધી છે"
     ],
     "optionsGujarati": [
-      "રાજ્ય કોઈ ચોક્કસ ધર્મને પ્રોત્સાહન આપતું નથી અને તમામ ધર્મોને સમાન ગણે છે",
-      "રાજ્ય ધર્મ વિરોધી છે",
       "ફક્ત એક જ ધર્મનું પાલન થાય છે",
-      "ધાર્મિક કાર્યો પર પ્રતિબંધ છે"
+      "ધાર્મિક કાર્યો પર પ્રતિબંધ છે",
+      "રાજ્ય કોઈ ચોક્કસ ધર્મને પ્રોત્સાહન આપતું નથી અને તમામ ધર્મોને સમાન ગણે છે",
+      "રાજ્ય ધર્મ વિરોધી છે"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "બિનસાંપ્રદાયિક રાષ્ટ્રમાં રાજ્યનો કોઈ સત્તાવાર ધર્મ નથી હોતો અને સૌ નાગરિકોને ધાર્મિક સમાનતા મળે છે.",
     "explanationGujarati": "બિનસાંપ્રદાયિક રાષ્ટ્રમાં રાજ્યનો કોઈ સત્તાવાર ધર્મ નથી હોતો અને સૌ નાગરિકોને ધાર્મિક સમાનતા મળે છે.",
     "targetCompany": "School",
@@ -2257,18 +2260,18 @@ const SEED_QUESTIONS = [
     "questionText": "પરોક્ષ કથન (Indirect Speech) માં રૂપાંતર કરો: He said, 'I am reading a book.'",
     "questionTextGujarati": "પરોક્ષ કથન (Indirect Speech) માં રૂપાંતર કરો: He said, 'I am reading a book.'",
     "options": [
-      "He said that he was reading a book.",
-      "He said that I am reading a book.",
+      "He told that he reads a book.",
       "He said that he is reading a book.",
-      "He told that he reads a book."
+      "He said that I am reading a book.",
+      "He said that he was reading a book."
     ],
     "optionsGujarati": [
-      "He said that he was reading a book.",
-      "He said that I am reading a book.",
+      "He told that he reads a book.",
       "He said that he is reading a book.",
-      "He told that he reads a book."
+      "He said that I am reading a book.",
+      "He said that he was reading a book."
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "Present continuous 'am reading' Indirect માં 'was reading' બને છે અને 'I' નું 'he' થાય છે.",
     "explanationGujarati": "Present continuous 'am reading' Indirect માં 'was reading' બને છે અને 'I' નું 'he' થાય છે.",
     "targetCompany": "School",
@@ -2285,18 +2288,18 @@ const SEED_QUESTIONS = [
     "questionText": "કડક ફરજ કે અનિવાર્યતા દર્શાવતું મોડલ ઓક્સિલરી (Modal Verb) કયું છે?",
     "questionTextGujarati": "કડક ફરજ કે અનિવાર્યતા દર્શાવતું મોડલ ઓક્સિલરી (Modal Verb) કયું છે?",
     "options": [
-      "must",
       "may",
-      "might",
-      "can"
+      "can",
+      "must",
+      "might"
     ],
     "optionsGujarati": [
-      "must",
       "may",
-      "might",
-      "can"
+      "can",
+      "must",
+      "might"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "'Must' અનિવાર્યતા, ફરજિયાતપણું અને કડક આદેશ દર્શાવે છે.",
     "explanationGujarati": "'Must' અનિવાર્યતા, ફરજિયાતપણું અને કડક આદેશ દર્શાવે છે.",
     "targetCompany": "School",
@@ -2315,14 +2318,14 @@ const SEED_QUESTIONS = [
     "options": [
       "who",
       "which",
-      "whom",
-      "whose"
+      "whose",
+      "whom"
     ],
     "optionsGujarati": [
       "who",
       "which",
-      "whom",
-      "whose"
+      "whose",
+      "whom"
     ],
     "correctAnswer": 0,
     "explanation": "વ્યક્તિ માટે કર્તા તરીકે 'who' વપરાય છે.",
@@ -2341,18 +2344,18 @@ const SEED_QUESTIONS = [
     "questionText": "‘BENEVOLENT’ (દયાળુ/પરોપકારી) શબ્દનો સમાનાર્થી (Synonym) શબ્દ કયો છે?",
     "questionTextGujarati": "‘BENEVOLENT’ (દયાળુ/પરોપકારી) શબ્દનો સમાનાર્થી (Synonym) શબ્દ કયો છે?",
     "options": [
-      "Kind / Generous",
-      "Cruel",
       "Selfish",
-      "Angry"
+      "Cruel",
+      "Angry",
+      "Kind / Generous"
     ],
     "optionsGujarati": [
-      "Kind / Generous",
-      "Cruel",
       "Selfish",
-      "Angry"
+      "Cruel",
+      "Angry",
+      "Kind / Generous"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'Benevolent' એટલે પરોપકારી કે દયાળુ (Kind/Generous).",
     "explanationGujarati": "'Benevolent' એટલે પરોપકારી કે દયાળુ (Kind/Generous).",
     "targetCompany": "School",
@@ -2369,18 +2372,18 @@ const SEED_QUESTIONS = [
     "questionText": "યોગ્ય ક્રિયાપદ પસંદ કરો: 'Neither of the boys ______ present yesterday.'",
     "questionTextGujarati": "યોગ્ય ક્રિયાપદ પસંદ કરો: 'Neither of the boys ______ present yesterday.'",
     "options": [
-      "was",
-      "were",
+      "have been",
       "are",
-      "have been"
+      "were",
+      "was"
     ],
     "optionsGujarati": [
-      "was",
-      "were",
+      "have been",
       "are",
-      "have been"
+      "were",
+      "was"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'Neither of' પછી બહુવચન નામ હોવા છતાં ક્રિયાપદ એકવચન (was) આવે છે.",
     "explanationGujarati": "'Neither of' પછી બહુવચન નામ હોવા છતાં ક્રિયાપદ એકવચન (was) આવે છે.",
     "targetCompany": "School",
@@ -2397,18 +2400,18 @@ const SEED_QUESTIONS = [
     "questionText": "'જુમો ભિસ્તી' કરુણ બોધવાર્તાના સર્જક કોણ છે?",
     "questionTextGujarati": "'જુમો ભિસ્તી' કરુણ બોધવાર્તાના સર્જક કોણ છે?",
     "options": [
+      "કાકા કાલેલકર",
       "ગૌરીશંકર જોશી 'ધૂમકેતુ'",
-      "ઉમાશંકર જોશી",
       "ઝવેરચંદ મેઘાણી",
-      "કાકા કાલેલકર"
+      "ઉમાશંકર જોશી"
     ],
     "optionsGujarati": [
+      "કાકા કાલેલકર",
       "ગૌરીશંકર જોશી 'ધૂમકેતુ'",
-      "ઉમાશંકર જોશી",
       "ઝવેરચંદ મેઘાણી",
-      "કાકા કાલેલકર"
+      "ઉમાશંકર જોશી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "'જુમો ભિસ્તી' વાર્તામાં જુમા અને તેના પાડા 'વેણુ' વચ્ચેનો નિસ્વાર્થ પ્રેમ ધૂમકેતુએ આલેખ્યો છે.",
     "explanationGujarati": "'જુમો ભિસ્તી' વાર્તામાં જુમા અને તેના પાડા 'વેણુ' વચ્ચેનો નિસ્વાર્થ પ્રેમ ધૂમકેતુએ આલેખ્યો છે.",
     "targetCompany": "School",
@@ -2425,18 +2428,18 @@ const SEED_QUESTIONS = [
     "questionText": "'દેશભક્ત જગડૂશા' પાઠમાં કયા નગરના દુષ્કાળની વાત છે?",
     "questionTextGujarati": "'દેશભક્ત જગડૂશા' પાઠમાં કયા નગરના દુષ્કાળની વાત છે?",
     "options": [
+      "સુરત",
       "પાટણ",
-      "અમદાવાદ",
       "જૂનાગઢ",
-      "સુરત"
+      "અમદાવાદ"
     ],
     "optionsGujarati": [
+      "સુરત",
       "પાટણ",
-      "અમદાવાદ",
       "જૂનાગઢ",
-      "સુરત"
+      "અમદાવાદ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પાટણના રાજા વિશળદેવના રાજ્યમાં કારમો દુષ્કાળ પડ્યો ત્યારે કચ્છના શાહ સોદાગર જગડૂશાએ અનાજના કોઠારો પ્રજા માટે ખુલ્લા મૂક્યા હતા.",
     "explanationGujarati": "પાટણના રાજા વિશળદેવના રાજ્યમાં કારમો દુષ્કાળ પડ્યો ત્યારે કચ્છના શાહ સોદાગર જગડૂશાએ અનાજના કોઠારો પ્રજા માટે ખુલ્લા મૂક્યા હતા.",
     "targetCompany": "School",
@@ -2453,18 +2456,18 @@ const SEED_QUESTIONS = [
     "questionText": "'વાંચતો' શબ્દમાં કયું કૃદંત રહેલું છે?",
     "questionTextGujarati": "'વાંચતો' શબ્દમાં કયું કૃદંત રહેલું છે?",
     "options": [
+      "ભવિષ્ય કૃદંત",
       "વર્તમાન કૃદંત",
       "ભૂતકૃદંત",
-      "ભવિષ્ય કૃદંત",
       "સંબંધક ભૂતકૃદંત"
     ],
     "optionsGujarati": [
+      "ભવિષ્ય કૃદંત",
       "વર્તમાન કૃદંત",
       "ભૂતકૃદંત",
-      "ભવિષ્ય કૃદંત",
       "સંબંધક ભૂતકૃદંત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "જે ધાતુને '-તો, -તી, -તું, -તા' પ્રત્યય લાગે તે વર્તમાન કૃદંત દર્શાવે છે.",
     "explanationGujarati": "જે ધાતુને '-તો, -તી, -તું, -તા' પ્રત્યય લાગે તે વર્તમાન કૃદંત દર્શાવે છે.",
     "targetCompany": "School",
@@ -2481,18 +2484,18 @@ const SEED_QUESTIONS = [
     "questionText": "'આકાશમાં વાદળો ઘેરાયા' વાક્યમાં 'વાદળો' સંજ્ઞાનો પ્રકાર કયો છે?",
     "questionTextGujarati": "'આકાશમાં વાદળો ઘેરાયા' વાક્યમાં 'વાદળો' સંજ્ઞાનો પ્રકાર કયો છે?",
     "options": [
-      "જાતિવાચક સંજ્ઞા",
       "વ્યક્તિવાચક સંજ્ઞા",
-      "દ્રવ્યવાચક સંજ્ઞા",
-      "ભાવવાચક સંજ્ઞા"
+      "જાતિવાચક સંજ્ઞા",
+      "ભાવવાચક સંજ્ઞા",
+      "દ્રવ્યવાચક સંજ્ઞા"
     ],
     "optionsGujarati": [
-      "જાતિવાચક સંજ્ઞા",
       "વ્યક્તિવાચક સંજ્ઞા",
-      "દ્રવ્યવાચક સંજ્ઞા",
-      "ભાવવાચક સંજ્ઞા"
+      "જાતિવાચક સંજ્ઞા",
+      "ભાવવાચક સંજ્ઞા",
+      "દ્રવ્યવાચક સંજ્ઞા"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "'વાદળ' એ સમગ્ર વર્ગ કે જાતિનું સૂચન કરતી હોવાથી જાતિવાચક સંજ્ઞા છે.",
     "explanationGujarati": "'વાદળ' એ સમગ્ર વર્ગ કે જાતિનું સૂચન કરતી હોવાથી જાતિવાચક સંજ્ઞા છે.",
     "targetCompany": "School",
@@ -2509,18 +2512,18 @@ const SEED_QUESTIONS = [
     "questionText": "'ઉંટના અઢારે અંગ વાંકા' કહેવતનો અર્થ શું થાય?",
     "questionTextGujarati": "'ઉંટના અઢારે અંગ વાંકા' કહેવતનો અર્થ શું થાય?",
     "options": [
-      "જેમાં અનેક દોષ કે ખામીઓ ભરેલી હોય તેવી વ્યક્તિ",
       "ઉંટ ખૂબ ઊંચું પ્રાણી છે",
       "કોઈપણ કામ સીધું ન કરવું",
+      "જેમાં અનેક દોષ કે ખામીઓ ભરેલી હોય તેવી વ્યક્તિ",
       "શરીરમાં ખોડખાંપણ હોવી"
     ],
     "optionsGujarati": [
-      "જેમાં અનેક દોષ કે ખામીઓ ભરેલી હોય તેવી વ્યક્તિ",
       "ઉંટ ખૂબ ઊંચું પ્રાણી છે",
       "કોઈપણ કામ સીધું ન કરવું",
+      "જેમાં અનેક દોષ કે ખામીઓ ભરેલી હોય તેવી વ્યક્તિ",
       "શરીરમાં ખોડખાંપણ હોવી"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "'ઉંટના અઢારે અંગ વાંકા' એટલે જે વ્યક્તિ કે વસ્તુમાં અનેક અવગુણો કે ખામીઓ હોય.",
     "explanationGujarati": "'ઉંટના અઢારે અંગ વાંકા' એટલે જે વ્યક્તિ કે વસ્તુમાં અનેક અવગુણો કે ખામીઓ હોય.",
     "targetCompany": "School",
@@ -2537,18 +2540,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો (x - 2) એ બહુપદી p(x) = x² - 5x + k નો અવયવ હોય, તો k ની કિંમત શોધો.",
     "questionTextGujarati": "જો (x - 2) એ બહુપદી p(x) = x² - 5x + k નો અવયવ હોય, તો k ની કિંમત શોધો.",
     "options": [
-      "6",
       "-6",
       "10",
-      "-10"
+      "-10",
+      "6"
     ],
     "optionsGujarati": [
-      "6",
       "-6",
       "10",
-      "-10"
+      "-10",
+      "6"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "p(2) = 0 => (2)² - 5(2) + k = 0 => 4 - 10 + k = 0 => k = 6.",
     "explanationGujarati": "p(2) = 0 => (2)² - 5(2) + k = 0 => 4 - 10 + k = 0 => k = 6.",
     "targetCompany": "School",
@@ -2565,18 +2568,18 @@ const SEED_QUESTIONS = [
     "questionText": "શૂન્ય સિવાયની અચળ બહુપદી (જેમ કે 7) ની ઘાત કેટલી હોય છે?",
     "questionTextGujarati": "શૂન્ય સિવાયની અચળ બહુપદી (જેમ કે 7) ની ઘાત કેટલી હોય છે?",
     "options": [
+      "2",
       "0",
       "1",
-      "2",
       "અવ્યાખ્યાયિત"
     ],
     "optionsGujarati": [
+      "2",
       "0",
       "1",
-      "2",
       "અવ્યાખ્યાયિત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "કોઈપણ અચળ પદ 7 = 7x⁰ લખી શકાય, તેથી તેની ઘાત 0 હોય છે.",
     "explanationGujarati": "કોઈપણ અચળ પદ 7 = 7x⁰ લખી શકાય, તેથી તેની ઘાત 0 હોય છે.",
     "targetCompany": "School",
@@ -2593,18 +2596,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કઈ અસંમેય સંખ્યા છે?",
     "questionTextGujarati": "નીચેનામાંથી કઈ અસંમેય સંખ્યા છે?",
     "options": [
-      "√2",
-      "√4",
       "3/5",
-      "0.25"
+      "0.25",
+      "√2",
+      "√4"
     ],
     "optionsGujarati": [
-      "√2",
-      "√4",
       "3/5",
-      "0.25"
+      "0.25",
+      "√2",
+      "√4"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "√2 નું દશાંશ વિસ્તરણ અનંત અનાવૃત્ત છે તેથી તે અસંમેય છે. જ્યારે √4 = 2 સંમેય છે.",
     "explanationGujarati": "√2 નું દશાંશ વિસ્તરણ અનંત અનાવૃત્ત છે તેથી તે અસંમેય છે. જ્યારે √4 = 2 સંમેય છે.",
     "targetCompany": "School",
@@ -2622,15 +2625,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "યામ સમતલમાં ઉગમબિંદુના યામ કયા હોય છે?",
     "options": [
       "(0, 0)",
+      "(1, 0)",
       "(1, 1)",
-      "(0, 1)",
-      "(1, 0)"
+      "(0, 1)"
     ],
     "optionsGujarati": [
       "(0, 0)",
+      "(1, 0)",
       "(1, 1)",
-      "(0, 1)",
-      "(1, 0)"
+      "(0, 1)"
     ],
     "correctAnswer": 0,
     "explanation": "બંને અક્ષો (X અને Y) ના છેદનબિંદુ (ઉગમબિંદુ) ના યામ (0, 0) હોય છે.",
@@ -2649,18 +2652,18 @@ const SEED_QUESTIONS = [
     "questionText": "બિંદુ (-3, 5) કયા ચરણમાં આવેલું છે?",
     "questionTextGujarati": "બિંદુ (-3, 5) કયા ચરણમાં આવેલું છે?",
     "options": [
-      "દ્વિતીય ચરણ",
-      "પ્રથમ ચરણ",
       "તૃતીય ચરણ",
-      "ચતુર્થ ચરણ"
+      "પ્રથમ ચરણ",
+      "ચતુર્થ ચરણ",
+      "દ્વિતીય ચરણ"
     ],
     "optionsGujarati": [
-      "દ્વિતીય ચરણ",
-      "પ્રથમ ચરણ",
       "તૃતીય ચરણ",
-      "ચતુર્થ ચરણ"
+      "પ્રથમ ચરણ",
+      "ચતુર્થ ચરણ",
+      "દ્વિતીય ચરણ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "ઋણ x-યામ અને ધન y-યામ ધરાવતા બિંદુઓ દ્વિતીય ચરણ (-, +) માં આવેલા હોય છે.",
     "explanationGujarati": "ઋણ x-યામ અને ધન y-યામ ધરાવતા બિંદુઓ દ્વિતીય ચરણ (-, +) માં આવેલા હોય છે.",
     "targetCompany": "School",
@@ -2679,14 +2682,14 @@ const SEED_QUESTIONS = [
     "options": [
       "90°",
       "45°",
-      "180°",
-      "60°"
+      "60°",
+      "180°"
     ],
     "optionsGujarati": [
       "90°",
       "45°",
-      "180°",
-      "60°"
+      "60°",
+      "180°"
     ],
     "correctAnswer": 0,
     "explanation": "x + x = 180° => 2x = 180° => x = 90°.",
@@ -2706,14 +2709,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "અર્ધવર્તુળમાં અંતર્ગત થયેલો ખૂણો હંમેશાં કેવો હોય છે?",
     "options": [
       "કાટકોણ (90°)",
-      "લઘુકોણ",
       "ગુરુકોણ",
+      "લઘુકોણ",
       "સરળકોણ"
     ],
     "optionsGujarati": [
       "કાટકોણ (90°)",
-      "લઘુકોણ",
       "ગુરુકોણ",
+      "લઘુકોણ",
       "સરળકોણ"
     ],
     "correctAnswer": 0,
@@ -2733,18 +2736,18 @@ const SEED_QUESTIONS = [
     "questionText": "r ત્રિજ્યા ધરાવતા નક્કર અર્ધગોળાની કુલ સપાટીનું ક્ષેત્રફળ કેટલું થાય?",
     "questionTextGujarati": "r ત્રિજ્યા ધરાવતા નક્કર અર્ધગોળાની કુલ સપાટીનું ક્ષેત્રફળ કેટલું થાય?",
     "options": [
-      "3πr²",
-      "2πr²",
       "4πr²",
-      "(2/3)πr³"
+      "2πr²",
+      "(2/3)πr³",
+      "3πr²"
     ],
     "optionsGujarati": [
-      "3πr²",
-      "2πr²",
       "4πr²",
-      "(2/3)πr³"
+      "2πr²",
+      "(2/3)πr³",
+      "3πr²"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "વક્રસપાટીનું ક્ષેત્રફળ (2πr²) + પાયાનું ક્ષેત્રફળ (πr²) = 3πr².",
     "explanationGujarati": "વક્રસપાટીનું ક્ષેત્રફળ (2πr²) + પાયાનું ક્ષેત્રફળ (πr²) = 3πr².",
     "targetCompany": "School",
@@ -2761,18 +2764,18 @@ const SEED_QUESTIONS = [
     "questionText": "ન્યૂટનનો ગતિનો કયો નિયમ બળ = દળ × પ્રવેગ (F = ma) નું સૂત્ર આપે છે?",
     "questionTextGujarati": "ન્યૂટનનો ગતિનો કયો નિયમ બળ = દળ × પ્રવેગ (F = ma) નું સૂત્ર આપે છે?",
     "options": [
+      "ગુરુત્વાકર્ષણનો નિયમ",
       "બીજો નિયમ",
       "પ્રથમ નિયમ",
-      "ત્રીજો નિયમ",
-      "ગુરુત્વાકર્ષણનો નિયમ"
+      "ત્રીજો નિયમ"
     ],
     "optionsGujarati": [
+      "ગુરુત્વાકર્ષણનો નિયમ",
       "બીજો નિયમ",
       "પ્રથમ નિયમ",
-      "ત્રીજો નિયમ",
-      "ગુરુત્વાકર્ષણનો નિયમ"
+      "ત્રીજો નિયમ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ન્યૂટનનો બીજો નિયમ દર્શાવે છે કે વેગમાનના ફેરફારનો દર લાગુ પાડેલા બાહ્ય બળના સમપ્રમાણમાં હોય છે (F = ma).",
     "explanationGujarati": "ન્યૂટનનો બીજો નિયમ દર્શાવે છે કે વેગમાનના ફેરફારનો દર લાગુ પાડેલા બાહ્ય બળના સમપ્રમાણમાં હોય છે (F = ma).",
     "targetCompany": "School",
@@ -2789,18 +2792,18 @@ const SEED_QUESTIONS = [
     "questionText": "પૃથ્વીની સપાટી પર ગુરુત્વપ્રવેગ (g) નું પ્રમાણભૂત મૂલ્ય કેટલું છે?",
     "questionTextGujarati": "પૃથ્વીની સપાટી પર ગુરુત્વપ્રવેગ (g) નું પ્રમાણભૂત મૂલ્ય કેટલું છે?",
     "options": [
-      "9.8 m/s²",
       "8.9 m/s²",
+      "9.8 m/s²",
       "9.8 m/s",
       "10.8 m/s²"
     ],
     "optionsGujarati": [
-      "9.8 m/s²",
       "8.9 m/s²",
+      "9.8 m/s²",
       "9.8 m/s",
       "10.8 m/s²"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પૃથ્વીની સપાટી પર ગુરુત્વપ્રવેગ g = 9.8 m/s² સ્વીકારેલ છે.",
     "explanationGujarati": "પૃથ્વીની સપાટી પર ગુરુત્વપ્રવેગ g = 9.8 m/s² સ્વીકારેલ છે.",
     "targetCompany": "School",
@@ -2818,15 +2821,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "કાર્ય અને ઊર્જાનો SI એકમ કયો છે?",
     "options": [
       "જૂલ (Joule)",
-      "વોટ (Watt)",
+      "પાસકલ (Pascal)",
       "ન્યૂટન (Newton)",
-      "પાસકલ (Pascal)"
+      "વોટ (Watt)"
     ],
     "optionsGujarati": [
       "જૂલ (Joule)",
-      "વોટ (Watt)",
+      "પાસકલ (Pascal)",
       "ન્યૂટન (Newton)",
-      "પાસકલ (Pascal)"
+      "વોટ (Watt)"
     ],
     "correctAnswer": 0,
     "explanation": "કાર્ય = બળ × સ્થાનાંતર (ન્યૂટન-મીટર), જેને જૂલ (J) તરીકે વ્યાખ્યાયિત કરાય છે.",
@@ -2845,18 +2848,18 @@ const SEED_QUESTIONS = [
     "questionText": "પ્રવાહી અવસ્થામાં રૂપાંતર પામ્યા વિના ઘન પદાર્થનું સીધું વાયુમાં રૂપાંતર થવાની પ્રક્રિયાને શું કહે છે?",
     "questionTextGujarati": "પ્રવાહી અવસ્થામાં રૂપાંતર પામ્યા વિના ઘન પદાર્થનું સીધું વાયુમાં રૂપાંતર થવાની પ્રક્રિયાને શું કહે છે?",
     "options": [
+      "ગલન (Melting)",
       "ઊર્ધ્વપાતન (Sublimation)",
-      "બાષ્પીભવન (Evaporation)",
       "ઘનીભવન (Condensation)",
-      "ગલન (Melting)"
+      "બાષ્પીભવન (Evaporation)"
     ],
     "optionsGujarati": [
+      "ગલન (Melting)",
       "ઊર્ધ્વપાતન (Sublimation)",
-      "બાષ્પીભવન (Evaporation)",
       "ઘનીભવન (Condensation)",
-      "ગલન (Melting)"
+      "બાષ્પીભવન (Evaporation)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "કપૂર અથવા એમોનિયમ ક્લોરાઇડ (નવસાર) ને ગરમ કરતાં તેનું પ્રવાહી વગર સીધું વાયુમાં રૂપાંતર થાય તેને ઊર્ધ્વપાતન કહે છે.",
     "explanationGujarati": "કપૂર અથવા એમોનિયમ ક્લોરાઇડ (નવસાર) ને ગરમ કરતાં તેનું પ્રવાહી વગર સીધું વાયુમાં રૂપાંતર થાય તેને ઊર્ધ્વપાતન કહે છે.",
     "targetCompany": "School",
@@ -2873,18 +2876,18 @@ const SEED_QUESTIONS = [
     "questionText": "ઇ.સ. 1665 માં પ્રાથમિક સૂક્ષ્મદર્શક યંત્ર વડે બૂચના પાતળા છેદમાં કોષની શોધ કોણે કરી હતી?",
     "questionTextGujarati": "ઇ.સ. 1665 માં પ્રાથમિક સૂક્ષ્મદર્શક યંત્ર વડે બૂચના પાતળા છેદમાં કોષની શોધ કોણે કરી હતી?",
     "options": [
-      "રોબર્ટ હૂક",
+      "શ્વાન",
       "લ્યુવેનહોક",
       "રોબર્ટ બ્રાઉન",
-      "શ્વાન"
+      "રોબર્ટ હૂક"
     ],
     "optionsGujarati": [
-      "રોબર્ટ હૂક",
+      "શ્વાન",
       "લ્યુવેનહોક",
       "રોબર્ટ બ્રાઉન",
-      "શ્વાન"
+      "રોબર્ટ હૂક"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "રોબર્ટ હૂકે 1665 માં સૌપ્રથમ કોષની રચનાનું અવલોકન કર્યું અને તેને 'કોષ' (Cell) નામ આપ્યું.",
     "explanationGujarati": "રોબર્ટ હૂકે 1665 માં સૌપ્રથમ કોષની રચનાનું અવલોકન કર્યું અને તેને 'કોષ' (Cell) નામ આપ્યું.",
     "targetCompany": "School",
@@ -2902,15 +2905,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "પાચક ઉત્સેચકો ધરાવતી અને કોષની 'આત્મઘાતી કોથળી' (Suicide Bag) તરીકે ઓળખાતી અંગિકા કઈ છે?",
     "options": [
       "લાયસોઝોમ્સ (Lysosomes)",
+      "પ્લાસ્ટીડ",
       "કણાભસૂત્ર",
-      "રિબોઝોમ્સ",
-      "પ્લાસ્ટીડ"
+      "રિબોઝોમ્સ"
     ],
     "optionsGujarati": [
       "લાયસોઝોમ્સ (Lysosomes)",
+      "પ્લાસ્ટીડ",
       "કણાભસૂત્ર",
-      "રિબોઝોમ્સ",
-      "પ્લાસ્ટીડ"
+      "રિબોઝોમ્સ"
     ],
     "correctAnswer": 0,
     "explanation": "કોષીય ચયાપચયમાં ખલેલ પહોંચે ત્યારે લાયસોઝોમ ફાટી જાય છે અને ઉત્સેચકો પોતાના જ કોષનું પાચન કરી નાખે છે.",
@@ -2929,18 +2932,18 @@ const SEED_QUESTIONS = [
     "questionText": "સામાન્ય મીઠા (સોડિયમ ક્લોરાઇડ) નું રાસાયણિક સૂત્ર શું છે?",
     "questionTextGujarati": "સામાન્ય મીઠા (સોડિયમ ક્લોરાઇડ) નું રાસાયણિક સૂત્ર શું છે?",
     "options": [
-      "NaCl",
-      "NaOH",
       "Na2CO3",
-      "NaHCO3"
+      "NaHCO3",
+      "NaCl",
+      "NaOH"
     ],
     "optionsGujarati": [
-      "NaCl",
-      "NaOH",
       "Na2CO3",
-      "NaHCO3"
+      "NaHCO3",
+      "NaCl",
+      "NaOH"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "સોડિયમ ક્લોરાઇડનું સાચું આણ્વીય સૂત્ર NaCl છે.",
     "explanationGujarati": "સોડિયમ ક્લોરાઇડનું સાચું આણ્વીય સૂત્ર NaCl છે.",
     "targetCompany": "School",
@@ -2957,18 +2960,18 @@ const SEED_QUESTIONS = [
     "questionText": "કાર્બન-12 ના 1 મોલ પરમાણુઓનું દળ બરાબર કેટલું થાય?",
     "questionTextGujarati": "કાર્બન-12 ના 1 મોલ પરમાણુઓનું દળ બરાબર કેટલું થાય?",
     "options": [
-      "12 ગ્રામ",
-      "6 ગ્રામ",
       "24 ગ્રામ",
-      "1 ગ્રામ"
+      "12 ગ્રામ",
+      "1 ગ્રામ",
+      "6 ગ્રામ"
     ],
     "optionsGujarati": [
-      "12 ગ્રામ",
-      "6 ગ્રામ",
       "24 ગ્રામ",
-      "1 ગ્રામ"
+      "12 ગ્રામ",
+      "1 ગ્રામ",
+      "6 ગ્રામ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "કાર્બન-12 નો મોલર દળ 12 ગ્રામ/મોલ છે, જેમાં 6.022 × 10²³ પરમાણુઓ હોય છે.",
     "explanationGujarati": "કાર્બન-12 નો મોલર દળ 12 ગ્રામ/મોલ છે, જેમાં 6.022 × 10²³ પરમાણુઓ હોય છે.",
     "targetCompany": "School",
@@ -2985,18 +2988,18 @@ const SEED_QUESTIONS = [
     "questionText": "14 જુલાઈ 1789 ના રોજ કયા જેલ કિલ્લા પર પ્રજાના હુમલાથી ફ્રેન્ચ ક્રાંતિની શરૂઆત થઈ હતી?",
     "questionTextGujarati": "14 જુલાઈ 1789 ના રોજ કયા જેલ કિલ્લા પર પ્રજાના હુમલાથી ફ્રેન્ચ ક્રાંતિની શરૂઆત થઈ હતી?",
     "options": [
-      "બેસ્ટિલનો કિલ્લો (Bastille)",
       "વર્સેલ્સ મહેલ",
       "વોટરલૂ",
+      "બેસ્ટિલનો કિલ્લો (Bastille)",
       "ટાવર ઓફ લંડન"
     ],
     "optionsGujarati": [
-      "બેસ્ટિલનો કિલ્લો (Bastille)",
       "વર્સેલ્સ મહેલ",
       "વોટરલૂ",
+      "બેસ્ટિલનો કિલ્લો (Bastille)",
       "ટાવર ઓફ લંડન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "બેસ્ટિલનો કિલ્લો રાજાશાહીના જુલમનું પ્રતીક હતો જેને જનતાએ તોડી પાડી કેદીઓને મુક્ત કર્યા હતા.",
     "explanationGujarati": "બેસ્ટિલનો કિલ્લો રાજાશાહીના જુલમનું પ્રતીક હતો જેને જનતાએ તોડી પાડી કેદીઓને મુક્ત કર્યા હતા.",
     "targetCompany": "School",
@@ -3013,18 +3016,18 @@ const SEED_QUESTIONS = [
     "questionText": "'ધ સોશિયલ કોન્ટ્રાક્ટ' (સામાજિક કરાર) પુસ્તકના લેખક મહાન વિચારક કોણ હતા?",
     "questionTextGujarati": "'ધ સોશિયલ કોન્ટ્રાક્ટ' (સામાજિક કરાર) પુસ્તકના લેખક મહાન વિચારક કોણ હતા?",
     "options": [
-      "રૂસો (Rousseau)",
       "વોલ્ટેર",
-      "મોન્ટેસ્ક્યુ",
-      "જ્હોન લોક"
+      "જ્હોન લોક",
+      "રૂસો (Rousseau)",
+      "મોન્ટેસ્ક્યુ"
     ],
     "optionsGujarati": [
-      "રૂસો (Rousseau)",
       "વોલ્ટેર",
-      "મોન્ટેસ્ક્યુ",
-      "જ્હોન લોક"
+      "જ્હોન લોક",
+      "રૂસો (Rousseau)",
+      "મોન્ટેસ્ક્યુ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "જીન જેક્સ રૂસોએ પ્રજા અને શાસક વચ્ચેના સામાજિક કરારનો પ્રખ્યાત સિદ્ધાંત આપ્યો હતો.",
     "explanationGujarati": "જીન જેક્સ રૂસોએ પ્રજા અને શાસક વચ્ચેના સામાજિક કરારનો પ્રખ્યાત સિદ્ધાંત આપ્યો હતો.",
     "targetCompany": "School",
@@ -3041,18 +3044,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતને લગભગ બે સરખા ભાગોમાં વિભાજિત કરતું અક્ષાંશવૃત્ત કયું છે?",
     "questionTextGujarati": "ભારતને લગભગ બે સરખા ભાગોમાં વિભાજિત કરતું અક્ષાંશવૃત્ત કયું છે?",
     "options": [
-      "કર્કવૃત્ત (Tropic of Cancer - 23.5° N)",
       "વિષુવવૃત્ત",
+      "કર્કવૃત્ત (Tropic of Cancer - 23.5° N)",
       "મકરવૃત્ત",
       "આર્ક્ટિક વૃત્ત"
     ],
     "optionsGujarati": [
-      "કર્કવૃત્ત (Tropic of Cancer - 23.5° N)",
       "વિષુવવૃત્ત",
+      "કર્કવૃત્ત (Tropic of Cancer - 23.5° N)",
       "મકરવૃત્ત",
       "આર્ક્ટિક વૃત્ત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "23.5° ઉત્તર અક્ષાંશ એટલે કે કર્કવૃત્ત ભારતના મધ્યમાંથી પસાર થઈ તેને બે ભાગોમાં વહેંચે છે.",
     "explanationGujarati": "23.5° ઉત્તર અક્ષાંશ એટલે કે કર્કવૃત્ત ભારતના મધ્યમાંથી પસાર થઈ તેને બે ભાગોમાં વહેંચે છે.",
     "targetCompany": "School",
@@ -3069,18 +3072,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભૂગર્ભીય હલનચલનથી નિર્માણ પામેલું ભારતનું સૌથી મોટું મીઠા પાણીનું સરોવર કયું છે?",
     "questionTextGujarati": "ભૂગર્ભીય હલનચલનથી નિર્માણ પામેલું ભારતનું સૌથી મોટું મીઠા પાણીનું સરોવર કયું છે?",
     "options": [
-      "વુલર સરોવર (Wular Lake)",
       "ચિલ્કા સરોવર",
+      "વુલર સરોવર (Wular Lake)",
       "સાંભર સરોવર",
       "પુલિકટ સરોવર"
     ],
     "optionsGujarati": [
-      "વુલર સરોવર (Wular Lake)",
       "ચિલ્કા સરોવર",
+      "વુલર સરોવર (Wular Lake)",
       "સાંભર સરોવર",
       "પુલિકટ સરોવર"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "જમ્મુ અને કાશ્મીરમાં આવેલું વુલર સરોવર ભારતનું સૌથી મોટું કુદરતી મીઠા પાણીનું સરોવર છે.",
     "explanationGujarati": "જમ્મુ અને કાશ્મીરમાં આવેલું વુલર સરોવર ભારતનું સૌથી મોટું કુદરતી મીઠા પાણીનું સરોવર છે.",
     "targetCompany": "School",
@@ -3097,18 +3100,18 @@ const SEED_QUESTIONS = [
     "questionText": "સાહિત્ય, વિજ્ઞાન, કલા અને સમાજસેવા ક્ષેત્રમાંથી રાષ્ટ્રપતિ દ્વારા રાજ્યસભામાં કેટલા સભ્યોની નિમણૂક થાય છે?",
     "questionTextGujarati": "સાહિત્ય, વિજ્ઞાન, કલા અને સમાજસેવા ક્ષેત્રમાંથી રાષ્ટ્રપતિ દ્વારા રાજ્યસભામાં કેટલા સભ્યોની નિમણૂક થાય છે?",
     "options": [
-      "૧૨ સભ્યો",
-      "૨ સભ્યો",
       "૧૦ સભ્યો",
-      "૧૫ સભ્યો"
+      "૧૫ સભ્યો",
+      "૧૨ સભ્યો",
+      "૨ સભ્યો"
     ],
     "optionsGujarati": [
-      "૧૨ સભ્યો",
-      "૨ સભ્યો",
       "૧૦ સભ્યો",
-      "૧૫ સભ્યો"
+      "૧૫ સભ્યો",
+      "૧૨ સભ્યો",
+      "૨ સભ્યો"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ભારતના રાષ્ટ્રપતિ રાજ્યસભામાં વિશિષ્ટ યોગદાન આપનાર ૧૨ પ્રખર મહાનુભાવોને નામાંકિત કરે છે.",
     "explanationGujarati": "ભારતના રાષ્ટ્રપતિ રાજ્યસભામાં વિશિષ્ટ યોગદાન આપનાર ૧૨ પ્રખર મહાનુભાવોને નામાંકિત કરે છે.",
     "targetCompany": "School",
@@ -3125,18 +3128,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતમાં સંસદ અને વિધાનસભાઓની મુક્ત અને ન્યાયી ચૂંટણીઓનું સંચાલન કરતી સ્વાયત્ત બંધારણીય સંસ્થા કઈ છે?",
     "questionTextGujarati": "ભારતમાં સંસદ અને વિધાનસભાઓની મુક્ત અને ન્યાયી ચૂંટણીઓનું સંચાલન કરતી સ્વાયત્ત બંધારણીય સંસ્થા કઈ છે?",
     "options": [
-      "ભારતીય ચૂંટણી પંચ (Election Commission of India)",
       "સર્વોચ્ચ અદાલત",
-      "ગૃહ મંત્રાલય",
-      "નીતિ આયોગ"
+      "ભારતીય ચૂંટણી પંચ (Election Commission of India)",
+      "નીતિ આયોગ",
+      "ગૃહ મંત્રાલય"
     ],
     "optionsGujarati": [
-      "ભારતીય ચૂંટણી પંચ (Election Commission of India)",
       "સર્વોચ્ચ અદાલત",
-      "ગૃહ મંત્રાલય",
-      "નીતિ આયોગ"
+      "ભારતીય ચૂંટણી પંચ (Election Commission of India)",
+      "નીતિ આયોગ",
+      "ગૃહ મંત્રાલય"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "બંધારણની કલમ ૩૨૪ મુજબ ભારતીય ચૂંટણી પંચ સમગ્ર દેશમાં ચૂંટણીઓનું નિયમન અને આયોજન કરે છે.",
     "explanationGujarati": "બંધારણની કલમ ૩૨૪ મુજબ ભારતીય ચૂંટણી પંચ સમગ્ર દેશમાં ચૂંટણીઓનું નિયમન અને આયોજન કરે છે.",
     "targetCompany": "School",
@@ -3153,18 +3156,18 @@ const SEED_QUESTIONS = [
     "questionText": "આઇઝેક અસિમોવની વાર્તા 'The Fun They Had' માં માર્ગીને તેના યાંત્રિક શિક્ષક (Mechanical Teacher) બાબતે સૌથી વધુ શું નાપસંદ હતું?",
     "questionTextGujarati": "આઇઝેક અસિમોવની વાર્તા 'The Fun They Had' માં માર્ગીને તેના યાંત્રિક શિક્ષક (Mechanical Teacher) બાબતે સૌથી વધુ શું નાપસંદ હતું?",
     "options": [
-      "The slot where she had to submit homework and test papers",
+      "The color of the robot",
       "The screen",
-      "The speaker volume",
-      "The color of the robot"
+      "The slot where she had to submit homework and test papers",
+      "The speaker volume"
     ],
     "optionsGujarati": [
-      "The slot where she had to submit homework and test papers",
+      "The color of the robot",
       "The screen",
-      "The speaker volume",
-      "The color of the robot"
+      "The slot where she had to submit homework and test papers",
+      "The speaker volume"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "માર્ગીને જે સ્લોટમાં હોમવર્ક અને ટેસ્ટ પેપર્સ પંચ કોડમાં દાખલ કરવા પડતાં હતાં તે ભાગ સૌથી વધુ નાપસંદ હતો.",
     "explanationGujarati": "માર્ગીને જે સ્લોટમાં હોમવર્ક અને ટેસ્ટ પેપર્સ પંચ કોડમાં દાખલ કરવા પડતાં હતાં તે ભાગ સૌથી વધુ નાપસંદ હતો.",
     "targetCompany": "School",
@@ -3181,18 +3184,18 @@ const SEED_QUESTIONS = [
     "questionText": "યોગ્ય ક્રિયાપદ પસંદ કરો: 'Neither the teacher nor the students ______ present.'",
     "questionTextGujarati": "યોગ્ય ક્રિયાપદ પસંદ કરો: 'Neither the teacher nor the students ______ present.'",
     "options": [
-      "were",
+      "has been",
       "was",
       "is",
-      "has been"
+      "were"
     ],
     "optionsGujarati": [
-      "were",
+      "has been",
       "was",
       "is",
-      "has been"
+      "were"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'Neither... nor' માં ક્રિયાપદ નજીકના કર્તા (students - બહુવચન) મુજબ 'were' આવે છે.",
     "explanationGujarati": "'Neither... nor' માં ક્રિયાપદ નજીકના કર્તા (students - બહુવચન) મુજબ 'were' આવે છે.",
     "targetCompany": "School",
@@ -3211,14 +3214,14 @@ const SEED_QUESTIONS = [
     "options": [
       "Metaphor (રૂપક)",
       "Simile",
-      "Hyperbole",
-      "Alliteration"
+      "Alliteration",
+      "Hyperbole"
     ],
     "optionsGujarati": [
       "Metaphor (રૂપક)",
       "Simile",
-      "Hyperbole",
-      "Alliteration"
+      "Alliteration",
+      "Hyperbole"
     ],
     "correctAnswer": 0,
     "explanation": "રોબર્ટ ફ્રોસ્ટની કવિતામાં 'બે રસ્તા' એ જીવનમાં લેવાના નિર્ણયો અને પસંદગીઓનું પ્રતીક અને રૂપક (Metaphor) છે.",
@@ -3237,18 +3240,18 @@ const SEED_QUESTIONS = [
     "questionText": "પરોક્ષ કથનનું સાચું રૂપ પસંદ કરો: The doctor said, 'Take this medicine twice daily.'",
     "questionTextGujarati": "પરોક્ષ કથનનું સાચું રૂપ પસંદ કરો: The doctor said, 'Take this medicine twice daily.'",
     "options": [
-      "The doctor advised to take that medicine twice daily.",
-      "The doctor ordered that take medicine.",
+      "The doctor asked to take this medicine.",
       "The doctor said take medicine.",
-      "The doctor asked to take this medicine."
+      "The doctor advised to take that medicine twice daily.",
+      "The doctor ordered that take medicine."
     ],
     "optionsGujarati": [
-      "The doctor advised to take that medicine twice daily.",
-      "The doctor ordered that take medicine.",
+      "The doctor asked to take this medicine.",
       "The doctor said take medicine.",
-      "The doctor asked to take this medicine."
+      "The doctor advised to take that medicine twice daily.",
+      "The doctor ordered that take medicine."
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ડૉક્ટરની તબીબી સલાહ હોવાથી 'advised' આવે અને 'this' નું 'that' થાય છે.",
     "explanationGujarati": "ડૉક્ટરની તબીબી સલાહ હોવાથી 'advised' આવે અને 'this' નું 'that' થાય છે.",
     "targetCompany": "School",
@@ -3265,18 +3268,18 @@ const SEED_QUESTIONS = [
     "questionText": "'સાંજ સમે શામળિયો' કાવ્યમાં કોનું મનોહર વર્ણન છે?",
     "questionTextGujarati": "'સાંજ સમે શામળિયો' કાવ્યમાં કોનું મનોહર વર્ણન છે?",
     "options": [
+      "ગોપીઓનું",
       "શ્રીકૃષ્ણના મનોહર રૂપનું",
-      "બલરામનું",
       "સુદામાનું",
-      "ગોપીઓનું"
+      "બલરામનું"
     ],
     "optionsGujarati": [
+      "ગોપીઓનું",
       "શ્રીકૃષ્ણના મનોહર રૂપનું",
-      "બલરામનું",
       "સુદામાનું",
-      "ગોપીઓનું"
+      "બલરામનું"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "નરસિંહ મહેતા રચિત આ પદમાં સાંજના સમયે ગાયોનું ધણ લઈને પાછા વળતા શ્રીકૃષ્ણના મોહક રૂપનું સુંદર આલેખન છે.",
     "explanationGujarati": "નરસિંહ મહેતા રચિત આ પદમાં સાંજના સમયે ગાયોનું ધણ લઈને પાછા વળતા શ્રીકૃષ્ણના મોહક રૂપનું સુંદર આલેખન છે.",
     "targetCompany": "School",
@@ -3294,15 +3297,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "'ચોરી અને પ્રાયશ્ચિત્ત' પાઠ ગાંધીજીના કયા પુસ્તકમાંથી લેવામાં આવ્યો છે?",
     "options": [
       "'સત્યના પ્રયોગો' (આત્મકથા)",
-      "હિન્દ સ્વરાજ",
       "મંગલ પ્રભાત",
-      "દક્ષિણ આફ્રિકાનો સત્યાગ્રહ"
+      "દક્ષિણ આફ્રિકાનો સત્યાગ્રહ",
+      "હિન્દ સ્વરાજ"
     ],
     "optionsGujarati": [
       "'સત્યના પ્રયોગો' (આત્મકથા)",
-      "હિન્દ સ્વરાજ",
       "મંગલ પ્રભાત",
-      "દક્ષિણ આફ્રિકાનો સત્યાગ્રહ"
+      "દક્ષિણ આફ્રિકાનો સત્યાગ્રહ",
+      "હિન્દ સ્વરાજ"
     ],
     "correctAnswer": 0,
     "explanation": "આ પાઠ ગાંધીજીની સુપ્રસિદ્ધ આત્મકથા 'સત્યના પ્રયોગો' માંથી લેવામાં આવ્યો છે જેમાં પિતા સમક્ષ દોષની નિખાલસ કબૂલાતનું વર્ણન છે.",
@@ -3321,18 +3324,18 @@ const SEED_QUESTIONS = [
     "questionText": "'રમેશે પુસ્તક વાંચ્યું' વાક્યનું કર્મણિ પ્રયોગમાં રૂપાંતર શું થશે?",
     "questionTextGujarati": "'રમેશે પુસ્તક વાંચ્યું' વાક્યનું કર્મણિ પ્રયોગમાં રૂપાંતર શું થશે?",
     "options": [
-      "રમેશ દ્વારા પુસ્તક વંચાયું",
       "રમેશ પુસ્તક વાંચશે",
       "રમેશથી પુસ્તક વાંચવાયું નથી",
+      "રમેશ દ્વારા પુસ્તક વંચાયું",
       "રમેશ પુસ્તક વાંચી રહ્યો છે"
     ],
     "optionsGujarati": [
-      "રમેશ દ્વારા પુસ્તક વંચાયું",
       "રમેશ પુસ્તક વાંચશે",
       "રમેશથી પુસ્તક વાંચવાયું નથી",
+      "રમેશ દ્વારા પુસ્તક વંચાયું",
       "રમેશ પુસ્તક વાંચી રહ્યો છે"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "કર્મણિ વાક્યમાં કર્તાને તૃતીયા વિભક્તિ (થી / દ્વારા) અને ધાતુને 'આ' પ્રત્યય લાગે છે: 'રમેશ દ્વારા પુસ્તક વંચાયું'.",
     "explanationGujarati": "કર્મણિ વાક્યમાં કર્તાને તૃતીયા વિભક્તિ (થી / દ્વારા) અને ધાતુને 'આ' પ્રત્યય લાગે છે: 'રમેશ દ્વારા પુસ્તક વંચાયું'.",
     "targetCompany": "School",
@@ -3349,18 +3352,18 @@ const SEED_QUESTIONS = [
     "questionText": "'પછે શામળિયોજી બોલિયા' કાવ્ય કયા મધ્યકાલીન મહાકવિની રચના છે?",
     "questionTextGujarati": "'પછે શામળિયોજી બોલિયા' કાવ્ય કયા મધ્યકાલીન મહાકવિની રચના છે?",
     "options": [
-      "મહાકવિ પ્રેમાનંદ",
-      "અખો",
+      "ભાલણ",
       "શામળ",
-      "ભાલણ"
+      "મહાકવિ પ્રેમાનંદ",
+      "અખો"
     ],
     "optionsGujarati": [
-      "મહાકવિ પ્રેમાનંદ",
-      "અખો",
+      "ભાલણ",
       "શામળ",
-      "ભાલણ"
+      "મહાકવિ પ્રેમાનંદ",
+      "અખો"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "આખ્યાન શિરોમણી પ્રેમાનંદના જાણીતા આખ્યાન 'સુદામાચરિત્ર' માંથી આ સુંદર કડવું લેવામાં આવ્યું છે.",
     "explanationGujarati": "આખ્યાન શિરોમણી પ્રેમાનંદના જાણીતા આખ્યાન 'સુદામાચરિત્ર' માંથી આ સુંદર કડવું લેવામાં આવ્યું છે.",
     "targetCompany": "School",
@@ -3378,14 +3381,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "(sin² 30° + cos² 30°) નું મૂલ્ય કેટલું થાય?",
     "options": [
       "1",
-      "0",
       "1/2",
+      "0",
       "√3/2"
     ],
     "optionsGujarati": [
       "1",
-      "0",
       "1/2",
+      "0",
       "√3/2"
     ],
     "correctAnswer": 0,
@@ -3405,18 +3408,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો દ્વિઘાત બહુપદી x² + 3x + k નું એક શૂન્ય 2 હોય, તો k ની કિંમત કેટલી થાય?",
     "questionTextGujarati": "જો દ્વિઘાત બહુપદી x² + 3x + k નું એક શૂન્ય 2 હોય, તો k ની કિંમત કેટલી થાય?",
     "options": [
-      "-10",
       "10",
+      "5",
       "-5",
-      "5"
+      "-10"
     ],
     "optionsGujarati": [
-      "-10",
       "10",
+      "5",
       "-5",
-      "5"
+      "-10"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "(2)² + 3(2) + k = 0 => 4 + 6 + k = 0 => k = -10.",
     "explanationGujarati": "(2)² + 3(2) + k = 0 => 4 + 6 + k = 0 => k = -10.",
     "targetCompany": "School",
@@ -3433,18 +3436,18 @@ const SEED_QUESTIONS = [
     "questionText": "દ્વિઘાત સમીકરણ 2x² - 4x + 3 = 0 નો વિવેચક (D) કેટલો થાય?",
     "questionTextGujarati": "દ્વિઘાત સમીકરણ 2x² - 4x + 3 = 0 નો વિવેચક (D) કેટલો થાય?",
     "options": [
+      "40",
       "-8",
-      "8",
       "-40",
-      "40"
+      "8"
     ],
     "optionsGujarati": [
+      "40",
       "-8",
-      "8",
       "-40",
-      "40"
+      "8"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "D = b² - 4ac = (-4)² - 4(2)(3) = 16 - 24 = -8.",
     "explanationGujarati": "D = b² - 4ac = (-4)² - 4(2)(3) = 16 - 24 = -8.",
     "targetCompany": "School",
@@ -3461,18 +3464,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમાંતર શ્રેણી 2, 7, 12, ... નું 10 મું પદ (a₁₀) કયું થાય?",
     "questionTextGujarati": "સમાંતર શ્રેણી 2, 7, 12, ... નું 10 મું પદ (a₁₀) કયું થાય?",
     "options": [
-      "47",
-      "52",
+      "50",
       "42",
-      "50"
+      "52",
+      "47"
     ],
     "optionsGujarati": [
-      "47",
-      "52",
+      "50",
       "42",
-      "50"
+      "52",
+      "47"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "a = 2, d = 5. a₁₀ = a + 9d = 2 + 9(5) = 47.",
     "explanationGujarati": "a = 2, d = 5. a₁₀ = a + 9d = 2 + 9(5) = 47.",
     "targetCompany": "School",
@@ -3489,18 +3492,18 @@ const SEED_QUESTIONS = [
     "questionText": "બિંદુ P(3, 4) નું ઉગમબિંદુ (0, 0) થી અંતર કેટલું થાય?",
     "questionTextGujarati": "બિંદુ P(3, 4) નું ઉગમબિંદુ (0, 0) થી અંતર કેટલું થાય?",
     "options": [
+      "25",
       "5",
       "7",
-      "1",
-      "25"
+      "1"
     ],
     "optionsGujarati": [
+      "25",
       "5",
       "7",
-      "1",
-      "25"
+      "1"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "અંતરસૂત્ર: √(x² + y²) = √(3² + 4²) = √25 = 5 એકમ.",
     "explanationGujarati": "અંતરસૂત્ર: √(x² + y²) = √(3² + 4²) = √25 = 5 એકમ.",
     "targetCompany": "School",
@@ -3517,18 +3520,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો tan θ = 4/3 હોય, તો sin θ નું મૂલ્ય કેટલું થાય?",
     "questionTextGujarati": "જો tan θ = 4/3 હોય, તો sin θ નું મૂલ્ય કેટલું થાય?",
     "options": [
-      "4/5",
-      "3/5",
+      "3/4",
       "5/4",
-      "3/4"
+      "4/5",
+      "3/5"
     ],
     "optionsGujarati": [
-      "4/5",
-      "3/5",
+      "3/4",
       "5/4",
-      "3/4"
+      "4/5",
+      "3/5"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "સામેની બાજુ = 4, પાસેની બાજુ = 3 => કર્ણ = 5. તેથી sin θ = 4/5.",
     "explanationGujarati": "સામેની બાજુ = 4, પાસેની બાજુ = 3 => કર્ણ = 5. તેથી sin θ = 4/5.",
     "targetCompany": "School",
@@ -3545,18 +3548,18 @@ const SEED_QUESTIONS = [
     "questionText": "વર્તુળના બહારના બિંદુ P માંથી વર્તુળને વધુમાં વધુ કેટલા સ્પર્શકો દોરી શકાય?",
     "questionTextGujarati": "વર્તુળના બહારના બિંદુ P માંથી વર્તુળને વધુમાં વધુ કેટલા સ્પર્શકો દોરી શકાય?",
     "options": [
-      "2",
-      "1",
       "અસંખ્ય",
-      "0"
+      "1",
+      "0",
+      "2"
     ],
     "optionsGujarati": [
-      "2",
-      "1",
       "અસંખ્ય",
-      "0"
+      "1",
+      "0",
+      "2"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "વર્તુળના બહારના બિંદુમાંથી વર્તુળને બરાબર 2 સ્પર્શકો દોરી શકાય છે અને તેમની લંબાઈ સમાન હોય છે.",
     "explanationGujarati": "વર્તુળના બહારના બિંદુમાંથી વર્તુળને બરાબર 2 સ્પર્શકો દોરી શકાય છે અને તેમની લંબાઈ સમાન હોય છે.",
     "targetCompany": "School",
@@ -3573,18 +3576,18 @@ const SEED_QUESTIONS = [
     "questionText": "મધ્યક (X̄), મધ્યસ્થ (M) અને બહુલક (Z) વચ્ચેનો પ્રયોગમૂલક સંબંધ કયો છે?",
     "questionTextGujarati": "મધ્યક (X̄), મધ્યસ્થ (M) અને બહુલક (Z) વચ્ચેનો પ્રયોગમૂલક સંબંધ કયો છે?",
     "options": [
-      "Z = 3M - 2X̄",
-      "M = 3Z - 2X̄",
+      "X̄ = 3M - 2Z",
       "Z = 2M - 3X̄",
-      "X̄ = 3M - 2Z"
+      "M = 3Z - 2X̄",
+      "Z = 3M - 2X̄"
     ],
     "optionsGujarati": [
-      "Z = 3M - 2X̄",
-      "M = 3Z - 2X̄",
+      "X̄ = 3M - 2Z",
       "Z = 2M - 3X̄",
-      "X̄ = 3M - 2Z"
+      "M = 3Z - 2X̄",
+      "Z = 3M - 2X̄"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "આંકડાશાસ્ત્રમાં બહુલક = ૩(મધ્યસ્થ) - ૨(મધ્યક) એટલે કે Z = 3M - 2X̄ સંબંધ સ્વીકૃત છે.",
     "explanationGujarati": "આંકડાશાસ્ત્રમાં બહુલક = ૩(મધ્યસ્થ) - ૨(મધ્યક) એટલે કે Z = 3M - 2X̄ સંબંધ સ્વીકૃત છે.",
     "targetCompany": "School",
@@ -3602,14 +3605,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "એક સમતોલ પાસાને ઉછાળતાં તેના પર યુગ્મ (બેકી) અવિભાજ્ય સંખ્યા મળવાની સંભાવના કેટલી થાય?",
     "options": [
       "1/6",
-      "1/2",
       "1/3",
+      "1/2",
       "2/3"
     ],
     "optionsGujarati": [
       "1/6",
-      "1/2",
       "1/3",
+      "1/2",
       "2/3"
     ],
     "correctAnswer": 0,
@@ -3629,18 +3632,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો બે ગોળાઓની ત્રિજ્યાનો ગુણોત્તર 2:3 હોય, તો તેમના ઘનફળનો ગુણોત્તર કેટલો થાય?",
     "questionTextGujarati": "જો બે ગોળાઓની ત્રિજ્યાનો ગુણોત્તર 2:3 હોય, તો તેમના ઘનફળનો ગુણોત્તર કેટલો થાય?",
     "options": [
-      "8:27",
-      "4:9",
       "2:3",
-      "16:81"
+      "16:81",
+      "4:9",
+      "8:27"
     ],
     "optionsGujarati": [
-      "8:27",
-      "4:9",
       "2:3",
-      "16:81"
+      "16:81",
+      "4:9",
+      "8:27"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "ગોળાનું ઘનફળ r³ ના સમપ્રમાણમાં હોય છે: V1/V2 = (r1/r2)³ = (2/3)³ = 8/27.",
     "explanationGujarati": "ગોળાનું ઘનફળ r³ ના સમપ્રમાણમાં હોય છે: V1/V2 = (r1/r2)³ = (2/3)³ = 8/27.",
     "targetCompany": "School",
@@ -3659,14 +3662,14 @@ const SEED_QUESTIONS = [
     "options": [
       "બમણો થશે",
       "અડધો થશે",
-      "ચાર ગણો થશે",
-      "અપરિવર્તિત રહેશે"
+      "અપરિવર્તિત રહેશે",
+      "ચાર ગણો થશે"
     ],
     "optionsGujarati": [
       "બમણો થશે",
       "અડધો થશે",
-      "ચાર ગણો થશે",
-      "અપરિવર્તિત રહેશે"
+      "અપરિવર્તિત રહેશે",
+      "ચાર ગણો થશે"
     ],
     "correctAnswer": 0,
     "explanation": "V = IR => I = V / R. અવરોધ અચળ હોય તો પ્રવાહ વોલ્ટેજના સમપ્રમાણમાં હોય છે, તેથી વોલ્ટેજ બમણો થતાં પ્રવાહ પણ બમણો થાય છે.",
@@ -3685,18 +3688,18 @@ const SEED_QUESTIONS = [
     "questionText": "25°C તાપમાને તટસ્થ જલીય દ્રાવણનું pH મૂલ્ય કેટલું હોય છે?",
     "questionTextGujarati": "25°C તાપમાને તટસ્થ જલીય દ્રાવણનું pH મૂલ્ય કેટલું હોય છે?",
     "options": [
-      "7",
-      "0",
+      "1",
       "14",
-      "1"
+      "7",
+      "0"
     ],
     "optionsGujarati": [
-      "7",
-      "0",
+      "1",
       "14",
-      "1"
+      "7",
+      "0"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "શુદ્ધ પાણી કે તટસ્થ દ્રાવણ માટે 25°C પર pH = 7 હોય છે.",
     "explanationGujarati": "શુદ્ધ પાણી કે તટસ્થ દ્રાવણ માટે 25°C પર pH = 7 હોય છે.",
     "targetCompany": "School",
@@ -3713,18 +3716,18 @@ const SEED_QUESTIONS = [
     "questionText": "રાસાયણિક પ્રક્રિયા: Fe2O3 + 2Al → Al2O3 + 2Fe એ શેનું ઉદાહરણ છે?",
     "questionTextGujarati": "રાસાયણિક પ્રક્રિયા: Fe2O3 + 2Al → Al2O3 + 2Fe એ શેનું ઉદાહરણ છે?",
     "options": [
-      "વિસ્થાપન પ્રક્રિયા (Displacement Reaction)",
-      "સંયોગીકરણ પ્રક્રિયા",
       "વિઘટન પ્રક્રિયા",
-      "દ્વિ-વિસ્થાપન પ્રક્રિયા"
+      "દ્વિ-વિસ્થાપન પ્રક્રિયા",
+      "સંયોગીકરણ પ્રક્રિયા",
+      "વિસ્થાપન પ્રક્રિયા (Displacement Reaction)"
     ],
     "optionsGujarati": [
-      "વિસ્થાપન પ્રક્રિયા (Displacement Reaction)",
-      "સંયોગીકરણ પ્રક્રિયા",
       "વિઘટન પ્રક્રિયા",
-      "દ્વિ-વિસ્થાપન પ્રક્રિયા"
+      "દ્વિ-વિસ્થાપન પ્રક્રિયા",
+      "સંયોગીકરણ પ્રક્રિયા",
+      "વિસ્થાપન પ્રક્રિયા (Displacement Reaction)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "એલ્યુમિનિયમ આયર્ન કરતાં વધુ સક્રિય ધાતુ હોવાથી તે Fe2O3 માંથી આયર્નનું વિસ્થાપન કરે છે.",
     "explanationGujarati": "એલ્યુમિનિયમ આયર્ન કરતાં વધુ સક્રિય ધાતુ હોવાથી તે Fe2O3 માંથી આયર્નનું વિસ્થાપન કરે છે.",
     "targetCompany": "School",
@@ -3742,15 +3745,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "ઇથેનોલ (C2H5OH) માં કયો ક્રિયાશીલ સમૂહ આવેલો છે?",
     "options": [
       "આલ્કોહોલ (-OH)",
+      "કાર્બોક્સિલિક એસિડ (-COOH)",
       "આલ્ડિહાઇડ (-CHO)",
-      "કીટોન (>C=O)",
-      "કાર્બોક્સિલિક એસિડ (-COOH)"
+      "કીટોન (>C=O)"
     ],
     "optionsGujarati": [
       "આલ્કોહોલ (-OH)",
+      "કાર્બોક્સિલિક એસિડ (-COOH)",
       "આલ્ડિહાઇડ (-CHO)",
-      "કીટોન (>C=O)",
-      "કાર્બોક્સિલિક એસિડ (-COOH)"
+      "કીટોન (>C=O)"
     ],
     "correctAnswer": 0,
     "explanation": "-OH સમૂહ એ આલ્કોહોલ ક્રિયાશીલ સમૂહ તરીકે ઓળખાય છે.",
@@ -3769,18 +3772,18 @@ const SEED_QUESTIONS = [
     "questionText": "મનુષ્યના હૃદયમાં કયો ખંડ મહાધમની દ્વારા સમગ્ર શરીરમાં ઓક્સિજનયુક્ત રુધિર પમ્પ કરે છે?",
     "questionTextGujarati": "મનુષ્યના હૃદયમાં કયો ખંડ મહાધમની દ્વારા સમગ્ર શરીરમાં ઓક્સિજનયુક્ત રુધિર પમ્પ કરે છે?",
     "options": [
-      "ડાબું ક્ષેપક (Left Ventricle)",
-      "જમણું ક્ષેપક",
       "ડાબું કર્ણક",
-      "જમણું કર્ણક"
+      "જમણું કર્ણક",
+      "જમણું ક્ષેપક",
+      "ડાબું ક્ષેપક (Left Ventricle)"
     ],
     "optionsGujarati": [
-      "ડાબું ક્ષેપક (Left Ventricle)",
-      "જમણું ક્ષેપક",
       "ડાબું કર્ણક",
-      "જમણું કર્ણક"
+      "જમણું કર્ણક",
+      "જમણું ક્ષેપક",
+      "ડાબું ક્ષેપક (Left Ventricle)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "ડાબું ક્ષેપક જાડી સ્નાયુમય દીવાલ ધરાવે છે અને સમગ્ર શરીરમાં ઊંચા દબાણે ઓક્સિજનયુક્ત રુધિર પહોંચાડે છે.",
     "explanationGujarati": "ડાબું ક્ષેપક જાડી સ્નાયુમય દીવાલ ધરાવે છે અને સમગ્ર શરીરમાં ઊંચા દબાણે ઓક્સિજનયુક્ત રુધિર પહોંચાડે છે.",
     "targetCompany": "School",
@@ -3797,18 +3800,18 @@ const SEED_QUESTIONS = [
     "questionText": "વનસ્પતિમાં કોષ લંબન અને પ્રકાશાનુવર્તન માટે કયો મુખ્ય અંતઃસ્ત્રાવ જવાબદાર છે?",
     "questionTextGujarati": "વનસ્પતિમાં કોષ લંબન અને પ્રકાશાનુવર્તન માટે કયો મુખ્ય અંતઃસ્ત્રાવ જવાબદાર છે?",
     "options": [
-      "ઓક્ઝિન (Auxin)",
       "જીબ્રેલીન",
-      "સાયટોકાઈનીન",
-      "એબ્સિસિક એસિડ"
+      "એબ્સિસિક એસિડ",
+      "ઓક્ઝિન (Auxin)",
+      "સાયટોકાઈનીન"
     ],
     "optionsGujarati": [
-      "ઓક્ઝિન (Auxin)",
       "જીબ્રેલીન",
-      "સાયટોકાઈનીન",
-      "એબ્સિસિક એસિડ"
+      "એબ્સિસિક એસિડ",
+      "ઓક્ઝિન (Auxin)",
+      "સાયટોકાઈનીન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ઓક્ઝિન પ્રરોહાગ્રના છેડે સંશ્લેષણ પામી છાંયડાવાળા ભાગમાં એકઠો થઈ કોષોની લંબાઈમાં વૃદ્ધિ પ્રેરે છે.",
     "explanationGujarati": "ઓક્ઝિન પ્રરોહાગ્રના છેડે સંશ્લેષણ પામી છાંયડાવાળા ભાગમાં એકઠો થઈ કોષોની લંબાઈમાં વૃદ્ધિ પ્રેરે છે.",
     "targetCompany": "School",
@@ -3825,18 +3828,18 @@ const SEED_QUESTIONS = [
     "questionText": "મેન્ડેલે શુદ્ધ ઊંચા (TT) અને નીચા (tt) વટાણાના છોડ વચ્ચે સંકરણ કરાવ્યું. F1 પેઢીમાં બધા જ છોડ કેવા મળ્યા?",
     "questionTextGujarati": "મેન્ડેલે શુદ્ધ ઊંચા (TT) અને નીચા (tt) વટાણાના છોડ વચ્ચે સંકરણ કરાવ્યું. F1 પેઢીમાં બધા જ છોડ કેવા મળ્યા?",
     "options": [
-      "બધા જ ઊંચા (All Tall - Tt)",
       "બધા જ નીચા",
-      "50% ઊંચા અને 50% નીચા",
-      "75% ઊંચા અને 25% નીચા"
+      "75% ઊંચા અને 25% નીચા",
+      "બધા જ ઊંચા (All Tall - Tt)",
+      "50% ઊંચા અને 50% નીચા"
     ],
     "optionsGujarati": [
-      "બધા જ ઊંચા (All Tall - Tt)",
       "બધા જ નીચા",
-      "50% ઊંચા અને 50% નીચા",
-      "75% ઊંચા અને 25% નીચા"
+      "75% ઊંચા અને 25% નીચા",
+      "બધા જ ઊંચા (All Tall - Tt)",
+      "50% ઊંચા અને 50% નીચા"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ઊંચાપણાનું જનીન (T) પ્રભાવી હોવાથી F1 પેઢીમાં તમામ છોડ વિષમયુગ્મી ઊંચા (Tt) બને છે.",
     "explanationGujarati": "ઊંચાપણાનું જનીન (T) પ્રભાવી હોવાથી F1 પેઢીમાં તમામ છોડ વિષમયુગ્મી ઊંચા (Tt) બને છે.",
     "targetCompany": "School",
@@ -3854,14 +3857,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "અંતર્ગોળ અરીસાની સામે વસ્તુને ક્યાં મૂકતાં તેનું વાસ્તવિક, ઊલટું અને વસ્તુ જેવડા જ કદનું પ્રતિબિંબ રચાય છે?",
     "options": [
       "વક્રતાકેન્દ્ર C પર",
-      "મુખ્ય કેન્દ્ર F પર",
       "ધ્રુવ P પર",
+      "મુખ્ય કેન્દ્ર F પર",
       "અનંત અંતરે"
     ],
     "optionsGujarati": [
       "વક્રતાકેન્દ્ર C પર",
-      "મુખ્ય કેન્દ્ર F પર",
       "ધ્રુવ P પર",
+      "મુખ્ય કેન્દ્ર F પર",
       "અનંત અંતરે"
     ],
     "correctAnswer": 0,
@@ -3881,18 +3884,18 @@ const SEED_QUESTIONS = [
     "questionText": "પ્રિઝમ વડે શ્વેત પ્રકાશનું તેના સાત ઘટક રંગોમાં વિભાજિત થવાની ઘટનાને શું કહે છે?",
     "questionTextGujarati": "પ્રિઝમ વડે શ્વેત પ્રકાશનું તેના સાત ઘટક રંગોમાં વિભાજિત થવાની ઘટનાને શું કહે છે?",
     "options": [
-      "પ્રકાશનું વિભાજન (Dispersion)",
       "પ્રકાશનું પ્રકીર્ણન",
-      "પૂર્ણ આંતરિક પરાવર્તન",
-      "પ્રકાશનું શોષણ"
+      "પ્રકાશનું વિભાજન (Dispersion)",
+      "પ્રકાશનું શોષણ",
+      "પૂર્ણ આંતરિક પરાવર્તન"
     ],
     "optionsGujarati": [
-      "પ્રકાશનું વિભાજન (Dispersion)",
       "પ્રકાશનું પ્રકીર્ણન",
-      "પૂર્ણ આંતરિક પરાવર્તન",
-      "પ્રકાશનું શોષણ"
+      "પ્રકાશનું વિભાજન (Dispersion)",
+      "પ્રકાશનું શોષણ",
+      "પૂર્ણ આંતરિક પરાવર્તન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "જુદા જુદા રંગોનો વેગ અને વક્રીભવનાંક અલગ હોવાથી કાચના પ્રિઝમમાંથી પસાર થતાં શ્વેત પ્રકાશનું સાત રંગોમાં વિભાજન થાય છે.",
     "explanationGujarati": "જુદા જુદા રંગોનો વેગ અને વક્રીભવનાંક અલગ હોવાથી કાચના પ્રિઝમમાંથી પસાર થતાં શ્વેત પ્રકાશનું સાત રંગોમાં વિભાજન થાય છે.",
     "targetCompany": "School",
@@ -3909,18 +3912,18 @@ const SEED_QUESTIONS = [
     "questionText": "વિદ્યુતપ્રવાહધારિત સીધા તારની આસપાસ ચુંબકીય ક્ષેત્રરેખાઓની દિશા નક્કી કરવા કયો નિયમ વપરાય છે?",
     "questionTextGujarati": "વિદ્યુતપ્રવાહધારિત સીધા તારની આસપાસ ચુંબકીય ક્ષેત્રરેખાઓની દિશા નક્કી કરવા કયો નિયમ વપરાય છે?",
     "options": [
-      "જમણા હાથના અંગૂઠાનો નિયમ (Right-Hand Thumb Rule)",
       "ફ્લેમિંગનો ડાબા હાથનો નિયમ",
-      "ફ્લેમિંગનો જમણા હાથનો નિયમ",
-      "ઓહ્મનો નિયમ"
+      "ઓહ્મનો નિયમ",
+      "જમણા હાથના અંગૂઠાનો નિયમ (Right-Hand Thumb Rule)",
+      "ફ્લેમિંગનો જમણા હાથનો નિયમ"
     ],
     "optionsGujarati": [
-      "જમણા હાથના અંગૂઠાનો નિયમ (Right-Hand Thumb Rule)",
       "ફ્લેમિંગનો ડાબા હાથનો નિયમ",
-      "ફ્લેમિંગનો જમણા હાથનો નિયમ",
-      "ઓહ્મનો નિયમ"
+      "ઓહ્મનો નિયમ",
+      "જમણા હાથના અંગૂઠાનો નિયમ (Right-Hand Thumb Rule)",
+      "ફ્લેમિંગનો જમણા હાથનો નિયમ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "જમણા હાથના અંગૂઠાના નિયમ મુજબ જો અંગૂઠો પ્રવાહની દિશામાં હોય તો વળેલી આંગળીઓ ચુંબકીય ક્ષેત્રની દિશા દર્શાવે છે.",
     "explanationGujarati": "જમણા હાથના અંગૂઠાના નિયમ મુજબ જો અંગૂઠો પ્રવાહની દિશામાં હોય તો વળેલી આંગળીઓ ચુંબકીય ક્ષેત્રની દિશા દર્શાવે છે.",
     "targetCompany": "School",
@@ -3937,18 +3940,18 @@ const SEED_QUESTIONS = [
     "questionText": "મોઢેરાનું પ્રસિદ્ધ સૂર્યમંદિર સોલંકી વંશના રાજા ભીમદેવ પ્રથમ દ્વારા ક્યારે બંધાવવામાં આવ્યું હતું?",
     "questionTextGujarati": "મોઢેરાનું પ્રસિદ્ધ સૂર્યમંદિર સોલંકી વંશના રાજા ભીમદેવ પ્રથમ દ્વારા ક્યારે બંધાવવામાં આવ્યું હતું?",
     "options": [
+      "ઇ.સ. ૧૧૯૦",
       "ઇ.સ. ૧૦૨૬",
-      "ઇ.સ. ૧૧૨૬",
       "ઇ.સ. ૧૦૫૦",
-      "ઇ.સ. ૧૧૯૦"
+      "ઇ.સ. ૧૧૨૬"
     ],
     "optionsGujarati": [
+      "ઇ.સ. ૧૧૯૦",
       "ઇ.સ. ૧૦૨૬",
-      "ઇ.સ. ૧૧૨૬",
       "ઇ.સ. ૧૦૫૦",
-      "ઇ.સ. ૧૧૯૦"
+      "ઇ.સ. ૧૧૨૬"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ઇ.સ. ૧૦૨૬ માં સોલંકી વંશના શાસક ભીમદેવ પ્રથમે મોઢેરા ખાતે શિલ્પ સ્થાપત્યની ઉત્કૃષ્ટ શૈલીમાં સૂર્યમંદિર બંધાવ્યું હતું.",
     "explanationGujarati": "ઇ.સ. ૧૦૨૬ માં સોલંકી વંશના શાસક ભીમદેવ પ્રથમે મોઢેરા ખાતે શિલ્પ સ્થાપત્યની ઉત્કૃષ્ટ શૈલીમાં સૂર્યમંદિર બંધાવ્યું હતું.",
     "targetCompany": "School",
@@ -3967,14 +3970,14 @@ const SEED_QUESTIONS = [
     "options": [
       "કાળી જમીન (Black Soil)",
       "કાંપવાળી જમીન",
-      "રાતી જમીન",
-      "પડખાઉ જમીન"
+      "પડખાઉ જમીન",
+      "રાતી જમીન"
     ],
     "optionsGujarati": [
       "કાળી જમીન (Black Soil)",
       "કાંપવાળી જમીન",
-      "રાતી જમીન",
-      "પડખાઉ જમીન"
+      "પડખાઉ જમીન",
+      "રાતી જમીન"
     ],
     "correctAnswer": 0,
     "explanation": "કાળી જમીન લાવાજન્ય હોવાથી અત્યંત ફળદ્રુપ અને ભેજસંગ્રાહક છે, તેથી તેને રેગુર કે કપાસની કાળી જમીન કહે છે.",
@@ -3993,18 +3996,18 @@ const SEED_QUESTIONS = [
     "questionText": "વિશ્વવિખ્યાત 'પટોળાં' ની હસ્તકળા ગુજરાતના કયા ઐતિહાસિક શહેર સાથે જોડાયેલી છે?",
     "questionTextGujarati": "વિશ્વવિખ્યાત 'પટોળાં' ની હસ્તકળા ગુજરાતના કયા ઐતિહાસિક શહેર સાથે જોડાયેલી છે?",
     "options": [
-      "પાટણ",
-      "સુરત",
       "જામનગર",
-      "ભાવનગર"
+      "પાટણ",
+      "ભાવનગર",
+      "સુરત"
     ],
     "optionsGujarati": [
-      "પાટણ",
-      "સુરત",
       "જામનગર",
-      "ભાવનગર"
+      "પાટણ",
+      "ભાવનગર",
+      "સુરત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પાટણના બેવડ ઇક્ત વણાટથી તૈયાર થતાં પટોળાં તેમના રંગ, ભાત અને દીર્ઘજીવી ટકાઉપણા માટે વિશ્વભરમાં પ્રખ્યાત છે.",
     "explanationGujarati": "પાટણના બેવડ ઇક્ત વણાટથી તૈયાર થતાં પટોળાં તેમના રંગ, ભાત અને દીર્ઘજીવી ટકાઉપણા માટે વિશ્વભરમાં પ્રખ્યાત છે.",
     "targetCompany": "School",
@@ -4021,18 +4024,18 @@ const SEED_QUESTIONS = [
     "questionText": "૧૯૯૧ ની આર્થિક નીતિના સંદર્ભમાં LPG શબ્દાવલીનો સાચો અર્થ શું છે?",
     "questionTextGujarati": "૧૯૯૧ ની આર્થિક નીતિના સંદર્ભમાં LPG શબ્દાવલીનો સાચો અર્થ શું છે?",
     "options": [
-      "ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (Liberalization, Privatization, Globalization)",
-      "લિક્વિફાઇડ પેટ્રોલિયમ ગેસ",
       "સ્થાનિક પંચાયત ગઠન",
-      "લોકપ્રિય જાહેર યોજના"
+      "લિક્વિફાઇડ પેટ્રોલિયમ ગેસ",
+      "લોકપ્રિય જાહેર યોજના",
+      "ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (Liberalization, Privatization, Globalization)"
     ],
     "optionsGujarati": [
-      "ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (Liberalization, Privatization, Globalization)",
-      "લિક્વિફાઇડ પેટ્રોલિયમ ગેસ",
       "સ્થાનિક પંચાયત ગઠન",
-      "લોકપ્રિય જાહેર યોજના"
+      "લિક્વિફાઇડ પેટ્રોલિયમ ગેસ",
+      "લોકપ્રિય જાહેર યોજના",
+      "ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (Liberalization, Privatization, Globalization)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "૧૯૯૧ ના ભારતના આર્થિક સુધારા ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (LPG) ત્રિપુટી તરીકે ઓળખાય છે.",
     "explanationGujarati": "૧૯૯૧ ના ભારતના આર્થિક સુધારા ઉદારીકરણ, ખાનગીકરણ અને વૈશ્વિકીકરણ (LPG) ત્રિપુટી તરીકે ઓળખાય છે.",
     "targetCompany": "School",
@@ -4049,18 +4052,18 @@ const SEED_QUESTIONS = [
     "questionText": "ભારતમાં દર વર્ષે 'રાષ્ટ્રીય ગ્રાહક અધિકાર દિન' કઈ તારીખે ઉજવવામાં આવે છે?",
     "questionTextGujarati": "ભારતમાં દર વર્ષે 'રાષ્ટ્રીય ગ્રાહક અધિકાર દિન' કઈ તારીખે ઉજવવામાં આવે છે?",
     "options": [
-      "૨૪ ડિસેમ્બર",
+      "૨૬ જાન્યુઆરી",
       "૧૫ માર્ચ",
-      "૫ જૂન",
-      "૨૬ જાન્યુઆરી"
+      "૨૪ ડિસેમ્બર",
+      "૫ જૂન"
     ],
     "optionsGujarati": [
-      "૨૪ ડિસેમ્બર",
+      "૨૬ જાન્યુઆરી",
       "૧૫ માર્ચ",
-      "૫ જૂન",
-      "૨૬ જાન્યુઆરી"
+      "૨૪ ડિસેમ્બર",
+      "૫ જૂન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "૨૪ ડિસેમ્બર ૧૯૮૬ ના રોજ રાષ્ટ્રપતિ દ્વારા 'ગ્રાહક સુરક્ષા અધિનિયમ' મંજૂર કરાયો હોવાથી આ દિવસ રાષ્ટ્રીય ગ્રાહક અધિકાર દિન ઉજવાય છે.",
     "explanationGujarati": "૨૪ ડિસેમ્બર ૧૯૮૬ ના રોજ રાષ્ટ્રપતિ દ્વારા 'ગ્રાહક સુરક્ષા અધિનિયમ' મંજૂર કરાયો હોવાથી આ દિવસ રાષ્ટ્રીય ગ્રાહક અધિકાર દિન ઉજવાય છે.",
     "targetCompany": "School",
@@ -4077,18 +4080,18 @@ const SEED_QUESTIONS = [
     "questionText": "ગુજરાતમાં નર્મદા નદી પર નિર્માણ પામેલી બહુહેતુક યોજના કઈ છે?",
     "questionTextGujarati": "ગુજરાતમાં નર્મદા નદી પર નિર્માણ પામેલી બહુહેતુક યોજના કઈ છે?",
     "options": [
-      "સરદાર સરોવર યોજના",
-      "ઉકાઈ યોજના",
+      "દાંતીવાડા યોજના",
       "ધરોઈ યોજના",
-      "દાંતીવાડા યોજના"
+      "ઉકાઈ યોજના",
+      "સરદાર સરોવર યોજના"
     ],
     "optionsGujarati": [
-      "સરદાર સરોવર યોજના",
-      "ઉકાઈ યોજના",
+      "દાંતીવાડા યોજના",
       "ધરોઈ યોજના",
-      "દાંતીવાડા યોજના"
+      "ઉકાઈ યોજના",
+      "સરદાર સરોવર યોજના"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "નર્મદા જિલ્લાના કેવડિયા ખાતે સરદાર સરોવર બંધ નિર્માણ પામેલ છે જે ગુજરાત, રાજસ્થાન અને મધ્યપ્રદેશને લાભ આપે છે.",
     "explanationGujarati": "નર્મદા જિલ્લાના કેવડિયા ખાતે સરદાર સરોવર બંધ નિર્માણ પામેલ છે જે ગુજરાત, રાજસ્થાન અને મધ્યપ્રદેશને લાભ આપે છે.",
     "targetCompany": "School",
@@ -4133,18 +4136,18 @@ const SEED_QUESTIONS = [
     "questionText": "'A Letter to God' વાર્તામાં લેંચોએ ઈશ્વરને પત્ર લખી ૧૦૦ પેસો શા માટે માંગ્યા હતા?",
     "questionTextGujarati": "'A Letter to God' વાર્તામાં લેંચોએ ઈશ્વરને પત્ર લખી ૧૦૦ પેસો શા માટે માંગ્યા હતા?",
     "options": [
-      "Because hailstones destroyed his ripe corn harvest completely",
-      "To buy a new tractor",
       "To pay his debts",
-      "To celebrate a festival"
+      "To celebrate a festival",
+      "Because hailstones destroyed his ripe corn harvest completely",
+      "To buy a new tractor"
     ],
     "optionsGujarati": [
-      "Because hailstones destroyed his ripe corn harvest completely",
-      "To buy a new tractor",
       "To pay his debts",
-      "To celebrate a festival"
+      "To celebrate a festival",
+      "Because hailstones destroyed his ripe corn harvest completely",
+      "To buy a new tractor"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ભારે કરા પડવાથી તેનો મકાઈનો પાક સદંતર નાશ પામ્યો હતો, જેથી કુટુંબનું ગુજરાન ચલાવવા અને નવો પાક વાવવા ૧૦૦ પેસો માંગ્યા હતા.",
     "explanationGujarati": "ભારે કરા પડવાથી તેનો મકાઈનો પાક સદંતર નાશ પામ્યો હતો, જેથી કુટુંબનું ગુજરાન ચલાવવા અને નવો પાક વાવવા ૧૦૦ પેસો માંગ્યા હતા.",
     "targetCompany": "School",
@@ -4189,18 +4192,18 @@ const SEED_QUESTIONS = [
     "questionText": "વાક્યમાં વ્યાકરણની ભૂલ શોધો: 'Each of the participants have received a certificate.'",
     "questionTextGujarati": "વાક્યમાં વ્યાકરણની ભૂલ શોધો: 'Each of the participants have received a certificate.'",
     "options": [
-      "'have' should be 'has'",
-      "'Each' should be 'All'",
       "'certificate' should be 'certificates'",
-      "'received' is wrong"
+      "'received' is wrong",
+      "'Each' should be 'All'",
+      "'have' should be 'has'"
     ],
     "optionsGujarati": [
-      "'have' should be 'has'",
-      "'Each' should be 'All'",
       "'certificate' should be 'certificates'",
-      "'received' is wrong"
+      "'received' is wrong",
+      "'Each' should be 'All'",
+      "'have' should be 'has'"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "'Each of' એકવચન કર્તા ગણાય છે તેથી સહાયક ક્રિયાપદ 'has' આવવું જોઈએ.",
     "explanationGujarati": "'Each of' એકવચન કર્તા ગણાય છે તેથી સહાયક ક્રિયાપદ 'has' આવવું જોઈએ.",
     "targetCompany": "School",
@@ -4219,14 +4222,14 @@ const SEED_QUESTIONS = [
     "options": [
       "must",
       "can",
-      "might",
-      "would"
+      "would",
+      "might"
     ],
     "optionsGujarati": [
       "must",
       "can",
-      "might",
-      "would"
+      "would",
+      "might"
     ],
     "correctAnswer": 0,
     "explanation": "ટ્રાફિક નિયમોનું પાલન કાનૂની ફરજ અને સલામતી માટે અનિવાર્ય હોવાથી 'must' વપરાય છે.",
@@ -4245,18 +4248,18 @@ const SEED_QUESTIONS = [
     "questionText": "'વૈષ્ણવજન તો તેને રે કહીએ જે પીડ પરાઈ જાણે રે' પદના રચયિતા કોણ છે?",
     "questionTextGujarati": "'વૈષ્ણવજન તો તેને રે કહીએ જે પીડ પરાઈ જાણે રે' પદના રચયિતા કોણ છે?",
     "options": [
-      "નરસિંહ મહેતા",
       "મીરાંબાઈ",
-      "અખો",
-      "દયારામ"
+      "નરસિંહ મહેતા",
+      "દયારામ",
+      "અખો"
     ],
     "optionsGujarati": [
-      "નરસિંહ મહેતા",
       "મીરાંબાઈ",
-      "અખો",
-      "દયારામ"
+      "નરસિંહ મહેતા",
+      "દયારામ",
+      "અખો"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "મહાત્મા ગાંધીજીના અતિપ્રિય આ ભજનના રચયિતા આદિકવિ નરસિંહ મહેતા છે.",
     "explanationGujarati": "મહાત્મા ગાંધીજીના અતિપ્રિય આ ભજનના રચયિતા આદિકવિ નરસિંહ મહેતા છે.",
     "targetCompany": "School",
@@ -4273,18 +4276,18 @@ const SEED_QUESTIONS = [
     "questionText": "'રેસનો ઘોડો' નવલિકામાં કયા બે પરિવારો અને બાળકોના શિક્ષણ-સંસ્કારોની સરખામણી છે?",
     "questionTextGujarati": "'રેસનો ઘોડો' નવલિકામાં કયા બે પરિવારો અને બાળકોના શિક્ષણ-સંસ્કારોની સરખામણી છે?",
     "options": [
-      "વિનુકાકા-સૌરભ અને સંજય-અંકિત",
-      "મગનલાલ અને છગનલાલ",
+      "હરિલાલ અને કાંતિલાલ",
       "રામશંકર અને શ્યામસુંદર",
-      "હરિલાલ અને કાંતિલાલ"
+      "મગનલાલ અને છગનલાલ",
+      "વિનુકાકા-સૌરભ અને સંજય-અંકિત"
     ],
     "optionsGujarati": [
-      "વિનુકાકા-સૌરભ અને સંજય-અંકિત",
-      "મગનલાલ અને છગનલાલ",
+      "હરિલાલ અને કાંતિલાલ",
       "રામશંકર અને શ્યામસુંદર",
-      "હરિલાલ અને કાંતિલાલ"
+      "મગનલાલ અને છગનલાલ",
+      "વિનુકાકા-સૌરભ અને સંજય-અંકિત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "વર્ષા અડાલજા રચિત 'રેસનો ઘોડો' વાર્તામાં વિનુકાકાના પુત્ર સૌરભ અને નીનાબહેન-સંજયના પુત્ર અંકિતના ઉછેરનું તુલનાત્મક દર્શન છે.",
     "explanationGujarati": "વર્ષા અડાલજા રચિત 'રેસનો ઘોડો' વાર્તામાં વિનુકાકાના પુત્ર સૌરભ અને નીનાબહેન-સંજયના પુત્ર અંકિતના ઉછેરનું તુલનાત્મક દર્શન છે.",
     "targetCompany": "School",
@@ -4301,18 +4304,18 @@ const SEED_QUESTIONS = [
     "questionText": "'મા-બાપ' કયો સમાસ છે?",
     "questionTextGujarati": "'મા-બાપ' કયો સમાસ છે?",
     "options": [
-      "દ્વન્દ્વ સમાસ",
-      "તત્પુરુષ સમાસ",
       "કર્મધારય સમાસ",
+      "તત્પુરુષ સમાસ",
+      "દ્વન્દ્વ સમાસ",
       "મધ્યમપદલોપી સમાસ"
     ],
     "optionsGujarati": [
-      "દ્વન્દ્વ સમાસ",
-      "તત્પુરુષ સમાસ",
       "કર્મધારય સમાસ",
+      "તત્પુરુષ સમાસ",
+      "દ્વન્દ્વ સમાસ",
       "મધ્યમપદલોપી સમાસ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "'મા અને બાપ' - બંને પદો સમાન મોભાના હોવાથી તે દ્વન્દ્વ સમાસ બને છે.",
     "explanationGujarati": "'મા અને બાપ' - બંને પદો સમાન મોભાના હોવાથી તે દ્વન્દ્વ સમાસ બને છે.",
     "targetCompany": "School",
@@ -4330,14 +4333,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "'શીલવંત સાધુને વારે વારે નમીએ' ભજનમાં ગંગાસતી કોને ઉપદેશ આપે છે?",
     "options": [
       "પાનબાઈને",
-      "મીરાંબાઈને",
       "લોયણને",
+      "મીરાંબાઈને",
       "જીવણદાસને"
     ],
     "optionsGujarati": [
       "પાનબાઈને",
-      "મીરાંબાઈને",
       "લોયણને",
+      "મીરાંબાઈને",
       "જીવણદાસને"
     ],
     "correctAnswer": 0,
@@ -4357,18 +4360,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમતલ જમીન પર પ્રક્ષિપ્ત પદાર્થની સમક્ષિતિજ અવધિ (Range) કયા પ્રક્ષેપણ કોણે મહત્તમ બને છે?",
     "questionTextGujarati": "સમતલ જમીન પર પ્રક્ષિપ્ત પદાર્થની સમક્ષિતિજ અવધિ (Range) કયા પ્રક્ષેપણ કોણે મહત્તમ બને છે?",
     "options": [
-      "45°",
-      "90°",
+      "60°",
       "30°",
-      "60°"
+      "90°",
+      "45°"
     ],
     "optionsGujarati": [
-      "45°",
-      "90°",
+      "60°",
       "30°",
-      "60°"
+      "90°",
+      "45°"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "R = (u² sin 2θ) / g. જ્યારે θ = 45° હોય ત્યારે sin 2(45°) = sin 90° = 1 મહત્તમ બને છે.",
     "explanationGujarati": "R = (u² sin 2θ) / g. જ્યારે θ = 45° હોય ત્યારે sin 2(45°) = sin 90° = 1 મહત્તમ બને છે.",
     "targetCompany": "School",
@@ -4386,14 +4389,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "સાર્વત્રિક ગુરુત્વાકર્ષણ અચળાંક (G) નું પારિમાણિક સૂત્ર કયું છે?",
     "options": [
       "[M⁻¹ L³ T⁻²]",
-      "[M¹ L³ T⁻²]",
       "[M⁻¹ L² T⁻²]",
+      "[M¹ L³ T⁻²]",
       "[M⁰ L³ T⁻¹]"
     ],
     "optionsGujarati": [
       "[M⁻¹ L³ T⁻²]",
-      "[M¹ L³ T⁻²]",
       "[M⁻¹ L² T⁻²]",
+      "[M¹ L³ T⁻²]",
       "[M⁰ L³ T⁻¹]"
     ],
     "correctAnswer": 0,
@@ -4413,18 +4416,18 @@ const SEED_QUESTIONS = [
     "questionText": "થર્મોડાયનેમિક્સનો કયો નિયમ તાપમાન અને તાપીય સંતુલનની સંકલ્પના વ્યાખ્યાયિત કરે છે?",
     "questionTextGujarati": "થર્મોડાયનેમિક્સનો કયો નિયમ તાપમાન અને તાપીય સંતુલનની સંકલ્પના વ્યાખ્યાયિત કરે છે?",
     "options": [
-      "શૂન્યતમ નિયમ (Zeroth Law)",
-      "પ્રથમ નિયમ",
       "દ્વિતીય નિયમ",
-      "તૃતીય નિયમ"
+      "તૃતીય નિયમ",
+      "પ્રથમ નિયમ",
+      "શૂન્યતમ નિયમ (Zeroth Law)"
     ],
     "optionsGujarati": [
-      "શૂન્યતમ નિયમ (Zeroth Law)",
-      "પ્રથમ નિયમ",
       "દ્વિતીય નિયમ",
-      "તૃતીય નિયમ"
+      "તૃતીય નિયમ",
+      "પ્રથમ નિયમ",
+      "શૂન્યતમ નિયમ (Zeroth Law)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "શૂન્યતમ નિયમ જણાવે છે કે જો તંત્રો A અને B સ્વતંત્ર રીતે C સાથે તાપીય સંતુલનમાં હોય તો તેઓ પરસ્પર પણ સંતુલનમાં હોય છે.",
     "explanationGujarati": "શૂન્યતમ નિયમ જણાવે છે કે જો તંત્રો A અને B સ્વતંત્ર રીતે C સાથે તાપીય સંતુલનમાં હોય તો તેઓ પરસ્પર પણ સંતુલનમાં હોય છે.",
     "targetCompany": "School",
@@ -4441,18 +4444,18 @@ const SEED_QUESTIONS = [
     "questionText": "નિયમિત વર્તુળાકાર ગતિ કરતા પદાર્થ પર કેન્દ્રગામી બળ દ્વારા એક પૂર્ણ પરિભ્રમણ દરમિયાન થતું કાર્ય કેટલું હોય છે?",
     "questionTextGujarati": "નિયમિત વર્તુળાકાર ગતિ કરતા પદાર્થ પર કેન્દ્રગામી બળ દ્વારા એક પૂર્ણ પરિભ્રમણ દરમિયાન થતું કાર્ય કેટલું હોય છે?",
     "options": [
-      "0 (શૂન્ય)",
       "ધન",
+      "0 (શૂન્ય)",
       "ઋણ",
       "અનંત"
     ],
     "optionsGujarati": [
-      "0 (શૂન્ય)",
       "ધન",
+      "0 (શૂન્ય)",
       "ઋણ",
       "અનંત"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "કેન્દ્રગામી બળ સ્થાનાંતરની દિશાને લંબરૂપે (θ = 90°) લાગતું હોવાથી W = F·d·cos 90° = 0 થાય છે.",
     "explanationGujarati": "કેન્દ્રગામી બળ સ્થાનાંતરની દિશાને લંબરૂપે (θ = 90°) લાગતું હોવાથી W = F·d·cos 90° = 0 થાય છે.",
     "targetCompany": "School",
@@ -4469,18 +4472,18 @@ const SEED_QUESTIONS = [
     "questionText": "વર્તુળાકાર ગતિમાં રેખીય વેગ (v) અને કોણીય વેગ (ω) વચ્ચેનો સંબંધ કયો છે?",
     "questionTextGujarati": "વર્તુળાકાર ગતિમાં રેખીય વેગ (v) અને કોણીય વેગ (ω) વચ્ચેનો સંબંધ કયો છે?",
     "options": [
-      "v = r·ω",
-      "ω = r·v",
       "v = ω / r",
-      "v = r²·ω"
+      "v = r²·ω",
+      "ω = r·v",
+      "v = r·ω"
     ],
     "optionsGujarati": [
-      "v = r·ω",
-      "ω = r·v",
       "v = ω / r",
-      "v = r²·ω"
+      "v = r²·ω",
+      "ω = r·v",
+      "v = r·ω"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "રેખીય વેગ v = r·ω (વેક્ટર સ્વરૂપે v = ω × r) થાય છે.",
     "explanationGujarati": "રેખીય વેગ v = r·ω (વેક્ટર સ્વરૂપે v = ω × r) થાય છે.",
     "targetCompany": "School",
@@ -4497,18 +4500,18 @@ const SEED_QUESTIONS = [
     "questionText": "પૃથ્વીની સપાટી પરથી નિષ્ક્રમણ વેગ (Escape Velocity) નું મૂલ્ય આશરે કેટલું હોય છે?",
     "questionTextGujarati": "પૃથ્વીની સપાટી પરથી નિષ્ક્રમણ વેગ (Escape Velocity) નું મૂલ્ય આશરે કેટલું હોય છે?",
     "options": [
+      "7.9 km/s",
       "11.2 km/s",
       "9.8 km/s",
-      "7.9 km/s",
       "15.0 km/s"
     ],
     "optionsGujarati": [
+      "7.9 km/s",
       "11.2 km/s",
       "9.8 km/s",
-      "7.9 km/s",
       "15.0 km/s"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ve = √(2gR) ≈ 11.2 કિમી/સેકન્ડ.",
     "explanationGujarati": "ve = √(2gR) ≈ 11.2 કિમી/સેકન્ડ.",
     "targetCompany": "School",
@@ -4526,15 +4529,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "L લંબાઈ ધરાવતા સાદા લોલકનો આવર્તકાળ T કોના સમપ્રમાણમાં હોય છે?",
     "options": [
       "√L",
+      "1/√L",
       "L",
-      "L²",
-      "1/√L"
+      "L²"
     ],
     "optionsGujarati": [
       "√L",
+      "1/√L",
       "L",
-      "L²",
-      "1/√L"
+      "L²"
     ],
     "correctAnswer": 0,
     "explanation": "સાદા લોલક માટે T = 2π√(L/g), તેથી T ∝ √L.",
@@ -4553,18 +4556,18 @@ const SEED_QUESTIONS = [
     "questionText": "સમઉષ્મી (એડિઆબેટિક - કટોત્તમ) થર્મોડાયનેમિક પ્રક્રિયામાં કઈ રાશિ અચળ રહે છે?",
     "questionTextGujarati": "સમઉષ્મી (એડિઆબેટિક - કટોત્તમ) થર્મોડાયનેમિક પ્રક્રિયામાં કઈ રાશિ અચળ રહે છે?",
     "options": [
-      "ઉષ્મા (Q = 0)",
       "તાપમાન (T)",
       "દબાણ (P)",
-      "કદ (V)"
+      "કદ (V)",
+      "ઉષ્મા (Q = 0)"
     ],
     "optionsGujarati": [
-      "ઉષ્મા (Q = 0)",
       "તાપમાન (T)",
       "દબાણ (P)",
-      "કદ (V)"
+      "કદ (V)",
+      "ઉષ્મા (Q = 0)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "સમઉષ્મી પ્રક્રિયામાં તંત્ર અને પરિસર વચ્ચે ઉષ્માનું આદાન-પ્રદાન થતું નથી (ΔQ = 0).",
     "explanationGujarati": "સમઉષ્મી પ્રક્રિયામાં તંત્ર અને પરિસર વચ્ચે ઉષ્માનું આદાન-પ્રદાન થતું નથી (ΔQ = 0).",
     "targetCompany": "School",
@@ -4581,18 +4584,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાઉલિંગ માપક્રમ અનુસાર કયા તત્વની વિદ્યુતઋણતા સૌથી વધુ (4.0) છે?",
     "questionTextGujarati": "પાઉલિંગ માપક્રમ અનુસાર કયા તત્વની વિદ્યુતઋણતા સૌથી વધુ (4.0) છે?",
     "options": [
+      "નાઇટ્રોજન (N)",
       "ફ્લોરિન (F)",
-      "ક્લોરિન (Cl)",
       "ઓક્સિજન (O)",
-      "નાઇટ્રોજન (N)"
+      "ક્લોરિન (Cl)"
     ],
     "optionsGujarati": [
+      "નાઇટ્રોજન (N)",
       "ફ્લોરિન (F)",
-      "ક્લોરિન (Cl)",
       "ઓક્સિજન (O)",
-      "નાઇટ્રોજન (N)"
+      "ક્લોરિન (Cl)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "આવર્ત કોષ્ટકમાં ફ્લોરિન સૌથી વધુ વિદ્યુતઋણ તત્વ છે જેનું મૂલ્ય 4.0 છે.",
     "explanationGujarati": "આવર્ત કોષ્ટકમાં ફ્લોરિન સૌથી વધુ વિદ્યુતઋણ તત્વ છે જેનું મૂલ્ય 4.0 છે.",
     "targetCompany": "School",
@@ -4609,18 +4612,18 @@ const SEED_QUESTIONS = [
     "questionText": "VSEPR સિદ્ધાંત મુજબ મિથેન (CH4) અણુનો ભૌમિતિક આકાર અને બંધકોણ કેટલો હોય છે?",
     "questionTextGujarati": "VSEPR સિદ્ધાંત મુજબ મિથેન (CH4) અણુનો ભૌમિતિક આકાર અને બંધકોણ કેટલો હોય છે?",
     "options": [
-      "સમચતુષ્ફલકીય (Tetrahedral), 109.5°",
       "ત્રિકોણીય સમતલીય, 120°",
-      "રેખીય, 180°",
-      "અષ્ટફલકીય, 90°"
+      "સમચતુષ્ફલકીય (Tetrahedral), 109.5°",
+      "અષ્ટફલકીય, 90°",
+      "રેખીય, 180°"
     ],
     "optionsGujarati": [
-      "સમચતુષ્ફલકીય (Tetrahedral), 109.5°",
       "ત્રિકોણીય સમતલીય, 120°",
-      "રેખીય, 180°",
-      "અષ્ટફલકીય, 90°"
+      "સમચતુષ્ફલકીય (Tetrahedral), 109.5°",
+      "અષ્ટફલકીય, 90°",
+      "રેખીય, 180°"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "sp³ સંકરણ ધરાવતા મિથેનમાં 4 બંધકારક યુગ્મો હોવાથી તેનો આકાર સમચતુષ્ફલકીય અને બંધકોણ 109.5° (109° 28') હોય છે.",
     "explanationGujarati": "sp³ સંકરણ ધરાવતા મિથેનમાં 4 બંધકારક યુગ્મો હોવાથી તેનો આકાર સમચતુષ્ફલકીય અને બંધકોણ 109.5° (109° 28') હોય છે.",
     "targetCompany": "School",
@@ -4638,14 +4641,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "p-પેટાકોશમાં વધુમાં વધુ કેટલા ઇલેક્ટ્રોન સમાવી શકાય છે?",
     "options": [
       "6",
-      "2",
       "10",
+      "2",
       "14"
     ],
     "optionsGujarati": [
       "6",
-      "2",
       "10",
+      "2",
       "14"
     ],
     "correctAnswer": 0,
@@ -4665,18 +4668,18 @@ const SEED_QUESTIONS = [
     "questionText": "લ-શટેલિયરના નિયમ મુજબ N2(g) + 3H2(g) ⇌ 2NH3(g) પ્રક્રિયા પર દબાણ વધારતાં સંતુલન કઈ દિશામાં ખસશે?",
     "questionTextGujarati": "લ-શટેલિયરના નિયમ મુજબ N2(g) + 3H2(g) ⇌ 2NH3(g) પ્રક્રિયા પર દબાણ વધારતાં સંતુલન કઈ દિશામાં ખસશે?",
     "options": [
-      "પુરોગામી દિશામાં (વધુ NH3 બનશે)",
       "પ્રતિગામી દિશામાં",
+      "પ્રક્રિયા બંધ થશે",
       "કોઈ ફેરફાર નહીં થાય",
-      "પ્રક્રિયા બંધ થશે"
+      "પુરોગામી દિશામાં (વધુ NH3 બનશે)"
     ],
     "optionsGujarati": [
-      "પુરોગામી દિશામાં (વધુ NH3 બનશે)",
       "પ્રતિગામી દિશામાં",
+      "પ્રક્રિયા બંધ થશે",
       "કોઈ ફેરફાર નહીં થાય",
-      "પ્રક્રિયા બંધ થશે"
+      "પુરોગામી દિશામાં (વધુ NH3 બનશે)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "દબાણ વધારતાં સંતુલન ઓછા વાયુ મોલ ધરાવતી દિશા તરફ (4 મોલ માંથી 2 મોલ તરફ એટલે કે પુરોગામી) ખસે છે.",
     "explanationGujarati": "દબાણ વધારતાં સંતુલન ઓછા વાયુ મોલ ધરાવતી દિશા તરફ (4 મોલ માંથી 2 મોલ તરફ એટલે કે પુરોગામી) ખસે છે.",
     "targetCompany": "School",
@@ -4693,18 +4696,18 @@ const SEED_QUESTIONS = [
     "questionText": "પોટેશિયમ ડાયક્રોમેટ (K2Cr2O7) માં ક્રોમિયમ (Cr) નો ઓક્સિડેશન આંક કેટલો છે?",
     "questionTextGujarati": "પોટેશિયમ ડાયક્રોમેટ (K2Cr2O7) માં ક્રોમિયમ (Cr) નો ઓક્સિડેશન આંક કેટલો છે?",
     "options": [
-      "+6",
-      "+3",
+      "+2",
       "+7",
-      "+2"
+      "+6",
+      "+3"
     ],
     "optionsGujarati": [
-      "+6",
-      "+3",
+      "+2",
       "+7",
-      "+2"
+      "+6",
+      "+3"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "2(+1) + 2(Cr) + 7(-2) = 0 => 2Cr - 12 = 0 => Cr = +6.",
     "explanationGujarati": "2(+1) + 2(Cr) + 7(-2) = 0 => 2Cr - 12 = 0 => Cr = +6.",
     "targetCompany": "School",
@@ -4721,18 +4724,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કયો વિશિષ્ટ (જથ્થાથી સ્વતંત્ર - Intensive) થર્મોડાયનેમિક ગુણધર્મ છે?",
     "questionTextGujarati": "નીચેનામાંથી કયો વિશિષ્ટ (જથ્થાથી સ્વતંત્ર - Intensive) થર્મોડાયનેમિક ગુણધર્મ છે?",
     "options": [
-      "તાપમાન (Temperature)",
       "દળ (Mass)",
       "કદ (Volume)",
-      "એન્થાલ્પી (Enthalpy)"
+      "એન્થાલ્પી (Enthalpy)",
+      "તાપમાન (Temperature)"
     ],
     "optionsGujarati": [
-      "તાપમાન (Temperature)",
       "દળ (Mass)",
       "કદ (Volume)",
-      "એન્થાલ્પી (Enthalpy)"
+      "એન્થાલ્પી (Enthalpy)",
+      "તાપમાન (Temperature)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "તાપમાન, દબાણ અને ઘનતા એ દ્રવ્યના જથ્થા પર આધારિત નથી તેથી તે Intensive ગુણધર્મ છે.",
     "explanationGujarati": "તાપમાન, દબાણ અને ઘનતા એ દ્રવ્યના જથ્થા પર આધારિત નથી તેથી તે Intensive ગુણધર્મ છે.",
     "targetCompany": "School",
@@ -4749,18 +4752,18 @@ const SEED_QUESTIONS = [
     "questionText": "CH3-CH(CH3)-CH2-CH3 નું સાચું IUPAC નામ શું થાય?",
     "questionTextGujarati": "CH3-CH(CH3)-CH2-CH3 નું સાચું IUPAC નામ શું થાય?",
     "options": [
-      "2-મિથાઇલબ્યુટેન",
-      "આઇસોપેન્ટેન",
       "3-મિથાઇલબ્યુટેન",
+      "આઇસોપેન્ટેન",
+      "2-મિથાઇલબ્યુટેન",
       "ડાયમિથાઇલપ્રોપેન"
     ],
     "optionsGujarati": [
-      "2-મિથાઇલબ્યુટેન",
-      "આઇસોપેન્ટેન",
       "3-મિથાઇલબ્યુટેન",
+      "આઇસોપેન્ટેન",
+      "2-મિથાઇલબ્યુટેન",
       "ડાયમિથાઇલપ્રોપેન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "ચાર કાર્બનની મુખ્ય શૃંખલા (બ્યુટેન) અને બીજા કાર્બન પર મિથાઇલ સમૂહ હોવાથી 2-મિથાઇલબ્યુટેન નામ બને છે.",
     "explanationGujarati": "ચાર કાર્બનની મુખ્ય શૃંખલા (બ્યુટેન) અને બીજા કાર્બન પર મિથાઇલ સમૂહ હોવાથી 2-મિથાઇલબ્યુટેન નામ બને છે.",
     "targetCompany": "School",
@@ -4777,18 +4780,18 @@ const SEED_QUESTIONS = [
     "questionText": "કોઈપણ શુદ્ધ પદાર્થના 1 મોલમાં રહેલા કણો/પરમાણુઓની સંખ્યા (એવોગેડ્રો અંક) નું મૂલ્ય કેટલું છે?",
     "questionTextGujarati": "કોઈપણ શુદ્ધ પદાર્થના 1 મોલમાં રહેલા કણો/પરમાણુઓની સંખ્યા (એવોગેડ્રો અંક) નું મૂલ્ય કેટલું છે?",
     "options": [
-      "6.022 × 10²³",
       "6.022 × 10²²",
       "3.00 × 10⁸",
+      "6.022 × 10²³",
       "1.602 × 10⁻¹⁹"
     ],
     "optionsGujarati": [
-      "6.022 × 10²³",
       "6.022 × 10²²",
       "3.00 × 10⁸",
+      "6.022 × 10²³",
       "1.602 × 10⁻¹⁹"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "NA = 6.022 × 10²³ કણો પ્રતિ મોલ.",
     "explanationGujarati": "NA = 6.022 × 10²³ કણો પ્રતિ મોલ.",
     "targetCompany": "School",
@@ -4805,18 +4808,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો ગણ A માં 4 ઘટકો હોય, તો ગણ A ના તમામ ઉપગણો (ઘાતગણ P(A)) ની કુલ સંખ્યા કેટલી થાય?",
     "questionTextGujarati": "જો ગણ A માં 4 ઘટકો હોય, તો ગણ A ના તમામ ઉપગણો (ઘાતગણ P(A)) ની કુલ સંખ્યા કેટલી થાય?",
     "options": [
+      "32",
       "16",
       "8",
-      "4",
-      "32"
+      "4"
     ],
     "optionsGujarati": [
+      "32",
       "16",
       "8",
-      "4",
-      "32"
+      "4"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ઉપગણોની સંખ્યા = 2ⁿ = 2⁴ = 16.",
     "explanationGujarati": "ઉપગણોની સંખ્યા = 2ⁿ = 2⁴ = 16.",
     "targetCompany": "School",
@@ -4833,18 +4836,18 @@ const SEED_QUESTIONS = [
     "questionText": "કાલ્પનિક એકમ i = √-1 માટે i⁴ નું મૂલ્ય કેટલું થાય?",
     "questionTextGujarati": "કાલ્પનિક એકમ i = √-1 માટે i⁴ નું મૂલ્ય કેટલું થાય?",
     "options": [
-      "1",
-      "-1",
       "i",
+      "-1",
+      "1",
       "-i"
     ],
     "optionsGujarati": [
-      "1",
-      "-1",
       "i",
+      "-1",
+      "1",
       "-i"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "i² = -1 => i⁴ = (i²)² = (-1)² = 1.",
     "explanationGujarati": "i² = -1 => i⁴ = (i²)² = (-1)² = 1.",
     "targetCompany": "School",
@@ -4862,15 +4865,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "sin(2x) નું વિસ્તરણ sin x અને cos x ના સ્વરૂપમાં શું થાય?",
     "options": [
       "2 sin x cos x",
-      "sin² x - cos² x",
       "cos² x - sin² x",
-      "2 sin x"
+      "2 sin x",
+      "sin² x - cos² x"
     ],
     "optionsGujarati": [
       "2 sin x cos x",
-      "sin² x - cos² x",
       "cos² x - sin² x",
-      "2 sin x"
+      "2 sin x",
+      "sin² x - cos² x"
     ],
     "correctAnswer": 0,
     "explanation": "ત્રિકોણમિતીય સૂત્ર: sin(2x) = 2 sin x cos x.",
@@ -4889,18 +4892,18 @@ const SEED_QUESTIONS = [
     "questionText": "f(x) = x³ - 5x + 7 નું x સાપેક્ષ પ્રથમ વિકલન f'(x) શોધો.",
     "questionTextGujarati": "f(x) = x³ - 5x + 7 નું x સાપેક્ષ પ્રથમ વિકલન f'(x) શોધો.",
     "options": [
-      "3x² - 5",
-      "3x² - 5x",
+      "3x² + 7",
       "x² - 5",
-      "3x² + 7"
+      "3x² - 5x",
+      "3x² - 5"
     ],
     "optionsGujarati": [
-      "3x² - 5",
-      "3x² - 5x",
+      "3x² + 7",
       "x² - 5",
-      "3x² + 7"
+      "3x² - 5x",
+      "3x² - 5"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "d/dx(x³) = 3x², d/dx(-5x) = -5, d/dx(7) = 0. તેથી f'(x) = 3x² - 5.",
     "explanationGujarati": "d/dx(x³) = 3x², d/dx(-5x) = -5, d/dx(7) = 0. તેથી f'(x) = 3x² - 5.",
     "targetCompany": "School",
@@ -4917,18 +4920,18 @@ const SEED_QUESTIONS = [
     "questionText": "પ્રમાણભૂત લક્ષ્યનું મૂલ્ય શોધો: lim (x → 0) [sin x / x] = ?",
     "questionTextGujarati": "પ્રમાણભૂત લક્ષ્યનું મૂલ્ય શોધો: lim (x → 0) [sin x / x] = ?",
     "options": [
-      "1",
-      "0",
       "અનંત",
-      "-1"
+      "0",
+      "-1",
+      "1"
     ],
     "optionsGujarati": [
-      "1",
-      "0",
       "અનંત",
-      "-1"
+      "0",
+      "-1",
+      "1"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "ગણિતશાસ્ત્રના પ્રમાણભૂત પ્રમેય મુજબ lim (x → 0) [sin x / x] = 1.",
     "explanationGujarati": "ગણિતશાસ્ત્રના પ્રમાણભૂત પ્રમેય મુજબ lim (x → 0) [sin x / x] = 1.",
     "targetCompany": "School",
@@ -4945,18 +4948,18 @@ const SEED_QUESTIONS = [
     "questionText": "5 જુદા જુદા પુસ્તકોને બુકશેલ્ફ પર કેટલી રીતે ગોઠવી શકાય?",
     "questionTextGujarati": "5 જુદા જુદા પુસ્તકોને બુકશેલ્ફ પર કેટલી રીતે ગોઠવી શકાય?",
     "options": [
+      "60",
       "120",
       "24",
-      "60",
       "720"
     ],
     "optionsGujarati": [
+      "60",
       "120",
       "24",
-      "60",
       "720"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "5 વસ્તુઓની ક્રમચય ગોઠવણી = 5! = 5 × 4 × 3 × 2 × 1 = 120 રીતો.",
     "explanationGujarati": "5 વસ્તુઓની ક્રમચય ગોઠવણી = 5! = 5 × 4 × 3 × 2 × 1 = 120 રીતો.",
     "targetCompany": "School",
@@ -4973,18 +4976,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાંચ સૃષ્ટિ વર્ગીકરણ પદ્ધતિ (મોનેરા, પ્રોટિસ્ટા, ફૂગ, વનસ્પતિ, પ્રાણી) કોણે રજૂ કરી હતી?",
     "questionTextGujarati": "પાંચ સૃષ્ટિ વર્ગીકરણ પદ્ધતિ (મોનેરા, પ્રોટિસ્ટા, ફૂગ, વનસ્પતિ, પ્રાણી) કોણે રજૂ કરી હતી?",
     "options": [
-      "આર. એચ. વ્હીટેકર (R.H. Whittaker)",
-      "કાર્લ લિનિયસ",
       "અર્ન્સ્ટ હેકલ",
-      "કાર્લ વૂઝ"
+      "આર. એચ. વ્હીટેકર (R.H. Whittaker)",
+      "કાર્લ વૂઝ",
+      "કાર્લ લિનિયસ"
     ],
     "optionsGujarati": [
-      "આર. એચ. વ્હીટેકર (R.H. Whittaker)",
-      "કાર્લ લિનિયસ",
       "અર્ન્સ્ટ હેકલ",
-      "કાર્લ વૂઝ"
+      "આર. એચ. વ્હીટેકર (R.H. Whittaker)",
+      "કાર્લ વૂઝ",
+      "કાર્લ લિનિયસ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "ઇ.સ. 1969 માં આર. એચ. વ્હીટેકરે કોષ રચના, પોષણ પદ્ધતિ અને શરીર આયોજનને આધારે પાંચ સૃષ્ટિ વર્ગીકરણ આપ્યું.",
     "explanationGujarati": "ઇ.સ. 1969 માં આર. એચ. વ્હીટેકરે કોષ રચના, પોષણ પદ્ધતિ અને શરીર આયોજનને આધારે પાંચ સૃષ્ટિ વર્ગીકરણ આપ્યું.",
     "targetCompany": "School",
@@ -5001,18 +5004,18 @@ const SEED_QUESTIONS = [
     "questionText": "કોષચક્રના કયા તબક્કા દરમિયાન DNA નું સ્વયંજનન (દ્વિગુણન) થાય છે?",
     "questionTextGujarati": "કોષચક્રના કયા તબક્કા દરમિયાન DNA નું સ્વયંજનન (દ્વિગુણન) થાય છે?",
     "options": [
-      "S-તબક્કો (Synthesis Phase)",
       "G1-તબક્કો",
+      "S-તબક્કો (Synthesis Phase)",
       "G2-તબક્કો",
       "M-તબક્કો"
     ],
     "optionsGujarati": [
-      "S-તબક્કો (Synthesis Phase)",
       "G1-તબક્કો",
+      "S-તબક્કો (Synthesis Phase)",
       "G2-તબક્કો",
       "M-તબક્કો"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "આંતરાવસ્થાના S-તબક્કામાં કોષકેન્દ્રમાં DNA નું સ્વયંજનન થઈ તેનું પ્રમાણ બમણું (2C માંથી 4C) થાય છે.",
     "explanationGujarati": "આંતરાવસ્થાના S-તબક્કામાં કોષકેન્દ્રમાં DNA નું સ્વયંજનન થઈ તેનું પ્રમાણ બમણું (2C માંથી 4C) થાય છે.",
     "targetCompany": "School",
@@ -5029,18 +5032,18 @@ const SEED_QUESTIONS = [
     "questionText": "વનસ્પતિના હરિતકણમાં પ્રકાશસંશ્લેષણની પ્રકાશ પ્રક્રિયા ક્યાં સંપન્ન થાય છે?",
     "questionTextGujarati": "વનસ્પતિના હરિતકણમાં પ્રકાશસંશ્લેષણની પ્રકાશ પ્રક્રિયા ક્યાં સંપન્ન થાય છે?",
     "options": [
-      "ગ્રાના / થાઇલેકોઇડ્સ",
-      "સ્ટ્રોમા (આધારક)",
       "બાહ્ય પટલ",
-      "રિબોઝોમ્સ"
+      "રિબોઝોમ્સ",
+      "સ્ટ્રોમા (આધારક)",
+      "ગ્રાના / થાઇલેકોઇડ્સ"
     ],
     "optionsGujarati": [
-      "ગ્રાના / થાઇલેકોઇડ્સ",
-      "સ્ટ્રોમા (આધારક)",
       "બાહ્ય પટલ",
-      "રિબોઝોમ્સ"
+      "રિબોઝોમ્સ",
+      "સ્ટ્રોમા (આધારક)",
+      "ગ્રાના / થાઇલેકોઇડ્સ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "પ્રકાશ પ્રક્રિયા થાઇલેકોઇડ પટલ (ગ્રાના) માં થાય છે જ્યાં ATP અને NADPH2 ઉત્પન્ન થાય છે.",
     "explanationGujarati": "પ્રકાશ પ્રક્રિયા થાઇલેકોઇડ પટલ (ગ્રાના) માં થાય છે જ્યાં ATP અને NADPH2 ઉત્પન્ન થાય છે.",
     "targetCompany": "School",
@@ -5057,18 +5060,18 @@ const SEED_QUESTIONS = [
     "questionText": "ગ્લાયકોલિસિસ પ્રક્રિયાના અંતે ગ્લુકોઝના 1 અણુમાંથી પાયરુવિક એસિડના કેટલા અણુઓ બને છે?",
     "questionTextGujarati": "ગ્લાયકોલિસિસ પ્રક્રિયાના અંતે ગ્લુકોઝના 1 અણુમાંથી પાયરુવિક એસિડના કેટલા અણુઓ બને છે?",
     "options": [
+      "6 અણુ CO2",
       "2 અણુ પાયરુવેટ (Pyruvate)",
       "1 અણુ લેક્ટિક એસિડ",
-      "2 અણુ ઇથેનોલ",
-      "6 અણુ CO2"
+      "2 અણુ ઇથેનોલ"
     ],
     "optionsGujarati": [
+      "6 અણુ CO2",
       "2 અણુ પાયરુવેટ (Pyruvate)",
       "1 અણુ લેક્ટિક એસિડ",
-      "2 અણુ ઇથેનોલ",
-      "6 અણુ CO2"
+      "2 અણુ ઇથેનોલ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "કોષરસમાં 6-કાર્બન ધરાવતા ગ્લુકોઝનું ઓક્સિડેશન થઈ 3-કાર્બન ધરાવતા પાયરુવિક એસિડના 2 અણુઓ મળે છે.",
     "explanationGujarati": "કોષરસમાં 6-કાર્બન ધરાવતા ગ્લુકોઝનું ઓક્સિડેશન થઈ 3-કાર્બન ધરાવતા પાયરુવિક એસિડના 2 અણુઓ મળે છે.",
     "targetCompany": "School",
@@ -5085,18 +5088,18 @@ const SEED_QUESTIONS = [
     "questionText": "કોષમાં પ્રોટીન સંશ્લેષણ માટે કઈ અંગિકા જવાબદાર છે?",
     "questionTextGujarati": "કોષમાં પ્રોટીન સંશ્લેષણ માટે કઈ અંગિકા જવાબદાર છે?",
     "options": [
-      "રિબોઝોમ્સ (Ribosomes)",
+      "કણાભસૂત્ર",
       "લાયસોઝોમ્સ",
-      "ગોલ્ગી પ્રસાધન",
-      "કણાભસૂત્ર"
+      "રિબોઝોમ્સ (Ribosomes)",
+      "ગોલ્ગી પ્રસાધન"
     ],
     "optionsGujarati": [
-      "રિબોઝોમ્સ (Ribosomes)",
+      "કણાભસૂત્ર",
       "લાયસોઝોમ્સ",
-      "ગોલ્ગી પ્રસાધન",
-      "કણાભસૂત્ર"
+      "રિબોઝોમ્સ (Ribosomes)",
+      "ગોલ્ગી પ્રસાધન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "રિબોઝોમ્સ mRNA સંકેતો અનુસાર એમિનો એસિડ જોડી પ્રોટીનનું સંશ્લેષણ કરે છે.",
     "explanationGujarati": "રિબોઝોમ્સ mRNA સંકેતો અનુસાર એમિનો એસિડ જોડી પ્રોટીનનું સંશ્લેષણ કરે છે.",
     "targetCompany": "School",
@@ -5113,18 +5116,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાયથોન (Python) માં નીચેનામાંથી કયો ડેટા ટાઈપ અપરિવર્તનશીલ (Immutable) છે?",
     "questionTextGujarati": "પાયથોન (Python) માં નીચેનામાંથી કયો ડેટા ટાઈપ અપરિવર્તનશીલ (Immutable) છે?",
     "options": [
-      "Tuple",
       "List",
-      "Dictionary",
-      "Set"
+      "Set",
+      "Tuple",
+      "Dictionary"
     ],
     "optionsGujarati": [
-      "Tuple",
       "List",
-      "Dictionary",
-      "Set"
+      "Set",
+      "Tuple",
+      "Dictionary"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "Tuple એકવાર બન્યા પછી તેના ઘટકોમાં ફેરફાર કરી શકાતો નથી, તેથી તે Immutable છે.",
     "explanationGujarati": "Tuple એકવાર બન્યા પછી તેના ઘટકોમાં ફેરફાર કરી શકાતો નથી, તેથી તે Immutable છે.",
     "targetCompany": "School",
@@ -5142,14 +5145,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "પાયથોનમાં `bool([])` નું પરિણામ શું મળે છે?",
     "options": [
       "False",
-      "True",
       "None",
+      "True",
       "Error"
     ],
     "optionsGujarati": [
       "False",
-      "True",
       "None",
+      "True",
       "Error"
     ],
     "correctAnswer": 0,
@@ -5169,18 +5172,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાયથોનમાં ઘાત (Exponentiation) ની ગણતરી માટે કયો ઓપરેટર વપરાય છે?",
     "questionTextGujarati": "પાયથોનમાં ઘાત (Exponentiation) ની ગણતરી માટે કયો ઓપરેટર વપરાય છે?",
     "options": [
-      "**",
+      "%%",
       "^",
       "//",
-      "%%"
+      "**"
     ],
     "optionsGujarati": [
-      "**",
+      "%%",
       "^",
       "//",
-      "%%"
+      "**"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "પાયથોનમાં `**` એ ઘાતાંકીય ઓપરેટર છે (દા.ત. 2 ** 3 = 8).",
     "explanationGujarati": "પાયથોનમાં `**` એ ઘાતાંકીય ઓપરેટર છે (દા.ત. 2 ** 3 = 8).",
     "targetCompany": "School",
@@ -5197,18 +5200,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાયથોન લિસ્ટના અંતમાં નવો ઘટક ઉમેરવા (append) ની સમય જટિલતા (Time Complexity) કેટલી હોય છે?",
     "questionTextGujarati": "પાયથોન લિસ્ટના અંતમાં નવો ઘટક ઉમેરવા (append) ની સમય જટિલતા (Time Complexity) કેટલી હોય છે?",
     "options": [
-      "O(1)",
-      "O(n)",
       "O(log n)",
-      "O(n²)"
+      "O(n)",
+      "O(n²)",
+      "O(1)"
     ],
     "optionsGujarati": [
-      "O(1)",
-      "O(n)",
       "O(log n)",
-      "O(n²)"
+      "O(n)",
+      "O(n²)",
+      "O(1)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "લિસ્ટના છેડે ઘટક ઉમેરવાની પ્રક્રિયા એમોર્ટાઇઝ્ડ અચળ સમય O(1) માં પૂર્ણ થાય છે.",
     "explanationGujarati": "લિસ્ટના છેડે ઘટક ઉમેરવાની પ્રક્રિયા એમોર્ટાઇઝ્ડ અચળ સમય O(1) માં પૂર્ણ થાય છે.",
     "targetCompany": "School",
@@ -5226,14 +5229,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "પાયથોનમાં એક જ લીટીના અનામી (Anonymous) ફંક્શન બનાવવા કયો કીવર્ડ વપરાય છે?",
     "options": [
       "lambda",
-      "def",
       "func",
+      "def",
       "inline"
     ],
     "optionsGujarati": [
       "lambda",
-      "def",
       "func",
+      "def",
       "inline"
     ],
     "correctAnswer": 0,
@@ -5254,14 +5257,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "વિદ્યુત ફ્લક્સ (Φ) નો SI એકમ કયો છે?",
     "options": [
       "N·m²/C (અથવા V·m)",
-      "N/C",
       "C/m²",
+      "N/C",
       "J/C"
     ],
     "optionsGujarati": [
       "N·m²/C (અથવા V·m)",
-      "N/C",
       "C/m²",
+      "N/C",
       "J/C"
     ],
     "correctAnswer": 0,
@@ -5281,18 +5284,18 @@ const SEED_QUESTIONS = [
     "questionText": "વિદ્યુતભારિત કેપેસિટર ઊર્જાનો સંગ્રહ કયા સ્વરૂપમાં કરે છે?",
     "questionTextGujarati": "વિદ્યુતભારિત કેપેસિટર ઊર્જાનો સંગ્રહ કયા સ્વરૂપમાં કરે છે?",
     "options": [
-      "પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં",
-      "ચુંબકીય ક્ષેત્રમાં",
       "ગતિઊર્જામાં",
+      "ચુંબકીય ક્ષેત્રમાં",
+      "પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં",
       "ઉષ્મા ઊર્જામાં"
     ],
     "optionsGujarati": [
-      "પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં",
-      "ચુંબકીય ક્ષેત્રમાં",
       "ગતિઊર્જામાં",
+      "ચુંબકીય ક્ષેત્રમાં",
+      "પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં",
       "ઉષ્મા ઊર્જામાં"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "કેપેસિટર તેની બે પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં U = (1/2)CV² સ્વરૂપે સ્થિતિઊર્જાનો સંગ્રહ કરે છે.",
     "explanationGujarati": "કેપેસિટર તેની બે પ્લેટો વચ્ચેના વિદ્યુતક્ષેત્રમાં U = (1/2)CV² સ્વરૂપે સ્થિતિઊર્જાનો સંગ્રહ કરે છે.",
     "targetCompany": "School",
@@ -5309,18 +5312,18 @@ const SEED_QUESTIONS = [
     "questionText": "કિર્ચીફનો પ્રથમ નિયમ (જંકશન નિયમ, ΣI = 0) કોના સંરક્ષણના નિયમ પર આધારિત છે?",
     "questionTextGujarati": "કિર્ચીફનો પ્રથમ નિયમ (જંકશન નિયમ, ΣI = 0) કોના સંરક્ષણના નિયમ પર આધારિત છે?",
     "options": [
-      "વિદ્યુતભાર (Electric Charge)",
-      "ઊર્જા (Energy)",
+      "દળ (Mass)",
       "વેગમાન (Momentum)",
-      "દળ (Mass)"
+      "ઊર્જા (Energy)",
+      "વિદ્યુતભાર (Electric Charge)"
     ],
     "optionsGujarati": [
-      "વિદ્યુતભાર (Electric Charge)",
-      "ઊર્જા (Energy)",
+      "દળ (Mass)",
       "વેગમાન (Momentum)",
-      "દળ (Mass)"
+      "ઊર્જા (Energy)",
+      "વિદ્યુતભાર (Electric Charge)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "જંકશન આગળ વિદ્યુતભાર સંગ્રહિત થતો નથી; જેટલો પ્રવાહ દાખલ થાય તેટલો જ બહાર નીકળે છે (વિદ્યુતભાર સંરક્ષણ).",
     "explanationGujarati": "જંકશન આગળ વિદ્યુતભાર સંગ્રહિત થતો નથી; જેટલો પ્રવાહ દાખલ થાય તેટલો જ બહાર નીકળે છે (વિદ્યુતભાર સંરક્ષણ).",
     "targetCompany": "School",
@@ -5365,18 +5368,18 @@ const SEED_QUESTIONS = [
     "questionText": "યંગના બે સ્લિટના પ્રયોગમાં સ્લિટ અને પડદા વચ્ચેનું અંતર D બમણું કરવામાં આવે તો શલાકાની પહોળાઈ (β):",
     "questionTextGujarati": "યંગના બે સ્લિટના પ્રયોગમાં સ્લિટ અને પડદા વચ્ચેનું અંતર D બમણું કરવામાં આવે તો શલાકાની પહોળાઈ (β):",
     "options": [
-      "બમણી થાય છે",
-      "અડધી થાય છે",
+      "અપરિવર્તિત રહે છે",
       "ચાર ગણી થાય છે",
-      "અપરિવર્તિત રહે છે"
+      "બમણી થાય છે",
+      "અડધી થાય છે"
     ],
     "optionsGujarati": [
-      "બમણી થાય છે",
-      "અડધી થાય છે",
+      "અપરિવર્તિત રહે છે",
       "ચાર ગણી થાય છે",
-      "અપરિવર્તિત રહે છે"
+      "બમણી થાય છે",
+      "અડધી થાય છે"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "શલાકા પહોળાઈ β = λD/d. D બમણું થતાં શલાકાની પહોળાઈ β પણ બમણી થાય છે.",
     "explanationGujarati": "શલાકા પહોળાઈ β = λD/d. D બમણું થતાં શલાકાની પહોળાઈ β પણ બમણી થાય છે.",
     "targetCompany": "School",
@@ -5393,18 +5396,18 @@ const SEED_QUESTIONS = [
     "questionText": "હીરો અતિશય ચમકવા પાછળ કઈ પ્રકાશીય ઘટના જવાબદાર છે?",
     "questionTextGujarati": "હીરો અતિશય ચમકવા પાછળ કઈ પ્રકાશીય ઘટના જવાબદાર છે?",
     "options": [
-      "પૂર્ણ આંતરિક પરાવર્તન (Total Internal Reflection)",
+      "વ્યતિકરણ",
       "વક્રીભવન",
-      "વિભાજન",
-      "વ્યતિકરણ"
+      "પૂર્ણ આંતરિક પરાવર્તન (Total Internal Reflection)",
+      "વિભાજન"
     ],
     "optionsGujarati": [
-      "પૂર્ણ આંતરિક પરાવર્તન (Total Internal Reflection)",
+      "વ્યતિકરણ",
       "વક્રીભવન",
-      "વિભાજન",
-      "વ્યતિકરણ"
+      "પૂર્ણ આંતરિક પરાવર્તન (Total Internal Reflection)",
+      "વિભાજન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "હીરાનો ક્રાંતિકોણ ખૂબ નાનો (આશરે 24.4°) હોવાથી તેમાં દાખલ થતાં પ્રકાશનું અંદર વારંવાર પૂર્ણ આંતરિક પરાવર્તન થાય છે.",
     "explanationGujarati": "હીરાનો ક્રાંતિકોણ ખૂબ નાનો (આશરે 24.4°) હોવાથી તેમાં દાખલ થતાં પ્રકાશનું અંદર વારંવાર પૂર્ણ આંતરિક પરાવર્તન થાય છે.",
     "targetCompany": "School",
@@ -5423,14 +5426,14 @@ const SEED_QUESTIONS = [
     "options": [
       "E = hν",
       "E = mc²",
-      "E = h/λ",
-      "E = hν²"
+      "E = hν²",
+      "E = h/λ"
     ],
     "optionsGujarati": [
       "E = hν",
       "E = mc²",
-      "E = h/λ",
-      "E = hν²"
+      "E = hν²",
+      "E = h/λ"
     ],
     "correctAnswer": 0,
     "explanation": "ફોટોનની ઊર્જા તેની આવૃત્તિના સમપ્રમાણમાં હોય છે: E = hν (જ્યાં h પ્લાન્ક અચળાંક છે).",
@@ -5449,18 +5452,18 @@ const SEED_QUESTIONS = [
     "questionText": "n-પ્રકારના અર્ધવાહકમાં બહુમતી ચાર્જ કેરિયર્સ (વાહકો) કયા હોય છે?",
     "questionTextGujarati": "n-પ્રકારના અર્ધવાહકમાં બહુમતી ચાર્જ કેરિયર્સ (વાહકો) કયા હોય છે?",
     "options": [
-      "મુક્ત ઇલેક્ટ્રોન (Electrons)",
       "હોલ (Holes)",
       "ધન આયનો",
+      "મુક્ત ઇલેક્ટ્રોન (Electrons)",
       "પ્રોટોન"
     ],
     "optionsGujarati": [
-      "મુક્ત ઇલેક્ટ્રોન (Electrons)",
       "હોલ (Holes)",
       "ધન આયનો",
+      "મુક્ત ઇલેક્ટ્રોન (Electrons)",
       "પ્રોટોન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "પેન્ટાવેલેન્ટ અશુદ્ધિ ઉમેરવાથી n-પ્રકારના અર્ધવાહકમાં મુક્ત ઇલેક્ટ્રોનની સાંદ્રતા હોલ કરતાં ઘણી વધારે હોય છે.",
     "explanationGujarati": "પેન્ટાવેલેન્ટ અશુદ્ધિ ઉમેરવાથી n-પ્રકારના અર્ધવાહકમાં મુક્ત ઇલેક્ટ્રોનની સાંદ્રતા હોલ કરતાં ઘણી વધારે હોય છે.",
     "targetCompany": "School",
@@ -5477,18 +5480,18 @@ const SEED_QUESTIONS = [
     "questionText": "પ્રથમ ક્રમની રાસાયણિક પ્રક્રિયા માટે વેગ અચળાંક (k) નો એકમ કયો છે?",
     "questionTextGujarati": "પ્રથમ ક્રમની રાસાયણિક પ્રક્રિયા માટે વેગ અચળાંક (k) નો એકમ કયો છે?",
     "options": [
+      "L²·mol⁻²·s⁻¹",
       "s⁻¹ (સેકન્ડ⁻¹)",
       "mol·L⁻¹·s⁻¹",
-      "L·mol⁻¹·s⁻¹",
-      "L²·mol⁻²·s⁻¹"
+      "L·mol⁻¹·s⁻¹"
     ],
     "optionsGujarati": [
+      "L²·mol⁻²·s⁻¹",
       "s⁻¹ (સેકન્ડ⁻¹)",
       "mol·L⁻¹·s⁻¹",
-      "L·mol⁻¹·s⁻¹",
-      "L²·mol⁻²·s⁻¹"
+      "L·mol⁻¹·s⁻¹"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "પ્રથમ ક્રમની પ્રક્રિયા માટે વેગ = k[A] => k = વેગ / [A] = (mol/L·s) / (mol/L) = s⁻¹.",
     "explanationGujarati": "પ્રથમ ક્રમની પ્રક્રિયા માટે વેગ = k[A] => k = વેગ / [A] = (mol/L·s) / (mol/L) = s⁻¹.",
     "targetCompany": "School",
@@ -5505,18 +5508,18 @@ const SEED_QUESTIONS = [
     "questionText": "રાઉલ્ટના નિયમ અનુસાર મંદ અબાષ્પશીલ દ્રાવણના બાષ્પદબાણમાં થતો સાપેક્ષ ઘટાડો કોના બરાબર હોય છે?",
     "questionTextGujarati": "રાઉલ્ટના નિયમ અનુસાર મંદ અબાષ્પશીલ દ્રાવણના બાષ્પદબાણમાં થતો સાપેક્ષ ઘટાડો કોના બરાબર હોય છે?",
     "options": [
-      "દ્રાવ્યના મોલ-અંશ (Mole fraction of solute)",
-      "દ્રાવકના મોલ-અંશ",
       "મોલાલિટી",
-      "મોલારિટી"
+      "મોલારિટી",
+      "દ્રાવ્યના મોલ-અંશ (Mole fraction of solute)",
+      "દ્રાવકના મોલ-અંશ"
     ],
     "optionsGujarati": [
-      "દ્રાવ્યના મોલ-અંશ (Mole fraction of solute)",
-      "દ્રાવકના મોલ-અંશ",
       "મોલાલિટી",
-      "મોલારિટી"
+      "મોલારિટી",
+      "દ્રાવ્યના મોલ-અંશ (Mole fraction of solute)",
+      "દ્રાવકના મોલ-અંશ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "રાઉલ્ટના નિયમ મુજબ (P° - P) / P° = x2 (દ્રાવ્યના મોલ-અંશ).",
     "explanationGujarati": "રાઉલ્ટના નિયમ મુજબ (P° - P) / P° = x2 (દ્રાવ્યના મોલ-અંશ).",
     "targetCompany": "School",
@@ -5533,18 +5536,18 @@ const SEED_QUESTIONS = [
     "questionText": "298 K તાપમાને વિદ્યુતધ્રુવ પોટેન્શિયલ અને આયનોની સાંદ્રતા વચ્ચેનો સંબંધ દર્શાવતું સમીકરણ કયું છે?",
     "questionTextGujarati": "298 K તાપમાને વિદ્યુતધ્રુવ પોટેન્શિયલ અને આયનોની સાંદ્રતા વચ્ચેનો સંબંધ દર્શાવતું સમીકરણ કયું છે?",
     "options": [
-      "નર્ન્સ્ટ સમીકરણ (Nernst Equation)",
-      "આર્હેનિયસ સમીકરણ",
       "વાન હોફ સમીકરણ",
+      "આર્હેનિયસ સમીકરણ",
+      "નર્ન્સ્ટ સમીકરણ (Nernst Equation)",
       "ગિબ્સ સમીકરણ"
     ],
     "optionsGujarati": [
-      "નર્ન્સ્ટ સમીકરણ (Nernst Equation)",
-      "આર્હેનિયસ સમીકરણ",
       "વાન હોફ સમીકરણ",
+      "આર્હેનિયસ સમીકરણ",
+      "નર્ન્સ્ટ સમીકરણ (Nernst Equation)",
       "ગિબ્સ સમીકરણ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "નર્ન્સ્ટ સમીકરણ E = E° - (0.059/n) log [નીપજો]/[પ્રક્રિયકો] સંબંધ આપે છે.",
     "explanationGujarati": "નર્ન્સ્ટ સમીકરણ E = E° - (0.059/n) log [નીપજો]/[પ્રક્રિયકો] સંબંધ આપે છે.",
     "targetCompany": "School",
@@ -5561,18 +5564,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કયું સંકીર્ણ સંયોજન પ્રકાશીય સમઘટકતા (Optical Isomerism) દર્શાવે છે?",
     "questionTextGujarati": "નીચેનામાંથી કયું સંકીર્ણ સંયોજન પ્રકાશીય સમઘટકતા (Optical Isomerism) દર્શાવે છે?",
     "options": [
-      "[Co(en)3]³⁺",
-      "[Pt(NH3)2Cl2]",
+      "[Zn(NH3)4]²⁺",
       "[Ni(CO)4]",
-      "[Zn(NH3)4]²⁺"
+      "[Co(en)3]³⁺",
+      "[Pt(NH3)2Cl2]"
     ],
     "optionsGujarati": [
-      "[Co(en)3]³⁺",
-      "[Pt(NH3)2Cl2]",
+      "[Zn(NH3)4]²⁺",
       "[Ni(CO)4]",
-      "[Zn(NH3)4]²⁺"
+      "[Co(en)3]³⁺",
+      "[Pt(NH3)2Cl2]"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "[Co(en)3]³⁺ માં ત્રણ કીલેટ વલયો હોવાથી તે અસંમિત બને છે અને d- તથા l- સમઘટકો દર્શાવે છે.",
     "explanationGujarati": "[Co(en)3]³⁺ માં ત્રણ કીલેટ વલયો હોવાથી તે અસંમિત બને છે અને d- તથા l- સમઘટકો દર્શાવે છે.",
     "targetCompany": "School",
@@ -5589,18 +5592,18 @@ const SEED_QUESTIONS = [
     "questionText": "લ્યુકાસ પ્રક્રિયક (Lucas Reagent) શેનું સમમોલર મિશ્રણ છે?",
     "questionTextGujarati": "લ્યુકાસ પ્રક્રિયક (Lucas Reagent) શેનું સમમોલર મિશ્રણ છે?",
     "options": [
-      "સાંદ્ર HCl + નિર્જળ ZnCl2",
       "સાંદ્ર H2SO4 + ZnSO4",
+      "સાંદ્ર HCl + નિર્જળ ZnCl2",
       "સાંદ્ર HNO3 + ZnCl2",
       "સાંદ્ર HCl + NaCl"
     ],
     "optionsGujarati": [
-      "સાંદ્ર HCl + નિર્જળ ZnCl2",
       "સાંદ્ર H2SO4 + ZnSO4",
+      "સાંદ્ર HCl + નિર્જળ ZnCl2",
       "સાંદ્ર HNO3 + ZnCl2",
       "સાંદ્ર HCl + NaCl"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "લ્યુકાસ પ્રક્રિયક એ નિર્જળ ZnCl2 અને સાંદ્ર HCl નું મિશ્રણ છે જે પ્રાથમિક, દ્વિતીયક અને તૃતીયક આલ્કોહોલની પરખ માટે વપરાય છે.",
     "explanationGujarati": "લ્યુકાસ પ્રક્રિયક એ નિર્જળ ZnCl2 અને સાંદ્ર HCl નું મિશ્રણ છે જે પ્રાથમિક, દ્વિતીયક અને તૃતીયક આલ્કોહોલની પરખ માટે વપરાય છે.",
     "targetCompany": "School",
@@ -5617,18 +5620,18 @@ const SEED_QUESTIONS = [
     "questionText": "મિથાઇલ કીટોન (CH3-CO-) સમૂહ ધરાવતા સંયોજનોનું હેલોફોર્મ કસોટી દ્વારા ઑક્સિડેશન કરવા કયો પ્રક્રિયક વપરાય છે?",
     "questionTextGujarati": "મિથાઇલ કીટોન (CH3-CO-) સમૂહ ધરાવતા સંયોજનોનું હેલોફોર્મ કસોટી દ્વારા ઑક્સિડેશન કરવા કયો પ્રક્રિયક વપરાય છે?",
     "options": [
-      "NaOH + I2 (સોડિયમ હાઇપોઆયોડાઇટ)",
+      "PCC",
       "KMnO4 / H⁺",
-      "LiAlH4",
-      "PCC"
+      "NaOH + I2 (સોડિયમ હાઇપોઆયોડાઇટ)",
+      "LiAlH4"
     ],
     "optionsGujarati": [
-      "NaOH + I2 (સોડિયમ હાઇપોઆયોડાઇટ)",
+      "PCC",
       "KMnO4 / H⁺",
-      "LiAlH4",
-      "PCC"
+      "NaOH + I2 (સોડિયમ હાઇપોઆયોડાઇટ)",
+      "LiAlH4"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "NaOH + I2 પ્રક્રિયક મિથાઇલ કીટોન સાથે પીળા રંગના આયડોફોર્મ (CHI3) ના અવક્ષેપ આપે છે.",
     "explanationGujarati": "NaOH + I2 પ્રક્રિયક મિથાઇલ કીટોન સાથે પીળા રંગના આયડોફોર્મ (CHI3) ના અવક્ષેપ આપે છે.",
     "targetCompany": "School",
@@ -5645,18 +5648,18 @@ const SEED_QUESTIONS = [
     "questionText": "નીચેનામાંથી કયું વિટામિન પાણીમાં દ્રાવ્ય છે અને પેશાબ વાટે ઉત્સર્જિત થાય છે?",
     "questionTextGujarati": "નીચેનામાંથી કયું વિટામિન પાણીમાં દ્રાવ્ય છે અને પેશાબ વાટે ઉત્સર્જિત થાય છે?",
     "options": [
-      "વિટામિન C",
       "વિટામિન A",
       "વિટામિન D",
+      "વિટામિન C",
       "વિટામિન K"
     ],
     "optionsGujarati": [
-      "વિટામિન C",
       "વિટામિન A",
       "વિટામિન D",
+      "વિટામિન C",
       "વિટામિન K"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "વિટામિન B અને C જળ-દ્રાવ્ય હોવાથી શરીરમાં સંગ્રહ પામતા નથી અને મૂત્ર વાટે ઉત્સર્જિત થાય છે.",
     "explanationGujarati": "વિટામિન B અને C જળ-દ્રાવ્ય હોવાથી શરીરમાં સંગ્રહ પામતા નથી અને મૂત્ર વાટે ઉત્સર્જિત થાય છે.",
     "targetCompany": "School",
@@ -5673,18 +5676,18 @@ const SEED_QUESTIONS = [
     "questionText": "પ્રોટીનનું દ્વિતીયક બંધારણ (α-હેલિક્સ અને β-પ્લીટેડ શીટ) કયા બંધ દ્વારા સ્થાયી બને છે?",
     "questionTextGujarati": "પ્રોટીનનું દ્વિતીયક બંધારણ (α-હેલિક્સ અને β-પ્લીટેડ શીટ) કયા બંધ દ્વારા સ્થાયી બને છે?",
     "options": [
-      "હાઇડ્રોજન બંધ (Hydrogen Bonds)",
       "પેપ્ટાઇડ બંધ",
+      "હાઇડ્રોજન બંધ (Hydrogen Bonds)",
       "ડાયસલ્ફાઇડ બંધ",
       "આયોનિક બંધ"
     ],
     "optionsGujarati": [
-      "હાઇડ્રોજન બંધ (Hydrogen Bonds)",
       "પેપ્ટાઇડ બંધ",
+      "હાઇડ્રોજન બંધ (Hydrogen Bonds)",
       "ડાયસલ્ફાઇડ બંધ",
       "આયોનિક બંધ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": ">C=O સમૂહના ઓક્સિજન અને -NH- સમૂહના હાઇડ્રોજન વચ્ચે રચાતા હાઇડ્રોજન બંધ દ્વિતીયક રચનાને સ્થિરતા આપે છે.",
     "explanationGujarati": ">C=O સમૂહના ઓક્સિજન અને -NH- સમૂહના હાઇડ્રોજન વચ્ચે રચાતા હાઇડ્રોજન બંધ દ્વિતીયક રચનાને સ્થિરતા આપે છે.",
     "targetCompany": "School",
@@ -5701,18 +5704,18 @@ const SEED_QUESTIONS = [
     "questionText": "2×2 એકમ શ્રેણિક (Identity Matrix I2) ના નિશ્ચાયકનું મૂલ્ય કેટલું થાય?",
     "questionTextGujarati": "2×2 એકમ શ્રેણિક (Identity Matrix I2) ના નિશ્ચાયકનું મૂલ્ય કેટલું થાય?",
     "options": [
-      "1",
       "0",
-      "2",
-      "-1"
+      "1",
+      "-1",
+      "2"
     ],
     "optionsGujarati": [
-      "1",
       "0",
-      "2",
-      "-1"
+      "1",
+      "-1",
+      "2"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "|I2| = 1(1) - 0(0) = 1.",
     "explanationGujarati": "|I2| = 1(1) - 0(0) = 1.",
     "targetCompany": "School",
@@ -5729,18 +5732,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો A એ n કક્ષાવાળો સામાન્ય ચોરસ શ્રેણિક હોય, તો |adj(A)| બરાબર શું થાય?",
     "questionTextGujarati": "જો A એ n કક્ષાવાળો સામાન્ય ચોરસ શ્રેણિક હોય, તો |adj(A)| બરાબર શું થાય?",
     "options": [
-      "|A|ⁿ⁻¹",
-      "|A|ⁿ",
+      "n|A|",
       "|A|ⁿ⁺¹",
-      "n|A|"
+      "|A|ⁿ⁻¹",
+      "|A|ⁿ"
     ],
     "optionsGujarati": [
-      "|A|ⁿ⁻¹",
-      "|A|ⁿ",
+      "n|A|",
       "|A|ⁿ⁺¹",
-      "n|A|"
+      "|A|ⁿ⁻¹",
+      "|A|ⁿ"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "શ્રેણિકના ગુણધર્મ મુજબ |adj(A)| = |A|ⁿ⁻¹.",
     "explanationGujarati": "શ્રેણિકના ગુણધર્મ મુજબ |adj(A)| = |A|ⁿ⁻¹.",
     "targetCompany": "School",
@@ -5757,18 +5760,18 @@ const SEED_QUESTIONS = [
     "questionText": "e^(sin x) નું x સાપેક્ષ વિકલન શું થાય?",
     "questionTextGujarati": "e^(sin x) નું x સાપેક્ષ વિકલન શું થાય?",
     "options": [
-      "cos x · e^(sin x)",
+      "sin x · e^(cos x)",
       "-cos x · e^(sin x)",
-      "e^(sin x)",
-      "sin x · e^(cos x)"
+      "cos x · e^(sin x)",
+      "e^(sin x)"
     ],
     "optionsGujarati": [
-      "cos x · e^(sin x)",
+      "sin x · e^(cos x)",
       "-cos x · e^(sin x)",
-      "e^(sin x)",
-      "sin x · e^(cos x)"
+      "cos x · e^(sin x)",
+      "e^(sin x)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "સાંકળ નિયમ: d/dx[e^(sin x)] = e^(sin x) · d/dx(sin x) = cos x · e^(sin x).",
     "explanationGujarati": "સાંકળ નિયમ: d/dx[e^(sin x)] = e^(sin x) · d/dx(sin x) = cos x · e^(sin x).",
     "targetCompany": "School",
@@ -5785,18 +5788,18 @@ const SEED_QUESTIONS = [
     "questionText": "નિયત સંકલનનું મૂલ્ય શોધો: ∫₀^(π/2) sin x dx = ?",
     "questionTextGujarati": "નિયત સંકલનનું મૂલ્ય શોધો: ∫₀^(π/2) sin x dx = ?",
     "options": [
-      "1",
-      "0",
       "π/2",
-      "-1"
+      "1",
+      "-1",
+      "0"
     ],
     "optionsGujarati": [
-      "1",
-      "0",
       "π/2",
-      "-1"
+      "1",
+      "-1",
+      "0"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "[-cos x]₀^(π/2) = -cos(π/2) - (-cos 0) = -0 + 1 = 1.",
     "explanationGujarati": "[-cos x]₀^(π/2) = -cos(π/2) - (-cos 0) = -0 + 1 = 1.",
     "targetCompany": "School",
@@ -5813,18 +5816,18 @@ const SEED_QUESTIONS = [
     "questionText": "વિકલ સમીકરણ (d²y/dx²)³ + (dy/dx)⁴ + y = 0 ની કક્ષા (Order) અને પરિમાણ (Degree) કેટલા છે?",
     "questionTextGujarati": "વિકલ સમીકરણ (d²y/dx²)³ + (dy/dx)⁴ + y = 0 ની કક્ષા (Order) અને પરિમાણ (Degree) કેટલા છે?",
     "options": [
-      "કક્ષા 2, પરિમાણ 3",
-      "કક્ષા 3, પરિમાણ 2",
       "કક્ષા 2, પરિમાણ 4",
-      "કક્ષા 4, પરિમાણ 3"
+      "કક્ષા 2, પરિમાણ 3",
+      "કક્ષા 4, પરિમાણ 3",
+      "કક્ષા 3, પરિમાણ 2"
     ],
     "optionsGujarati": [
-      "કક્ષા 2, પરિમાણ 3",
-      "કક્ષા 3, પરિમાણ 2",
       "કક્ષા 2, પરિમાણ 4",
-      "કક્ષા 4, પરિમાણ 3"
+      "કક્ષા 2, પરિમાણ 3",
+      "કક્ષા 4, પરિમાણ 3",
+      "કક્ષા 3, પરિમાણ 2"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "મહત્તમ વિકલન d²y/dx² હોવાથી કક્ષા 2 છે અને તેની સૌથી મોટી ઘાત 3 હોવાથી પરિમાણ 3 છે.",
     "explanationGujarati": "મહત્તમ વિકલન d²y/dx² હોવાથી કક્ષા 2 છે અને તેની સૌથી મોટી ઘાત 3 હોવાથી પરિમાણ 3 છે.",
     "targetCompany": "School",
@@ -5841,18 +5844,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો બે સદિશો a અને b પરસ્પર લંબ હોય, તો તેમનો અદિશ ગુણાકાર (a · b) કેટલો થાય?",
     "questionTextGujarati": "જો બે સદિશો a અને b પરસ્પર લંબ હોય, તો તેમનો અદિશ ગુણાકાર (a · b) કેટલો થાય?",
     "options": [
-      "0",
       "1",
       "|a||b|",
-      "-1"
+      "-1",
+      "0"
     ],
     "optionsGujarati": [
-      "0",
       "1",
       "|a||b|",
-      "-1"
+      "-1",
+      "0"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "a · b = |a||b| cos 90° = 0.",
     "explanationGujarati": "a · b = |a||b| cos 90° = 0.",
     "targetCompany": "School",
@@ -5870,14 +5873,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "દિકગુણોત્તર (1, 2, 2) અને (2, -2, 1) ધરાવતી બે રેખાઓ વચ્ચેનો ખૂણો કેટલો થાય?",
     "options": [
       "90° (પરસ્પર લંબ)",
-      "0°",
       "45°",
+      "0°",
       "60°"
     ],
     "optionsGujarati": [
       "90° (પરસ્પર લંબ)",
-      "0°",
       "45°",
+      "0°",
       "60°"
     ],
     "correctAnswer": 0,
@@ -5897,18 +5900,18 @@ const SEED_QUESTIONS = [
     "questionText": "જો P(A) = 0.6, P(B) = 0.5 અને P(A ∩ B) = 0.3 હોય, તો શરતી સંભાવના P(A | B) શોધો.",
     "questionTextGujarati": "જો P(A) = 0.6, P(B) = 0.5 અને P(A ∩ B) = 0.3 હોય, તો શરતી સંભાવના P(A | B) શોધો.",
     "options": [
-      "0.6",
+      "0.8",
       "0.5",
       "0.3",
-      "0.8"
+      "0.6"
     ],
     "optionsGujarati": [
-      "0.6",
+      "0.8",
       "0.5",
       "0.3",
-      "0.8"
+      "0.6"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "P(A | B) = P(A ∩ B) / P(B) = 0.3 / 0.5 = 0.6.",
     "explanationGujarati": "P(A | B) = P(A ∩ B) / P(B) = 0.3 / 0.5 = 0.6.",
     "targetCompany": "School",
@@ -5925,18 +5928,18 @@ const SEED_QUESTIONS = [
     "questionText": "બેવડું ફલન (Double Fertilization) એ કયા વનસ્પતિ સમૂહની અનન્ય લાક્ષણિકતા છે?",
     "questionTextGujarati": "બેવડું ફલન (Double Fertilization) એ કયા વનસ્પતિ સમૂહની અનન્ય લાક્ષણિકતા છે?",
     "options": [
-      "આવૃત બીજધારી (Angiosperms)",
-      "અનાવૃત બીજધારી (Gymnosperms)",
       "ત્રિઅંગી (Pteridophytes)",
+      "અનાવૃત બીજધારી (Gymnosperms)",
+      "આવૃત બીજધારી (Angiosperms)",
       "દ્વિઅંગી (Bryophytes)"
     ],
     "optionsGujarati": [
-      "આવૃત બીજધારી (Angiosperms)",
-      "અનાવૃત બીજધારી (Gymnosperms)",
       "ત્રિઅંગી (Pteridophytes)",
+      "અનાવૃત બીજધારી (Gymnosperms)",
+      "આવૃત બીજધારી (Angiosperms)",
       "દ્વિઅંગી (Bryophytes)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "આવૃત બીજધારીઓમાં એક નરજન્યુ અંડકોષ સાથે (યુગ્મનજ - 2n) અને બીજો દ્વિતીયક કોષકેન્દ્ર સાથે (ભ્રૂણપોષ - 3n) જોડાય છે જેને બેવડું ફલન કહેવાય છે.",
     "explanationGujarati": "આવૃત બીજધારીઓમાં એક નરજન્યુ અંડકોષ સાથે (યુગ્મનજ - 2n) અને બીજો દ્વિતીયક કોષકેન્દ્ર સાથે (ભ્રૂણપોષ - 3n) જોડાય છે જેને બેવડું ફલન કહેવાય છે.",
     "targetCompany": "School",
@@ -5953,18 +5956,18 @@ const SEED_QUESTIONS = [
     "questionText": "મનુષ્યમાં સ્ત્રી માસિક ચક્રના ૧૪મા દિવસે કયા અંતઃસ્ત્રાવનું સ્તર મહત્તમ બની અંડપાત (Ovulation) પ્રેરે છે?",
     "questionTextGujarati": "મનુષ્યમાં સ્ત્રી માસિક ચક્રના ૧૪મા દિવસે કયા અંતઃસ્ત્રાવનું સ્તર મહત્તમ બની અંડપાત (Ovulation) પ્રેરે છે?",
     "options": [
-      "લ્યુટીનાઇઝિંગ હોર્મોન (LH)",
+      "FSH",
       "પ્રોજેસ્ટેરોન",
-      "એસ્ટ્રોજન",
-      "FSH"
+      "લ્યુટીનાઇઝિંગ હોર્મોન (LH)",
+      "એસ્ટ્રોજન"
     ],
     "optionsGujarati": [
-      "લ્યુટીનાઇઝિંગ હોર્મોન (LH)",
+      "FSH",
       "પ્રોજેસ્ટેરોન",
-      "એસ્ટ્રોજન",
-      "FSH"
+      "લ્યુટીનાઇઝિંગ હોર્મોન (LH)",
+      "એસ્ટ્રોજન"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "LH ના ઝડપી સ્ત્રાવ (LH સર્જ) ને લીધે ગ્રાફિયન પુટિકા ફાટી અંડકોષ મુક્ત થાય છે.",
     "explanationGujarati": "LH ના ઝડપી સ્ત્રાવ (LH સર્જ) ને લીધે ગ્રાફિયન પુટિકા ફાટી અંડકોષ મુક્ત થાય છે.",
     "targetCompany": "School",
@@ -5981,18 +5984,18 @@ const SEED_QUESTIONS = [
     "questionText": "DNA ના સ્વયંજનન દરમિયાન તૂટક શૃંખલા પર બનેલા ઓકાઝાકી ટુકડાઓને જોડવાનું કાર્ય કયો ઉત્સેચક કરે છે?",
     "questionTextGujarati": "DNA ના સ્વયંજનન દરમિયાન તૂટક શૃંખલા પર બનેલા ઓકાઝાકી ટુકડાઓને જોડવાનું કાર્ય કયો ઉત્સેચક કરે છે?",
     "options": [
-      "DNA લિગેઝ (DNA Ligase)",
-      "DNA પોલિમરેઝ",
       "હેલિકેઝ",
-      "ટોપોઆઇસોમરેઝ"
+      "DNA પોલિમરેઝ",
+      "ટોપોઆઇસોમરેઝ",
+      "DNA લિગેઝ (DNA Ligase)"
     ],
     "optionsGujarati": [
-      "DNA લિગેઝ (DNA Ligase)",
-      "DNA પોલિમરેઝ",
       "હેલિકેઝ",
-      "ટોપોઆઇસોમરેઝ"
+      "DNA પોલિમરેઝ",
+      "ટોપોઆઇસોમરેઝ",
+      "DNA લિગેઝ (DNA Ligase)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "DNA લિગેઝ ઉત્સેચક ઓકાઝાકી ટુકડાઓને ફોસ્ફોડાયએસ્ટર બંધ બનાવી એક સળંગ શૃંખલામાં જોડે છે.",
     "explanationGujarati": "DNA લિગેઝ ઉત્સેચક ઓકાઝાકી ટુકડાઓને ફોસ્ફોડાયએસ્ટર બંધ બનાવી એક સળંગ શૃંખલામાં જોડે છે.",
     "targetCompany": "School",
@@ -6010,15 +6013,15 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "PCR (પોલિમરેઝ ચેઇન રિએક્શન) પદ્ધતિમાં ઊંચા તાપમાને પણ સક્રિય રહેતો કયો DNA પોલિમરેઝ વપરાય છે?",
     "options": [
       "ટૅક પોલિમરેઝ (Taq Polymerase)",
-      "RNA પોલિમરેઝ",
       "રિવર્સ ટ્રાન્સક્રિપ્ટેઝ",
-      "રિસ્ટ્રિક્શન એન્ડોન્યુક્લિએઝ"
+      "રિસ્ટ્રિક્શન એન્ડોન્યુક્લિએઝ",
+      "RNA પોલિમરેઝ"
     ],
     "optionsGujarati": [
       "ટૅક પોલિમરેઝ (Taq Polymerase)",
-      "RNA પોલિમરેઝ",
       "રિવર્સ ટ્રાન્સક્રિપ્ટેઝ",
-      "રિસ્ટ્રિક્શન એન્ડોન્યુક્લિએઝ"
+      "રિસ્ટ્રિક્શન એન્ડોન્યુક્લિએઝ",
+      "RNA પોલિમરેઝ"
     ],
     "correctAnswer": 0,
     "explanation": "થર્મસ એક્વાટીકસ બેક્ટેરિયામાંથી મેળવેલ ટૅક પોલિમરેઝ 94°C જેટલા ઊંચા તાપમાને વિનૈસર્ગીકરણ દરમિયાન પણ સક્રિય રહે છે.",
@@ -6038,14 +6041,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "એક જ જનીન એક કરતાં વધુ બાહ્યસ્વરૂપ (લક્ષણો) ને અસર કરતું હોય તે ઘટનાને શું કહે છે?",
     "options": [
       "પ્લિયોટ્રોપી (Pleiotropy)",
-      "પોલિજેનિક વારસો",
       "સહપ્રભાવિતા",
+      "પોલિજેનિક વારસો",
       "અપૂર્ણ પ્રભુતા"
     ],
     "optionsGujarati": [
       "પ્લિયોટ્રોપી (Pleiotropy)",
-      "પોલિજેનિક વારસો",
       "સહપ્રભાવિતા",
+      "પોલિજેનિક વારસો",
       "અપૂર્ણ પ્રભુતા"
     ],
     "correctAnswer": 0,
@@ -6065,18 +6068,18 @@ const SEED_QUESTIONS = [
     "questionText": "સ્ટેક (Stack) ડેટા સ્ટ્રક્ચરમાં ઘટકો કયા સિદ્ધાંત મુજબ ઉમેરાય અને દૂર થાય છે?",
     "questionTextGujarati": "સ્ટેક (Stack) ડેટા સ્ટ્રક્ચરમાં ઘટકો કયા સિદ્ધાંત મુજબ ઉમેરાય અને દૂર થાય છે?",
     "options": [
-      "LIFO (Last In, First Out)",
+      "Tree Order",
       "FIFO (First In, First Out)",
-      "Random Access",
-      "Tree Order"
+      "LIFO (Last In, First Out)",
+      "Random Access"
     ],
     "optionsGujarati": [
-      "LIFO (Last In, First Out)",
+      "Tree Order",
       "FIFO (First In, First Out)",
-      "Random Access",
-      "Tree Order"
+      "LIFO (Last In, First Out)",
+      "Random Access"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "સ્ટેકમાં છેલ્લે દાખલ થયેલું ઘટક સૌથી પહેલાં પોપ (દૂર) થાય છે, જેને LIFO સિદ્ધાંત કહે છે.",
     "explanationGujarati": "સ્ટેકમાં છેલ્લે દાખલ થયેલું ઘટક સૌથી પહેલાં પોપ (દૂર) થાય છે, જેને LIFO સિદ્ધાંત કહે છે.",
     "targetCompany": "School",
@@ -6093,18 +6096,18 @@ const SEED_QUESTIONS = [
     "questionText": "SQL માં GROUP BY ક્લોઝ વડે જૂથ બનાવ્યા પછી જૂથો પર શરત મૂકી ફિલ્ટર કરવા કયો ક્લોઝ વપરાય છે?",
     "questionTextGujarati": "SQL માં GROUP BY ક્લોઝ વડે જૂથ બનાવ્યા પછી જૂથો પર શરત મૂકી ફિલ્ટર કરવા કયો ક્લોઝ વપરાય છે?",
     "options": [
-      "HAVING",
       "WHERE",
-      "ORDER BY",
-      "DISTINCT"
+      "DISTINCT",
+      "HAVING",
+      "ORDER BY"
     ],
     "optionsGujarati": [
-      "HAVING",
       "WHERE",
-      "ORDER BY",
-      "DISTINCT"
+      "DISTINCT",
+      "HAVING",
+      "ORDER BY"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "એગ્રીગેટ ફંક્શન્સ અને જૂથો પર શરત મૂકવા માટે HAVING ક્લોઝ વપરાય છે.",
     "explanationGujarati": "એગ્રીગેટ ફંક્શન્સ અને જૂથો પર શરત મૂકવા માટે HAVING ક્લોઝ વપરાય છે.",
     "targetCompany": "School",
@@ -6121,18 +6124,18 @@ const SEED_QUESTIONS = [
     "questionText": "SQL માં નીચેનામાંથી કયો કમાન્ડ DDL (ડેટા ડેફિનેશન લેંગ્વેજ) કમાન્ડ છે?",
     "questionTextGujarati": "SQL માં નીચેનામાંથી કયો કમાન્ડ DDL (ડેટા ડેફિનેશન લેંગ્વેજ) કમાન્ડ છે?",
     "options": [
-      "CREATE",
+      "UPDATE",
       "SELECT",
       "INSERT",
-      "UPDATE"
+      "CREATE"
     ],
     "optionsGujarati": [
-      "CREATE",
+      "UPDATE",
       "SELECT",
       "INSERT",
-      "UPDATE"
+      "CREATE"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "CREATE ટેબલનું માળખું વ્યાખ્યાયિત કરતો હોવાથી તે DDL કમાન્ડ છે.",
     "explanationGujarati": "CREATE ટેબલનું માળખું વ્યાખ્યાયિત કરતો હોવાથી તે DDL કમાન્ડ છે.",
     "targetCompany": "School",
@@ -6150,14 +6153,14 @@ const SEED_QUESTIONS = [
     "questionTextGujarati": "કમ્પ્યુટર નેટવર્કિંગમાં DNS નું પૂર્ણ નામ શું છે?",
     "options": [
       "Domain Name System",
-      "Data Network Server",
       "Digital Network Service",
+      "Data Network Server",
       "Dynamic Name Service"
     ],
     "optionsGujarati": [
       "Domain Name System",
-      "Data Network Server",
       "Digital Network Service",
+      "Data Network Server",
       "Dynamic Name Service"
     ],
     "correctAnswer": 0,
@@ -6177,18 +6180,18 @@ const SEED_QUESTIONS = [
     "questionText": "પાયથોનમાં કોઈપણ ઓબ્જેક્ટની અજોડ ઓળખ (મેમરી એડ્રેસ) મેળવવા કયું ઇન-બિલ્ટ ફંક્શન વપરાય છે?",
     "questionTextGujarati": "પાયથોનમાં કોઈપણ ઓબ્જેક્ટની અજોડ ઓળખ (મેમરી એડ્રેસ) મેળવવા કયું ઇન-બિલ્ટ ફંક્શન વપરાય છે?",
     "options": [
-      "id()",
       "type()",
       "hex()",
-      "hash()"
+      "hash()",
+      "id()"
     ],
     "optionsGujarati": [
-      "id()",
       "type()",
       "hex()",
-      "hash()"
+      "hash()",
+      "id()"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "`id()` ફંક્શન ઓબ્જેક્ટનું મેમરીમાં અનન્ય સરનામું (ઇન્ટિજર) પરત કરે છે.",
     "explanationGujarati": "`id()` ફંક્શન ઓબ્જેક્ટનું મેમરીમાં અનન્ય સરનામું (ઇન્ટિજર) પરત કરે છે.",
     "targetCompany": "School",
@@ -6203,9 +6206,9 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "A train 150m long is running at a speed of 54 km/hr. In how much time will it pass a standing telegraph post?",
     "options": [
-      "8 seconds",
-      "10 seconds",
       "12 seconds",
+      "10 seconds",
+      "8 seconds",
       "15 seconds"
     ],
     "correctAnswer": 1,
@@ -6223,8 +6226,8 @@ const SEED_QUESTIONS = [
     "questionText": "If 12 men can complete a work in 20 days, how many days will 15 men take to complete the same work?",
     "options": [
       "16 days",
-      "14 days",
       "18 days",
+      "14 days",
       "15 days"
     ],
     "correctAnswer": 0,
@@ -6241,12 +6244,12 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "A shopkeeper marks an article 40% above cost price and allows a discount of 25%. What is his profit percentage?",
     "options": [
-      "15%",
-      "5%",
+      "8%",
       "10%",
-      "8%"
+      "15%",
+      "5%"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "Let CP = 100. MP = 140. SP = 140 × 0.75 = 105. Profit = 5%.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6260,10 +6263,10 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "In how many years will an amount double itself at 12.5% simple interest per annum?",
     "options": [
-      "6 years",
+      "12 years",
       "8 years",
       "10 years",
-      "12 years"
+      "6 years"
     ],
     "correctAnswer": 1,
     "explanation": "SI = P. P = (P × 12.5 × T) / 100 => T = 100 / 12.5 = 8 years.",
@@ -6298,12 +6301,12 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "A bag contains 5 red balls and 4 blue balls. If two balls are drawn at random without replacement, what is the probability that both are red?",
     "options": [
+      "1/2",
       "5/18",
-      "10/36",
-      "25/81",
-      "1/2"
+      "4/9",
+      "25/81"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "P = (5/9) × (4/8) = 20/72 = 5/18.",
     "targetCompany": "Amazon",
     "difficulty": "Medium"
@@ -6317,9 +6320,9 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "The average age of a class of 30 students is 15 years. If the teacher's age is included, the average increases by 1 year. What is the teacher's age?",
     "options": [
-      "45 years",
-      "46 years",
       "48 years",
+      "46 years",
+      "45 years",
       "50 years"
     ],
     "correctAnswer": 1,
@@ -6336,12 +6339,12 @@ const SEED_QUESTIONS = [
     "subject": "Aptitude",
     "questionText": "A boat travels 24 km downstream in 2 hours and takes 4 hours to return upstream. What is the speed of the boat in still water?",
     "options": [
-      "8 km/hr",
       "9 km/hr",
       "6 km/hr",
+      "8 km/hr",
       "10 km/hr"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "Downstream speed = 24/2 = 12 km/h. Upstream speed = 24/4 = 6 km/h. Boat speed = (12 + 6)/2 = 9 km/h.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6355,12 +6358,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "Look at this series: 2, 1, (1/2), (1/4), ... What number should come next?",
     "options": [
+      "(1/16)",
       "(1/3)",
-      "(1/8)",
       "(2/8)",
-      "(1/16)"
+      "(1/8)"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "This is a simple division series. Each number is half of the previous number: 1/4 ÷ 2 = 1/8.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6374,10 +6377,10 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "Pointing to a photograph, a man said, 'I have no brother or sister, but that man's father is my father's son.' Whose photograph was it?",
     "options": [
-      "His father's",
+      "His nephew's",
       "His son's",
       "His own",
-      "His nephew's"
+      "His father's"
     ],
     "correctAnswer": 1,
     "explanation": "'My father's son' = himself (since he has no brother). 'That man's father is himself' => it is his son's photo.",
@@ -6393,12 +6396,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "If in a certain code language, 'ROSE' is written as 'ILHV', how will 'PEACE' be written in that code?",
     "options": [
+      "LVAYV",
       "KVZXV",
       "KZVXV",
-      "KXZWV",
-      "LVAYV"
+      "KXZWV"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "Reverse alphabet pairs (A<->Z, B<->Y, P<->K, E<->V, A<->Z, C<->X, E<->V).",
     "targetCompany": "Wipro",
     "difficulty": "Medium"
@@ -6412,12 +6415,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "Statements: Some books are pens. All pens are desks. Conclusion: (I) Some desks are books. (II) All books are desks.",
     "options": [
-      "Only I follows",
-      "Only II follows",
       "Both I and II follow",
+      "Only II follows",
+      "Only I follows",
       "Neither follows"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "Some books are pens and all pens are desks implies that the common portion of books and pens are desks (Some desks are books).",
     "targetCompany": "Accenture",
     "difficulty": "Medium"
@@ -6431,12 +6434,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "A person walks 10 km North, turns Right and walks 5 km, then turns Right and walks 10 km. How far is he from his starting point?",
     "options": [
+      "15 km North",
       "5 km East",
-      "5 km West",
       "10 km South",
-      "15 km North"
+      "5 km West"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "The 10 km North and 10 km South cancel out, leaving him 5 km East of origin.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6450,12 +6453,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "In a row of 40 students, Priya is 13th from the left end. What is her rank from the right end?",
     "options": [
+      "29th",
       "27th",
       "28th",
-      "29th",
       "26th"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "Rank from right = (Total - Left Rank) + 1 = (40 - 13) + 1 = 28th.",
     "targetCompany": "Amazon",
     "difficulty": "Medium"
@@ -6469,12 +6472,12 @@ const SEED_QUESTIONS = [
     "subject": "Reasoning",
     "questionText": "Which word does NOT belong with the others?",
     "options": [
-      "Index",
-      "Glossary",
       "Chapter",
-      "Book"
+      "Book",
+      "Glossary",
+      "Index"
     ],
-    "correctAnswer": 3,
+    "correctAnswer": 1,
     "explanation": "Index, glossary, and chapter are individual parts/sections of a book.",
     "targetCompany": "Cognizant",
     "difficulty": "Medium"
@@ -6488,12 +6491,12 @@ const SEED_QUESTIONS = [
     "subject": "Verbal",
     "questionText": "Identify the grammatically correct sentence:",
     "options": [
-      "One of my friend is visiting today.",
       "One of my friends is visiting today.",
       "One of my friends are visiting today.",
+      "One of my friend is visiting today.",
       "One of my friend are visiting today."
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "'One of' is followed by plural noun ('friends') and singular verb ('is').",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6507,12 +6510,12 @@ const SEED_QUESTIONS = [
     "subject": "Verbal",
     "questionText": "Choose the word most nearly opposite in meaning to 'METICULOUS':",
     "options": [
-      "Careless",
       "Careful",
-      "Accurate",
-      "Painstaking"
+      "Painstaking",
+      "Careless",
+      "Accurate"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "Meticulous means showing great attention to detail; the opposite is careless.",
     "targetCompany": "Infosys",
     "difficulty": "Medium"
@@ -6527,9 +6530,9 @@ const SEED_QUESTIONS = [
     "questionText": "What does the idiom 'Bite the bullet' mean?",
     "options": [
       "Face an inevitable, difficult situation with courage",
-      "Eat fast",
+      "Engage in physical combat",
       "Avoid responsibility",
-      "Engage in physical combat"
+      "Eat fast"
     ],
     "correctAnswer": 0,
     "explanation": "'Bite the bullet' means enduring an unpleasant ordeal with fortitude.",
@@ -6545,12 +6548,12 @@ const SEED_QUESTIONS = [
     "subject": "Verbal",
     "questionText": "Select the synonym for 'CANDID':",
     "options": [
-      "Secretive",
       "Frank and outspoken",
+      "Secretive",
       "Deceptive",
       "Shy"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "Candid means straightforward, honest, and frank.",
     "targetCompany": "Accenture",
     "difficulty": "Medium"
@@ -6564,12 +6567,12 @@ const SEED_QUESTIONS = [
     "subject": "Verbal",
     "questionText": "Choose the correctly spelled word:",
     "options": [
-      "Accomodation",
-      "Accommodation",
       "Acommodation",
-      "Accomadation"
+      "Accomadation",
+      "Accommodation",
+      "Accomodation"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "Correct spelling has double c and double m: 'Accommodation'.",
     "targetCompany": "Cognizant",
     "difficulty": "Medium"
@@ -6583,12 +6586,12 @@ const SEED_QUESTIONS = [
     "subject": "Coding",
     "questionText": "In React, what hook is used to handle side-effects such as data fetching or subscriptions?",
     "options": [
-      "useState",
       "useContext",
       "useEffect",
+      "useState",
       "useReducer"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 1,
     "explanation": "useEffect is designed to perform side effects in functional React components.",
     "targetCompany": "Infosys",
     "difficulty": "Medium"
@@ -6603,9 +6606,9 @@ const SEED_QUESTIONS = [
     "questionText": "What is the primary difference between `let` and `var` in JavaScript?",
     "options": [
       "let is block-scoped, while var is function-scoped",
+      "var is hoisted without undefined",
       "var is block-scoped",
-      "let can be redeclared in the same scope",
-      "var is hoisted without undefined"
+      "let can be redeclared in the same scope"
     ],
     "correctAnswer": 0,
     "explanation": "Variables declared with `let` respect enclosing block scopes ({ ... }) and temporal dead zones.",
@@ -6621,12 +6624,12 @@ const SEED_QUESTIONS = [
     "subject": "Coding",
     "questionText": "What does the `useCallback` hook in React return?",
     "options": [
-      "A memoized callback function",
-      "A memoized computed value",
+      "A DOM ref",
       "A state updater",
-      "A DOM ref"
+      "A memoized callback function",
+      "A memoized computed value"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 2,
     "explanation": "`useCallback(fn, deps)` returns a memoized version of the callback that only changes if dependencies update.",
     "targetCompany": "Amazon",
     "difficulty": "Medium"
@@ -6641,9 +6644,9 @@ const SEED_QUESTIONS = [
     "questionText": "What will `console.log(typeof null)` output in JavaScript?",
     "options": [
       "'object'",
-      "'null'",
+      "'boolean'",
       "'undefined'",
-      "'boolean'"
+      "'null'"
     ],
     "correctAnswer": 0,
     "explanation": "Due to a historical bug preserved for compatibility, `typeof null` returns `'object'`.",
@@ -6659,12 +6662,12 @@ const SEED_QUESTIONS = [
     "subject": "Coding",
     "questionText": "Which JavaScript array method creates a new array populated with the results of calling a provided function on every element?",
     "options": [
-      "forEach()",
       "filter()",
-      "map()",
-      "reduce()"
+      "forEach()",
+      "reduce()",
+      "map()"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 3,
     "explanation": "`map()` transforms elements and returns a new array of identical length.",
     "targetCompany": "Accenture",
     "difficulty": "Medium"
@@ -6678,12 +6681,12 @@ const SEED_QUESTIONS = [
     "subject": "DSA",
     "questionText": "What is the average time complexity of searching an element in a Balanced Binary Search Tree (BST)?",
     "options": [
-      "O(1)",
+      "O(n log n)",
       "O(n)",
-      "O(log n)",
-      "O(n log n)"
+      "O(1)",
+      "O(log n)"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 3,
     "explanation": "In a balanced BST, the height is log(n), making search operations run in O(log n) time.",
     "targetCompany": "Amazon",
     "difficulty": "Medium"
@@ -6697,12 +6700,12 @@ const SEED_QUESTIONS = [
     "subject": "DSA",
     "questionText": "Which sorting algorithm has a worst-case time complexity of O(n log n) and is based on divide-and-conquer?",
     "options": [
-      "Merge Sort",
-      "Quick Sort",
       "Bubble Sort",
-      "Insertion Sort"
+      "Insertion Sort",
+      "Quick Sort",
+      "Merge Sort"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "Merge Sort guarantees O(n log n) across best, average, and worst cases.",
     "targetCompany": "Amazon",
     "difficulty": "Medium"
@@ -6716,12 +6719,12 @@ const SEED_QUESTIONS = [
     "subject": "DSA",
     "questionText": "Which data structure is primarily used to implement Breadth-First Search (BFS) on a graph?",
     "options": [
-      "Stack",
       "Queue",
+      "Array",
       "Priority Queue",
-      "Array"
+      "Stack"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 0,
     "explanation": "BFS explores level by level using a FIFO Queue.",
     "targetCompany": "Infosys",
     "difficulty": "Medium"
@@ -6735,12 +6738,12 @@ const SEED_QUESTIONS = [
     "subject": "DSA",
     "questionText": "What is the space complexity of finding an element using iterative Binary Search on a sorted array?",
     "options": [
+      "O(n log n)",
       "O(1)",
       "O(log n)",
-      "O(n)",
-      "O(n log n)"
+      "O(n)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 1,
     "explanation": "Iterative binary search uses two pointer variables, requiring O(1) auxiliary space.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6773,9 +6776,9 @@ const SEED_QUESTIONS = [
     "subject": "Database",
     "questionText": "In relational databases, which SQL JOIN returns all rows from the left table and matched rows from the right table?",
     "options": [
-      "INNER JOIN",
-      "LEFT OUTER JOIN",
       "RIGHT OUTER JOIN",
+      "LEFT OUTER JOIN",
+      "INNER JOIN",
       "CROSS JOIN"
     ],
     "correctAnswer": 1,
@@ -6792,12 +6795,12 @@ const SEED_QUESTIONS = [
     "subject": "Database",
     "questionText": "What does the 'A' stand for in ACID properties of database transactions?",
     "options": [
-      "Atomicity (All or nothing)",
       "Availability",
       "Authentication",
-      "Accuracy"
+      "Accuracy",
+      "Atomicity (All or nothing)"
     ],
-    "correctAnswer": 0,
+    "correctAnswer": 3,
     "explanation": "Atomicity ensures that all transaction operations execute completely or rollback entirely.",
     "targetCompany": "TCS NQT",
     "difficulty": "Medium"
@@ -6812,11 +6815,11 @@ const SEED_QUESTIONS = [
     "questionText": "Which HTTP status code signifies '404'?",
     "options": [
       "Bad Request",
-      "Unauthorized",
       "Not Found",
+      "Unauthorized",
       "Internal Server Error"
     ],
-    "correctAnswer": 2,
+    "correctAnswer": 1,
     "explanation": "HTTP 404 indicates that the requested server resource was not found.",
     "targetCompany": "Infosys",
     "difficulty": "Medium"
@@ -6832,8 +6835,8 @@ const SEED_QUESTIONS = [
     "options": [
       "Hash Index",
       "B-Tree / B+ Tree",
-      "Inverted Index",
-      "Bitmap Index"
+      "Bitmap Index",
+      "Inverted Index"
     ],
     "correctAnswer": 1,
     "explanation": "B+ Trees maintain balanced depth and sequential linked leaf nodes for rapid range scans.",
@@ -6849,17 +6852,17 @@ const SEED_QUESTIONS = [
     "subject": "Database",
     "questionText": "What architectural principle ensures that an API server handles each request independently without storing client session state?",
     "options": [
+      "Monolithic",
       "Stateful",
       "Stateless (REST)",
-      "Monolithic",
       "Event-driven"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 2,
     "explanation": "REST APIs require stateless interactions where each request carries all requisite credentials.",
     "targetCompany": "Wipro",
     "difficulty": "Medium"
   }
-];
+].concat(STREAM_QUESTIONS);
 
 let questionsSeeded = false;
 async function ensureQuestionsSeeded() {
@@ -6923,8 +6926,10 @@ router.get('/questions', async (req, res) => {
     if (grade) {
       matchStage.grades = grade;
     }
-    if (category && category !== 'All Topics') {
-      matchStage.category = category;
+    const wantsCategory = category && category !== 'All Topics';
+    if (wantsCategory) {
+      // The app sends the subject's English name (e.g. "Accountancy"); stored questions may use either field.
+      matchStage.$and = [{ $or: [{ category }, { subject: category }] }];
     }
     if (company && company !== 'All Companies') {
       matchStage.$or = [{ targetCompany: company }, { targetCompany: 'All' }];
@@ -6957,10 +6962,12 @@ router.get('/questions', async (req, res) => {
       { $sample: { size: limit } }
     ]);
 
-    if (questions.length === 0) {
+    // A subject with no stored questions returns an empty list so the app uses its own
+    // bundled set for that subject, instead of showing another subject's questions.
+    if (questions.length === 0 && !wantsCategory) {
       questions = await Question.find({ grades: grade }).limit(limit);
     }
-    if (questions.length === 0) {
+    if (questions.length === 0 && !wantsCategory) {
       questions = await Question.find().limit(limit);
     }
 
@@ -7244,31 +7251,22 @@ router.get('/user/dashboard-stats', async (req, res) => {
 
     const results = await ExamResult.find(resultsQuery).sort({ createdAt: -1 });
 
-    let streakCount = user ? user.streakCount || 0 : 0;
-    if (user) {
-      const now = new Date();
-      const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : new Date(0);
-
-      const todayStr = now.toISOString().split('T')[0];
-      const lastLoginStr = lastLogin.toISOString().split('T')[0];
-
-      if (todayStr !== lastLoginStr) {
-        const todayDate = new Date(todayStr);
-        const lastDate = new Date(lastLoginStr);
-        const dayDiff = Math.round((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (dayDiff === 1) {
-          streakCount += 1;
-          user.streakCount = streakCount;
-          user.lastLoginDate = now;
-          await user.save();
-        } else if (dayDiff > 1) {
-          streakCount = 1;
-          user.streakCount = 1;
-          user.lastLoginDate = now;
-          await user.save();
-        }
-      }
+    // Streak = consecutive days with at least one finished test, ending today or yesterday.
+    // Same rule as the app's on-device fallback (services/localProgress.ts computeStreak),
+    // so the number never depends on whether the server was reachable.
+    const dayKey = (d) => new Date(d).toISOString().split('T')[0];
+    const studyDays = new Set(results.map((r) => dayKey(r.createdAt)));
+    let streakCount = 0;
+    const cursor = new Date(dayKey(new Date()));
+    if (!studyDays.has(dayKey(cursor))) cursor.setUTCDate(cursor.getUTCDate() - 1);
+    while (studyDays.has(dayKey(cursor))) {
+      streakCount += 1;
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+    }
+    if (user && (user.streakCount !== streakCount || dayKey(user.lastLoginDate || 0) !== dayKey(new Date()))) {
+      user.streakCount = streakCount; // kept on the user for the leaderboard
+      user.lastLoginDate = new Date();
+      await user.save().catch(() => {});
     }
 
     const totalTests = results.length;

@@ -20,12 +20,18 @@ const userSchema = new mongoose.Schema({
     enum: ['English', 'Gujarati'],
     default: 'English',
   },
+  // Class 11/12 only: which GSEB stream's subjects to show. Empty for other classes.
+  stream: {
+    type: String,
+    enum: ['science', 'commerce', 'arts', ''],
+    default: '',
+  },
   academicStage: {
     type: String,
     enum: ['school', 'college'],
     default: 'college',
   },
-  streakCount: { type: Number, default: 1 },
+  streakCount: { type: Number, default: 0 },
   targetCompany: { type: String, default: 'All Companies' },
   weakSpotStats: { type: Object, default: {} },
   attemptedQuestionIds: [{ type: Number }],

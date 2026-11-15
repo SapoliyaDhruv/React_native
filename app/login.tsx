@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MindSprintColors, MindSprintFonts } from '@/constants/mindsprintTheme';
 import { useTheme } from '@/context/ThemeContext';
-import { AcademicGrade } from '@/constants/academicData';
+import { AcademicGrade, AcademicStream, STREAM_OPTIONS, gradeHasStreams } from '@/constants/academicData';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import * as WebBrowser from 'expo-web-browser';
@@ -35,6 +36,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<AcademicGrade>('college');
+  const [selectedStream, setSelectedStream] = useState<AcademicStream | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { login: authLogin, register: authRegister, loginWithGoogle: authGoogleLogin, loginAsGuest } = useAuth();
 
@@ -69,6 +71,11 @@ export default function LoginScreen() {
       return;
     }
 
+    if (!isLoginMode && gradeHasStreams(selectedGrade) && !selectedStream) {
+      Alert.alert(tr('Choose your stream', 'તમારો પ્રવાહ પસંદ કરો'), tr('Pick Science, Commerce or Arts so we show your subjects.', 'તમારા વિષયો બતાવવા માટે વિજ્ઞાન, વાણિજ્ય કે આર્ટ્સ પસંદ કરો.'));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -83,7 +90,7 @@ export default function LoginScreen() {
       } else {
         const targetBoard = selectedGrade === 'college' ? 'CBSE' : 'GSEB';
         const targetMedium = selectedGrade === 'college' ? 'English' : 'Gujarati';
-        const res = await authRegister(name, email, password, selectedGrade, targetBoard, targetMedium);
+        const res = await authRegister(name, email, password, selectedGrade, targetBoard, targetMedium, gradeHasStreams(selectedGrade) ? selectedStream : undefined);
         setLoading(false);
         if (res.error) {
           Alert.alert(tr('Could not create account', 'એકાઉન્ટ બની શક્યું નહીં'), res.error);
@@ -306,6 +313,27 @@ export default function LoginScreen() {
                       </TouchableOpacity>
                     ))}
                   </View>
+                  {gradeHasStreams(selectedGrade) && (
+                    <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOut.duration(120)} style={{ marginTop: 14 }}>
+                      <Text style={styles.inputLabel}>{tr('Stream', 'પ્રવાહ')}</Text>
+                      <View style={styles.gradePillRow} accessibilityRole="radiogroup">
+                        {STREAM_OPTIONS.map((o) => (
+                          <TouchableOpacity
+                            key={o.stream}
+                            style={[styles.gradePill, selectedStream === o.stream && styles.gradePillActive]}
+                            onPress={() => setSelectedStream(o.stream)}
+                            accessibilityRole="radio"
+                            accessibilityLabel={`${o.label}. ${o.subjects}`}
+                            accessibilityState={{ selected: selectedStream === o.stream }}
+                          >
+                            <Text style={[styles.gradePillText, selectedStream === o.stream && styles.gradePillTextActive]}>
+                              {lang === 'gu' ? o.labelGujarati.replace(/\s*\(.*\)/, '') : o.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </Animated.View>
+                  )}
                 </View>
               )}
             </View>

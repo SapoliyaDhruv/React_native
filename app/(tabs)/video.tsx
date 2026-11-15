@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { MindSprintFonts } from '@/constants/mindsprintTheme';
 import { subjectTone } from '@/constants/subjectTones';
-import { ACADEMIC_CURRICULUM, AcademicGrade, AcademicSubject, SubjectChapter } from '@/constants/academicData';
+import { ACADEMIC_CURRICULUM, AcademicGrade, AcademicSubject, SubjectChapter, subjectsForStream } from '@/constants/academicData';
 import { VIDEO_LECTURES_DATA, VideoLecture } from '@/constants/videoData';
 import { VideoPlayerView } from '@/components/mindsprint/VideoPlayerView';
 import { useCourseProgress } from '@/components/courses/useCourseProgress';
@@ -57,7 +57,8 @@ export default function WatchingScreen() {
   const { user } = useAuth();
   const { tr, isGujarati } = useLanguage();
   const grade = (user?.grade || '7') as AcademicGrade;
-  const subjects = useMemo(() => (ACADEMIC_CURRICULUM[grade] || ACADEMIC_CURRICULUM['7']).subjects, [grade]);
+  const stream = user?.stream;
+  const subjects = useMemo(() => subjectsForStream((ACADEMIC_CURRICULUM[grade] || ACADEMIC_CURRICULUM['7']).subjects, grade, stream), [grade, stream]);
   const progress = useCourseProgress(grade, user?.email);
   const done = progress.completedIds;
 

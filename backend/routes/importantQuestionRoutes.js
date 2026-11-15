@@ -2272,7 +2272,7 @@ const SEED_IMPORTANT_QUESTIONS = [
       "Infosys 2023"
     ],
     "modelAnswer": "Approach 1 (Subquery with MAX):\nSELECT MAX(salary) AS SecondHighestSalary FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nApproach 2 (LIMIT and OFFSET in MySQL / Postgres):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nApproach 3 (Window Function DENSE_RANK):\nWITH RankedSalaries AS (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as rank_no FROM Employee) SELECT salary FROM RankedSalaries WHERE rank_no = 2;",
-    "modelAnswerGujarati": "રીત ૧ (સબક્વેરી):\nSELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nરીત ૨ (LIMIT અને OFFSET):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nરીત ૩ (DENSE_RANK વિન્ડો ફંક્શન):\nSELECT salary FROM (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as r FROM Employee) WHERE r = 2;",
+    "modelAnswerGujarati": "રીત ૧ (સબક્વેરી):\nSELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee);\n\nરીત ૨ (LIMIT અને OFFSET):\nSELECT DISTINCT salary FROM Employee ORDER BY salary DESC LIMIT 1 OFFSET 1;\n\nરીત ૩ (DENSE_RANK વિન્ડો ફંક્શન):\nSELECT salary FROM (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) as r FROM Employee) AS t WHERE r = 2;",
     "stepWiseMarking": [
       {
         "stepNumber": 1,
@@ -2425,7 +2425,7 @@ const SEED_IMPORTANT_QUESTIONS = [
     "examinerTips": "Mention that 0/1 knapsack CANNOT be solved with a greedy approach, unlike fractional knapsack.",
     "examinerTipsGujarati": "0/1 નેપસેક ગ્રીડી પદ્ધતિથી ન ઉકેલાય તે દર્શાવો."
   }
-];
+].concat(require('../data/stream_important_questions.json')); // Class 11/12 Commerce & Arts, shared with the app
 
 async function autoSeedImportantQuestions() {
   try {
@@ -2454,6 +2454,8 @@ router.get('/', async (req, res) => {
         if (marks && q.marks !== parseInt(marks)) return false;
         return true;
       });
+      // A subject with no questions yet returns none, never another subject's questions.
+      if (subject && subject !== 'All') return list;
       if (list.length === 0 && grade) {
         list = SEED_IMPORTANT_QUESTIONS.filter((q) => q.grade === grade);
       }
